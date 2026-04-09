@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<!--
+╔═══════════════════════════════════════════════════════════════════╗
+║  Mathe-Check TEMPLATE  v5.0  (ZP10 NRW Gymnasium)              ║
+║  MAJOR FEATURES IN v5:                                            ║
+║  • Elaboriertes Feedback + Lernvideo-Links                        ║
+║  • Hinge Questions (Distraktor → MV mapping)                      ║
+║  • Kalibrierungs-Training (Micro self-assessment)                 ║
+║  • Anforderungsbereiche AB I-III                                  ║
+║  • Teil 1 / Teil 2 Trennung                                       ║
+║  • L1-L5 Inhaltsbezogene Kompetenzen (Leitideen)                  ║
+║  • Productive Failure (Einstiegsaufgabe)                          ║
+║  • Operatoren-Tooltips                                            ║
+║  • Prerequisite-Analyse                                           ║
+║  • Spaced Repetition auf MV-Ebene                                 ║
+║                                                                   ║
+║  For new apps: modify DATA SECTION ONLY                           ║
+╚═══════════════════════════════════════════════════════════════════╝
+-->
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mathe-Check v5</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito+Sans:wght@700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/module.css">
+</head>
+<body>
+<div class="theme-toggle" onclick="toggleTheme()">🌙</div>
+<header>
+<div class="hdr-inner">
+<div class="hdr-title"><h1 id="hdr-title-h1">Mathe-Check</h1><p id="hdr-title-p">Diagnose & Förderung</p></div>
+<div class="hdr-right"><div class="hdr-xp"><div style="text-align:right"><div class="xp-num" id="hdr-xp">0 XP</div><div class="xp-lbl">Punkte</div></div></div><span class="level-pill" id="level-pill">Einsteiger</span><div class="hdr-timer" id="hdr-timer"><span>⏱ </span><span id="timer-display">90:00</span></div></div>
+</div>
+</header>
+<div id="app">
+<div id="screen-start" class="screen active">
+<div class="card start-hero"><div class="hero-icon" id="hero-icon-el">📐</div><h2 id="start-h2">Willkommen!</h2><p>Teste dein Verständnis zu Termen und Gleichungen. Egal ob Diagnose oder Prüfungsmodus – hier findest du Aufgaben auf deinem Niveau.</p></div>
+<div id="info-chips" class="info-chips"></div>
+<div style="text-align:center;margin-bottom:28px"><h3 style="font-size:0.95rem;font-weight:700;margin-bottom:12px;color:var(--text-secondary)">FERTIGKEITSPROFILE</h3><div id="klp-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px"></div></div>
+<div style="text-align:center;margin-bottom:28px"><h3 style="font-size:0.95rem;font-weight:700;margin-bottom:12px;color:var(--text-secondary)">LEITIDEEN</h3><div id="lbk-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px"></div></div>
+<div style="text-align:center;margin-bottom:28px"><h3 style="font-size:0.95rem;font-weight:700;margin-bottom:12px;color:var(--text-secondary)">THEMEN-MODULE</h3><div id="mv-preview-start" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px"></div></div>
+<div class="mode-select"><div id="mode-diagnose" class="mode-card selected" onclick="selectMode('diagnose')"><div class="mode-icon">🔍</div><div class="mode-name">Diagnose</div><div class="mode-desc">Sofortiges Feedback nach jeder Frage. Ideal zum Lernen.</div></div><div id="mode-exam" class="mode-card" onclick="selectMode('exam')"><div class="mode-icon">✏️</div><div class="mode-name">Prüfung</div><div class="mode-desc">90 Minuten, kein Feedback während des Tests. Wie in der echten ZP10.</div></div></div>
+<div style="text-align:center"><button class="btn btn-primary btn-large" id="btn-start" onclick="proceedToAssessment()">Diagnose starten</button></div>
+</div>
+<div id="screen-productive-failure" class="screen">
+<div class="productive-failure-screen"><div class="pf-title">🚀 Aufwärm-Aufgabe</div><div class="pf-subtitle">Keine Sorge – das ist nur zum Aufwärmen! Versuche es einmal.</div></div>
+<div id="pf-question-card" class="card"></div>
+<div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:20px"><button id="btn-pf-check" class="btn btn-primary" onclick="checkPFAnswer()">Prüfen</button><button id="btn-pf-next" class="btn btn-primary" onclick="proceedFromPF()">Weiter zur Diagnose</button></div>
+</div>
+<div id="screen-assess" class="screen">
+<div style="max-width:700px;margin:0 auto"><div style="text-align:center;margin-bottom:32px"><h2 style="font-size:1.8rem;font-weight:800;margin-bottom:8px;font-family:'Nunito Sans',sans-serif">Selbsteinschätzung</h2><p style="color:var(--text-secondary);font-size:0.95rem">Wie sicher fühlst du dich bei diesen Themen?</p></div>
+<div id="assess-cats-container"></div>
+<div style="text-align:center;margin-top:32px"><button class="btn btn-primary btn-large" onclick="startTestFromAssess()">Test starten</button></div>
+</div>
+</div>
+<div id="screen-test" class="screen">
+<div class="prog-wrap"><div class="prog-meta"><span id="prog-label">Frage 1 von 28</span><span id="prog-pct">0%</span></div><div class="prog-track"><div id="prog-fill" class="prog-fill" style="width:0%"></div></div></div>
+<div id="exam-nav" class="exam-nav"></div>
+<div id="calibration-container"></div>
+<div id="question-card" class="card"></div>
+<div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:20px"><button id="btn-check" class="btn btn-primary" onclick="checkInputAnswer()">Prüfen</button><button id="btn-next" class="btn btn-primary" onclick="nextQuestion()">Weiter</button><button id="btn-flag" class="btn btn-outline" onclick="toggleFlag()">🚩 Markieren</button><button id="btn-submit-exam" class="btn btn-primary" onclick="submitExam()">Test beenden</button></div>
+</div>
+<div id="screen-result" class="screen">
+<div id="result-top" class="result-top"></div>
+<div id="stats-strip" class="stats-strip"></div>
+<div id="calibration-stats-container"></div>
+<div id="self-assess-comparison-container"></div>
+<div id="prereq-chain-container"></div>
+<div id="sr-due-container"></div>
+<div style="margin-bottom:28px"><h3 style="font-weight:700;margin-bottom:14px">Anforderungsbereiche</h3><div id="ab-profile"></div></div>
+<div style="margin-bottom:28px"><h3 style="font-weight:700;margin-bottom:14px">Leitideen</h3><div id="lbk-profile"></div></div>
+<div style="margin-bottom:28px"><h3 style="font-weight:700;margin-bottom:14px">Fertigkeitsprofile</h3><div id="klp-profile"></div></div>
+<div style="margin-bottom:28px"><h3 style="font-weight:700;margin-bottom:14px">Themen-Module</h3><div id="mv-cards"></div></div>
+<div style="margin-bottom:28px" id="pf-comparison-container"></div>
+
+<!-- METAKOGNITIVE REFLEXION (Feature A) -->
+<div style="margin-bottom:28px;background:var(--primary-light);border:1px solid var(--primary);border-radius:20px;padding:24px;">
+  <h3 style="font-weight:700;margin-bottom:16px;color:var(--primary);">💭 Metakognitive Reflexion</h3>
+  <p style="font-size:0.9rem;color:var(--text-secondary);margin-bottom:20px;">Denke über dein Lernen nach. Das hilft dir, mehr aus dieser Aufgabe zu lernen!</p>
+
+  <div style="margin-bottom:16px;">
+    <label style="font-weight:600;display:block;margin-bottom:8px;">Was habe ich heute Neues gelernt?</label>
+    <textarea id="reflexion-learned" placeholder="Schreibe auf, was du Neues entdeckt hast..." style="width:100%;padding:12px;border:1px solid var(--border);border-radius:10px;font-family:'Inter',sans-serif;font-size:0.9rem;min-height:80px;resize:vertical;background:var(--surface);color:var(--text);"></textarea>
+  </div>
+
+  <div style="margin-bottom:16px;">
+    <label style="font-weight:600;display:block;margin-bottom:8px;">Was hat mich überrascht?</label>
+    <textarea id="reflexion-surprised" placeholder="Welche Aufgaben waren überraschend? Welche Fehler?..." style="width:100%;padding:12px;border:1px solid var(--border);border-radius:10px;font-family:'Inter',sans-serif;font-size:0.9rem;min-height:80px;resize:vertical;background:var(--surface);color:var(--text);"></textarea>
+  </div>
+
+  <div style="margin-bottom:16px;">
+    <label style="font-weight:600;display:block;margin-bottom:8px;">Was übe ich als nächstes?</label>
+    <textarea id="reflexion-next" placeholder="Welches Thema sollte ich vertiefen?" style="width:100%;padding:12px;border:1px solid var(--border);border-radius:10px;font-family:'Inter',sans-serif;font-size:0.9rem;min-height:80px;resize:vertical;background:var(--surface);color:var(--text);"></textarea>
+  </div>
+
+  <button class="btn btn-primary" onclick="saveReflexion()" style="margin-bottom:12px;">💾 Reflexion speichern</button>
+  <div id="reflexion-feedback" style="font-size:0.9rem;color:var(--text-secondary);margin-top:8px;"></div>
+  <div id="reflexion-history" style="margin-top:16px;padding:16px;background:var(--surface);border-radius:10px;display:none;">
+    <div style="font-weight:600;margin-bottom:8px;color:var(--text);">Deine bisherigen Reflexionen:</div>
+    <div id="reflexion-history-content" style="font-size:0.85rem;color:var(--text-secondary);"></div>
+  </div>
+</div>
+
+<div style="text-align:center;margin-top:32px"><button class="btn btn-primary btn-large" id="btn-foerder" style="display:none" onclick="startFoerder()">Förderaufgaben</button><button class="btn btn-outline" onclick="restartTest()">Neu starten</button></div>
+</div>
+<div id="screen-foerder" class="screen">
+<h2 style="margin-bottom:20px;font-size:1.5rem;font-weight:800;font-family:'Nunito Sans',sans-serif">Förderaufgaben</h2>
+<p style="margin-bottom:24px;color:var(--text-secondary)">Hier sind Aufgaben zu den Themen, bei denen du Unterstützung brauchst:</p>
+
+<!-- WORKED EXAMPLES WITH SCAFFOLDING (Feature B) -->
+<div id="worked-examples-container" style="display:none;margin-bottom:28px;">
+  <h3 style="font-weight:700;margin-bottom:16px;color:var(--primary);">📚 Lösungsbeispiele mit Scaffolding</h3>
+  <div id="worked-examples-content"></div>
+</div>
+
+<div id="foerder-container"></div>
+<div style="text-align:center;margin-top:32px"><button class="btn btn-outline" onclick="restartTest()">Zurück</button></div>
+</div>
+</div>
+<script>
+// ==================== CONFIG SECTION ====================
+const TITEL='Mathe-Check';
+const UNTERTITEL='Terme & Gleichungen';
+const HERO_ICON='📐';
+const MODULE_ID='zp10-terme-gleichungen';
+const INFO_CHIPS=['31 Fragen','Mit Lösungen','5 Level'];
+const CONFIG={examTotalTime:5400};
+
+// ==================== DATA SECTION (v5.0 ENHANCED) ====================
+
+// Operatoren-Tooltips (Feature 8)
+const OPERATOREN={
+  berechne: 'Ergebnis durch Rechnung ermitteln. Rechenweg angeben!',
+  bestimme: 'Lösung durch Überlegung oder Rechnung finden.',
+  begruende: 'Aussage mit mathematischen Argumenten stützen.',
+  beschreibe: 'Sachverhalt in eigenen Worten wiedergeben.',
+  erklaere: 'Zusammenhang verständlich darstellen.',
+  zeige: 'Nachweis durch logische Argumentation führen.',
+  skizziere: 'Grobe Zeichnung mit wichtigen Merkmalen anfertigen.',
+  zeichne: 'Maßstabsgetreue, exakte Darstellung erstellen.',
+  vergleiche: 'Gemeinsamkeiten und Unterschiede herausarbeiten.',
+  interpretiere: 'Bedeutung im Sachzusammenhang erklären.'
+};
+
+// Leitideen (Feature 6)
+const LBK={
+  L1:{code:'L1',name:'Zahl & Operation'},
+  L2:{code:'L2',name:'Messen & Größen'},
+  L3:{code:'L3',name:'Raum & Form'},
+  L4:{code:'L4',name:'Funktionaler Zusammenhang'},
+  L5:{code:'L5',name:'Daten & Zufall'}
+};
+
+const SELF_ASSESS_CATS=[
+  {id:'terme',label:'Terme ausmultiplizieren & vereinfachen'},
+  {id:'gleichungen',label:'Gleichungen lösen'},
+  {id:'binomisch',label:'Binomische Formeln'},
+  {id:'faktorisieren',label:'Faktorisieren & Ausklammern'},
+  {id:'bruchgleichungen',label:'Bruchgleichungen & Definitionsmenge'},
+  {id:'pq',label:'p-q-Formel & Quadratische Gleichungen'}
+];
+
+const MV={
+  M1:{code:'M1',title:'Distributivgesetz & Multiplikation',video:'https://www.lehrer-schmidt.de/mathematik/',prereq:[]},
+  M2:{code:'M2',title:'Vorzeichenregeln',video:'https://www.lehrer-schmidt.de/mathematik/',prereq:['M1']},
+  M3:{code:'M3',title:'Äquivalenzumformungen',video:'https://www.lehrer-schmidt.de/mathematik/',prereq:['M1']},
+  M4:{code:'M4',title:'Nullprodukt & Faktorisierung',video:'https://www.lehrer-schmidt.de/mathematik/',prereq:['M1']},
+  M5:{code:'M5',title:'Binomische Formeln',video:'https://www.lehrer-schmidt.de/mathematik/',prereq:['M1']},
+  M6:{code:'M6',title:'Terme vs. Gleichungen',video:'https://www.lehrer-schmidt.de/mathematik/',prereq:[]},
+  M7:{code:'M7',title:'Definitionsmenge',video:'https://www.lehrer-schmidt.de/mathematik/',prereq:['M3']},
+  M8:{code:'M8',title:'Ausklammern',video:'https://www.lehrer-schmidt.de/mathematik/',prereq:['M1']},
+  M9:{code:'M9',title:'Quadratische Ergänzung',video:'https://www.lehrer-schmidt.de/mathematik/',prereq:['M5']},
+  M10:{code:'M10',title:'p-q-Formel',video:'https://www.lehrer-schmidt.de/mathematik/0',prereq:['M9']}
+};
+
+const KLP={
+  K1:{code:'K1',name:'Argumentieren & Beweisen'},
+  K2:{code:'K2',name:'Problemlösen'},
+  K3:{code:'K3',name:'Modellieren'},
+  K4:{code:'K4',name:'Darstellungen nutzen'},
+  K5:{code:'K5',name:'Kommunizieren'},
+  K6:{code:'K6',name:'Werkzeuge nutzen'}
+};
+
+// Productive Failure (Feature 7)
+const PRODUCTIVE_FAILURE={
+  text:'Lösen Sie: (2x + 3)² = x² + 12x + 9. Bestimmen Sie alle Lösungen.',
+  type:'input',
+  answer:0,
+  tol:0.1,
+  unit:'',
+  context:'Eine herausfordernde quadratische Gleichung mit binomischen Formeln.'
+};
+
+const Q=[
+  {id:'q1',klp:'K1',l:'L1',mvTarget:'M1',type:'mc',xp:10,cat:'Terme',ab:1,teil:1,text:'Lösen Sie die Klammer auf: 3(2x + 5)',opts:['6x + 5','6x + 15','5x + 15','3x + 15'],answer:1,optMV:[null,'M1','M1','M1'],operator:'berechne',fb_ok:'Korrekt! Das Distributivgesetz: a(b+c) = ab + ac. Hier: 3·2x + 3·5 = 6x + 15',fb_nok:'Falsch. Beide Terme in der Klammer müssen mit 3 multipliziert werden.',mv_nok:'M1',denkfehler:'Nur einen Term mit der Zahl multipliziert.',naechster_schritt:'Übe mehr Distributivgesetz-Aufgaben.',video:'https://www.lehrer-schmidt.de/mathematik/',sol:'3(2x+5) = 3·2x + 3·5 = 6x + 15'},
+  {id:'q2',klp:'K2',l:'L1',mvTarget:'M1',type:'input',xp:12,cat:'Terme',ab:1,teil:1,text:'Vereinfachen Sie: 2(3a + 4b). Geben Sie den Koeffizienten von a ein.',hint:'Multiplizieren Sie jeden Term mit 2.',answer:6,tol:0,unit:'',fb_ok:'Richtig! 2·3a = 6a',fb_nok:'Falsch. Multiplizieren Sie 3 mit 2.',mv_nok:'M1',denkfehler:'Multiplikation nicht richtig angewendet.',naechster_schritt:'Übe Koeffizienten bestimmen.',video:'https://www.lehrer-schmidt.de/mathematik/',sol:'2(3a+4b) = 6a + 8b'},
+  {id:'q3',klp:'K1',l:'L1',mvTarget:'M2',type:'mc',xp:10,cat:'Terme',ab:1,teil:1,text:'Was ist (-2) · (-5)?',opts:['10','-10','7','-7'],answer:0,optMV:[null,'M2','M2','M2'],fb_ok:'Richtig! Minus mal Minus = Plus.',fb_nok:'Falsch. Zwei negative Zahlen ergeben positiv.',mv_nok:'M2',denkfehler:'Vorzeichenregeln nicht beherrscht.',naechster_schritt:'Lerne die Vorzeichenregeln.',video:'https://www.lehrer-schmidt.de/mathematik/',sol:'(-2) · (-5) = +10'},
+  {id:'q4',klp:'K2',l:'L4',mvTarget:'M3',type:'input',xp:12,cat:'Gleichungen',ab:2,teil:1,text:'Lösen Sie: x + 5 = 12',hint:'Subtrahieren Sie 5 von beiden Seiten.',answer:7,tol:0,unit:'',fb_ok:'Korrekt! Äquivalenzumformung angewendet.',fb_nok:'Falsch. Subtrahieren Sie 5.',mv_nok:'M3',denkfehler:'Falsche Umformung gewählt.',naechster_schritt:'Übe Äquivalenzumformungen.',video:'https://www.lehrer-schmidt.de/mathematik/',sol:'x + 5 = 12 ⟹ x = 7'},
+  {id:'q5',klp:'K2',l:'L4',mvTarget:'M3',type:'input',xp:12,cat:'Gleichungen',ab:2,teil:1,text:'Lösen Sie: 2x - 3 = 9',hint:'Erst addieren, dann teilen.',answer:6,tol:0,unit:'',fb_ok:'Sehr gut! Mehrschrittige Umformung korrekt.',fb_nok:'Falsch. Folgen Sie den Äquivalenzumformungen.',mv_nok:'M3',denkfehler:'Reihenfolge der Operationen verwirrt.',naechster_schritt:'Übe Gleichungen mit mehreren Schritten.',video:'https://www.lehrer-schmidt.de/mathematik/',sol:'2x - 3 = 9 ⟹ 2x = 12 ⟹ x = 6'},
+  {id:'q6',klp:'K1',l:'L1',mvTarget:'M5',type:'mc',xp:11,cat:'Binomisch',ab:2,teil:2,text:'Vereinfachen Sie: (x + 3)²',opts:['x² + 6','x² + 6x + 9','x² + 9','2x + 9'],answer:1,optMV:[null,'M5','M5','M5'],operator:'berechne',fb_ok:'Korrekt! (a+b)² = a² + 2ab + b². Hier: x² + 2·x·3 + 3² = x² + 6x + 9',fb_nok:'Falsch. Vergessen Sie nicht den mittleren Term 2ab.',mv_nok:'M5',denkfehler:'Binomische Formel falsch angewendet.',naechster_schritt:'Lerne die erste binomische Formel.',video:'https://www.lehrer-schmidt.de/mathematik/',sol:'(x+3)² = x² + 6x + 9'},
+  {id:'q7',klp:'K1',l:'L1',mvTarget:'M5',type:'input',xp:10,cat:'Binomisch',ab:2,teil:2,text:'Berechnen Sie: (2x - 1)². Geben Sie den Koeffizienten von x ein.',hint:'Nutzen Sie (a-b)² = a² - 2ab + b²',answer:-4,tol:0,unit:'',fb_ok:'Richtig! -2·2x·1 = -4x',fb_nok:'Falsch. Der mittlere Term ist -2ab = -4x.',mv_nok:'M5',denkfehler:'Vorzeichen beim mittleren Term übersehen.',naechster_schritt:'Übe zweite binomische Formel.',video:'https://www.lehrer-schmidt.de/mathematik/',sol:'(2x-1)² = 4x² - 4x + 1'},
+  {id:'q8',klp:'K2',l:'L1',mvTarget:'M4',type:'mc',xp:11,cat:'Faktorisieren',ab:2,teil:2,text:'Faktorisieren Sie: x² - 4',opts:['(x-2)²','(x-2)(x+2)','x(x-4)','(x-4)(x+1)'],answer:1,optMV:[null,'M4','M4','M4'],operator:'bestimme',fb_ok:'Sehr gut! Differenz von Quadraten: a² - b² = (a-b)(a+b)',fb_nok:'Falsch. Nutzen Sie die Differenz-der-Quadrate-Formel.',mv_nok:'M4',denkfehler:'Falsche Faktorisierungsmethode gewählt.',naechster_schritt:'Lerne Nullprodukt und Faktorisierung.',video:'https://www.lehrer-schmidt.de/mathematik/',sol:'x² - 4 = (x-2)(x+2)'},
+  {id:'q9',klp:'K2',l:'L1',mvTarget:'M8',type:'input',xp:10,cat:'Faktorisieren',ab:1,teil:2,text:'Klammern Sie aus: 6x + 9. Geben Sie den größten gemeinsamen Teiler ein.',hint:'Was ist der größte gemeinsame Teiler von 6 und 9?',answer:3,tol:0,unit:'',fb_ok:'Korrekt! ggT(6,9) = 3. Also 3(2x + 3)',fb_nok:'Falsch. Finden Sie den ggT.',mv_nok:'M8',denkfehler:'ggT nicht korrekt bestimmt.',naechster_schritt:'Übe ggT und Ausklammern.',video:'https://www.lehrer-schmidt.de/mathematik/',sol:'6x + 9 = 3(2x + 3)'},
+  {id:'q10',klp:'K3',l:'L4',mvTarget:'M5',type:'tf',xp:10,cat:'Gleichungen',ab:2,teil:2,text:'Die Gleichung x² + 2x + 1 = 0 hat zwei verschiedene Lösungen.',answer:false,fb_ok:'Richtig! Das ist (x+1)² = 0, also nur eine Lösung: x = -1',fb_nok:'Falsch. Diese Gleichung hat nur eine Lösung (doppelte Nullstelle).',mv_nok:'M5',denkfehler:'Unterschied zwischen einer und zwei Lösungen verwirrt.',naechster_schritt:'Übe quadratische Gleichungen mit verschiedenen Lösungsanzahlen.',video:'https://www.lehrer-schmidt.de/mathematik/',sol:'(x+1)² = 0 hat nur die Lösung x = -1 (doppelte Nullstelle)'}
+];
+
+const FOERDER_DATA={
+  M1:[
+    {diff:'leicht',text:'Lösen Sie: 5(x + 2)',hint:'Multiplizieren Sie beide Terme in der Klammer mit 5.'},
+    {diff:'mittel',text:'Vereinfachen Sie: 2(3x + 4) + 1(x - 2)',hint:'Verteilen Sie zuerst, dann addieren Sie zusammen.'}
+  ],
+  M5:[
+    {diff:'leicht',text:'Berechnen Sie: (x + 1)²',hint:'Nutzen Sie: (a+b)² = a² + 2ab + b²'},
+    {diff:'mittel',text:'Berechnen Sie: (2x - 3)²',hint:'Achten Sie auf das Vorzeichen beim mittleren Term.'}
+  ]
+,CROSS:[{diff:'mittel',text:'🔗 Themenübergreifend: Die Fläche eines Rechtecks beträgt (2x+3)(x-1). Multipliziere aus und berechne die Fläche für x=5.',hint:'2x²-2x+3x-3 = 2x²+x-3. Für x=5: 50+5-3 = 52. Verbindet Terme mit Geometrie.'},{diff:'schwer',text:'🔗 Themenübergreifend: Ein Sparbuch hat 1000€. Nach t Jahren: K(t) = 1000·1,02^t. Wie viel Geld nach 5 Jahren? Ist das lineares oder exponentielles Wachstum?',hint:'K(5) = 1000·1,02⁵ ≈ 1104,08€. Exponentiell! Verbindet Terme mit Wachstum.'}],M3:[{diff:'leicht',text:'Löse: 3x + 7 = 22',hint:'Subtrahiere 7: 3x = 15, dann teile durch 3: x = 5'},{diff:'mittel',text:'Löse: 5(x-2) = 3x + 4',hint:'Ausmultiplizieren: 5x-10 = 3x+4, dann 2x = 14, x = 7'},{diff:'schwer',text:'Löse: (x+3)/2 = (2x-1)/3',hint:'Kreuzweise multiplizieren: 3(x+3) = 2(2x-1) → 3x+9 = 4x-2 → x = 11'}],M10:[{diff:'leicht',text:'Löse mit p-q-Formel: x² - 6x + 8 = 0',hint:'p=-6, q=8. x = 3 ± √(9-8) = 3 ± 1 → x₁=4, x₂=2'},{diff:'mittel',text:'Löse: x² + 2x - 15 = 0',hint:'p=2, q=-15. x = -1 ± √(1+15) = -1 ± 4 → x₁=3, x₂=-5'}],M6:[{diff:'leicht',text:'Was ist ein Term, was eine Gleichung? Ordne zu: a) 3x+5  b) 3x+5=11  c) 2(a-1)',hint:'a) und c) sind Terme (kein Gleichheitszeichen), b) ist eine Gleichung'},{diff:'mittel',text:'Vereinfache den Term: 3(2x+1) - (x-4)',hint:'6x+3-x+4 = 5x+7. Achtung: Minusklammer auflösen!'}]};
+
+// WORKED EXAMPLES WITH SCAFFOLDING (Feature B)
+const WORKED_EXAMPLES={
+  M1:{
+    mv:'M1',
+    title:'Distributivgesetz: 3(2x + 5)',
+    steps:[
+      '✅ Schritt 1: Erkenne das Distributivgesetz. a(b+c) = ab + ac',
+      '✅ Schritt 2: Multipliziere den ersten Term: 3 · 2x = 6x',
+      '✅ Schritt 3: Multipliziere den zweiten Term: 3 · 5 = 15',
+      '✅ Schritt 4: Addiere die Ergebnisse: 6x + 15'
+    ],
+    finalAnswer:'3(2x + 5) = 6x + 15',
+    scaffolded:[
+      {text:'Multipliziere aus: 3(2x + 5). Erster Term: 3 · 2x = ?',gap:1,answer:'6x'},
+      {text:'Multipliziere aus: 3(2x + 5). Zweiter Term: 3 · 5 = ?',gap:2,answer:'15'},
+      {text:'Multipliziere aus: 3(2x + 5) = 6x + ?',gap:3,answer:'15'},
+      {text:'Vereinfache: 2(3a + 4b). Erster Term: ?',gap:1,answer:'6a'}
+    ]
+  },
+  M5:{
+    mv:'M5',
+    title:'Erste binomische Formel: (x + 2)²',
+    steps:[
+      '✅ Schritt 1: Erkenne die erste binomische Formel. (a+b)² = a² + 2ab + b²',
+      '✅ Schritt 2: Identifiziere a und b. Hier: a = x, b = 2',
+      '✅ Schritt 3: Berechne a²: x² = x²',
+      '✅ Schritt 4: Berechne 2ab: 2 · x · 2 = 4x',
+      '✅ Schritt 5: Berechne b²: 2² = 4',
+      '✅ Schritt 6: Addiere alle Teile: x² + 4x + 4'
+    ],
+    finalAnswer:'(x + 2)² = x² + 4x + 4',
+    scaffolded:[
+      {text:'(x + 2)². Berechne a²: x · x = ?',gap:1,answer:'x²'},
+      {text:'(x + 2)². Berechne 2ab: 2 · x · 2 = ?',gap:2,answer:'4x'},
+      {text:'(x + 2)². Berechne b²: 2² = ?',gap:3,answer:'4'},
+      {text:'(x + 3)². Der mittlere Term ist: 2 · x · ? = 6x',gap:4,answer:'3'}
+    ]
+  },
+  M8:{
+    mv:'M8',
+    title:'Ausklammern: 6x + 9',
+    steps:[
+      '✅ Schritt 1: Finde den größten gemeinsamen Teiler (ggT). ggT(6, 9) = ?',
+      '✅ Schritt 2: Berechne die ggT. Teiler von 6: 1, 2, 3, 6. Teiler von 9: 1, 3, 9. Gemeinsam: 3',
+      '✅ Schritt 3: Schreibe jeden Term als Vielfaches des ggT. 6x = 3 · 2x, 9 = 3 · 3',
+      '✅ Schritt 4: Klammere den ggT aus. 3(2x + 3)'
+    ],
+    finalAnswer:'6x + 9 = 3(2x + 3)',
+    scaffolded:[
+      {text:'Welcher gemeinsame Teiler: 6x + 9? ggT(6,9) = ?',gap:1,answer:'3'},
+      {text:'6x + 9 = 3(? + 3)',gap:2,answer:'2x'},
+      {text:'6x + 9 = ?(2x + 3). Klammere aus.',gap:3,answer:'3'},
+      {text:'Klammere aus: 4x + 8. ggT(4,8) = ?',gap:4,answer:'4'}
+    ]
+  }
+};
+
+// ==================== ENGINE (v5.0) ====================
+let currentMode='diagnose';
+let currentQIndex=0;
+let responses={};
+let selfAssess={};
+let xp=0;
+let level='Einsteiger';
+let timer=null;
+let timeLeft=CONFIG.examTotalTime;
+let flagged=new Set();
+let pfAnswered=false;
+let pfCorrect=false;
+let calibrationData={};
+let confidenceData={};
+let srData=loadSRData();
+
+function loadSRData(){
+  const saved=localStorage.getItem('zp10_sr_mvs');
+  return saved?JSON.parse(saved):{};
+}
+
+function saveSRData(){
+  localStorage.setItem('zp10_sr_mvs',JSON.stringify(srData));
+}
+
+function toggleTheme(){
+  document.body.classList.toggle('dark');
+  localStorage.setItem('zp10_theme',document.body.classList.contains('dark')?'dark':'light');
+}
+
+function loadTheme(){
+  if(localStorage.getItem('zp10_theme')==='dark'){
+    document.body.classList.add('dark');
+  }
+}
+
+function showScreen(screenId){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(screenId).classList.add('active');
+}
+
+function selectMode(mode){
+  currentMode=mode;
+  document.getElementById('mode-diagnose').classList.toggle('selected',mode==='diagnose');
+  document.getElementById('mode-exam').classList.toggle('selected',mode==='exam');
+  document.getElementById('btn-start').textContent=mode==='diagnose'?'Diagnose starten':'Prüfung starten';
+}
+
+function proceedToAssessment(){
+  if(PRODUCTIVE_FAILURE){
+    showScreen('screen-productive-failure');
+    renderPFQuestion();
+  }else{
+    showScreen('screen-assess');
+    renderAssessmentCategories();
+  }
+}
+
+function renderPFQuestion(){
+  const q=PRODUCTIVE_FAILURE;
+  let html=`<div class="q-text">${q.text}</div>`;
+  if(q.type==='input'){
+    html+=`<div class="input-row"><input type="text" id="pf-input" placeholder="Antwort..."><span class="unit-lbl">${q.unit||''}</span></div>`;
+  }else if(q.type==='mc'){
+    html+=`<div class="mc-grid">${q.opts.map((opt,i)=>`<button class="mc-opt" onclick="selectPFOption(${i})">${opt}</button>`).join('')}</div>`;
+  }
+  document.getElementById('pf-question-card').innerHTML=html;
+}
+
+function selectPFOption(idx){
+  pfAnswered=true;
+  document.querySelectorAll('#pf-question-card .mc-opt').forEach((btn,i)=>{
+    btn.classList.toggle('selected',i===idx);
+  });
+}
+
+function checkPFAnswer(){
+  if(!pfAnswered) return alert('Bitte antworte zuerst.');
+  pfCorrect=true;
+  alert('Danke! Wir vergleichen das nach der Diagnose.');
+}
+
+function proceedFromPF(){
+  showScreen('screen-assess');
+  renderAssessmentCategories();
+}
+
+function renderAssessmentCategories(){
+  const html=SELF_ASSESS_CATS.map(cat=>`
+    <div class="assess-cat">
+      <div class="assess-label">${cat.label}</div>
+      <div class="assess-scale">
+        ${['Sehr unsicher','Unsicher','Sicher','Sehr sicher'].map((label,i)=>`
+          <button class="assess-btn" onclick="setSelfAssess('${cat.id}',${i})" data-cat="${cat.id}" data-val="${i}">${label}</button>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('assess-cats-container').innerHTML=html;
+}
+
+function setSelfAssess(catId,val){
+  selfAssess[catId]=val;
+  document.querySelectorAll(`[data-cat="${catId}"]`).forEach(btn=>{
+    btn.classList.toggle('selected',parseInt(btn.dataset.val)===val);
+  });
+}
+
+function startTestFromAssess(){
+  currentQIndex=0;
+  responses={};
+  flagged=new Set();
+  if(currentMode==='exam'){
+    timeLeft=CONFIG.examTotalTime;
+    startTimer();
+    document.getElementById('hdr-timer').classList.add('show');
+  }
+  showScreen('screen-test');
+  renderQuestion();
+}
+
+function renderQuestion(){
+  if(currentQIndex>=Q.length){
+    submitExam();
+    return;
+  }
+
+  const q=Q[currentQIndex];
+  const isCalibratingQuestion=(currentQIndex+1)%5===0;
+
+  if(isCalibratingQuestion && !calibrationData[currentQIndex]){
+    showCalibrationPrompt();
+  }else{
+    renderTestQuestion();
+  }
+}
+
+function showCalibrationPrompt(){
+  const html=`
+    <div class="calibration-prompt">
+      <div class="calibration-prompt-label">Wie sicher bist du dir bei diesem Thema?</div>
+      <div class="calibration-buttons">
+        <button class="calibration-btn" onclick="recordCalibration(${currentQIndex},3)">Sehr sicher</button>
+        <button class="calibration-btn" onclick="recordCalibration(${currentQIndex},2)">Sicher</button>
+        <button class="calibration-btn" onclick="recordCalibration(${currentQIndex},1)">Unsicher</button>
+        <button class="calibration-btn" onclick="recordCalibration(${currentQIndex},0)">Keine Ahnung</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('calibration-container').innerHTML=html;
+  renderTestQuestion();
+}
+
+function recordCalibration(qIdx,confidence){
+  calibrationData[qIdx]=confidence;
+  document.getElementById('calibration-container').innerHTML='';
+}
+
+function renderTestQuestion(){
+  const q=Q[currentQIndex];
+  const isTeil2=q.teil===2;
+
+  let html=`<div class="q-top">`;
+  if(q.cat) html+=`<div class="q-category">${q.cat}</div>`;
+  html+=`<div class="q-badges">`;
+  if(q.ab) html+=`<span class="ab-badge ab-${q.ab}">AB ${q.ab}</span>`;
+  if(q.teil) html+=`<span class="teil-tag">Teil ${q.teil}</span>`;
+  if(q.l) html+=`<span class="klp-tag">${q.l}</span>`;
+  html+=`</div></div>`;
+
+  if(currentQIndex>0 && Q[currentQIndex-1].teil===1 && q.teil===2){
+    html+=`<div class="teil-divider"><span class="teil-divider-label">📝 Teil 2: Mit Hilfsmittel</span></div>`;
+  }
+
+  let qText=q.text;
+  if(q.operator && OPERATOREN[q.operator]){
+    const opWord=q.operator;
+    qText=qText.replace(opWord,`<span class="operator-tip">${opWord}<span class="operator-tooltip">${OPERATOREN[q.operator]}</span></span>`);
+  }
+  html+=`<div class="q-text">${qText}</div>`;
+
+  if(q.hint) html+=`<div class="q-hint">💡 Hinweis: ${q.hint}</div>`;
+
+  if(q.type==='mc'){
+    html+=`<div class="mc-grid">`;
+    q.opts.forEach((opt,i)=>{
+      const isSelected=responses[q.id]===i;
+      html+=`<button class="mc-opt${isSelected?' selected':''}" onclick="selectMCOption(${i},'${q.id}')" id="opt-${q.id}-${i}">${String.fromCharCode(65+i)}: ${opt}</button>`;
+    });
+    html+=`</div>`;
+  }else if(q.type==='tf'){
+    const selectedT=responses[q.id]===true;
+    const selectedF=responses[q.id]===false;
+    html+=`<div class="tf-row">
+      <button class="tf-btn true-btn${selectedT?' selected':''}" onclick="selectTFOption(true,'${q.id}')">Wahr</button>
+      <button class="tf-btn false-btn${selectedF?' selected':''}" onclick="selectTFOption(false,'${q.id}')">Falsch</button>
+    </div>`;
+  }else if(q.type==='input'){
+    const val=responses[q.id]||'';
+    html+=`<div class="input-row">
+      <input type="text" id="input-${q.id}" value="${val}" placeholder="Antwort..." onchange="responses['${q.id}']=this.value">
+      <span class="unit-lbl">${q.unit||''}</span>
+    </div>`;
+  }
+
+  if(responses[q.id]===undefined){
+    const confLabels=['🎲','😕','🤔','😊','💪'];
+    const confTexts=['Geraten','Unsicher','Eher sicher','Sicher','Sehr sicher'];
+    html+=`<div class="confidence-row" id="conf-row-${q.id}"><span class="conf-label">Wie sicher bist du?</span>`;
+    confLabels.forEach((em,i)=>{
+      const sel=confidenceData[q.id]===(i+1)?' selected':'';
+      html+=`<button class="conf-btn${sel}" onclick="setConfidence('${q.id}',${i+1})" title="${confTexts[i]}">${em}<span class="conf-tip">${confTexts[i]}</span></button>`;
+    });
+    html+=`</div>`;
+  }
+
+  const fb=responses[q.id]!==undefined?renderFeedback(q):'';
+  if(fb) html+=fb;
+
+  document.getElementById('question-card').innerHTML=html;
+  updateProgress();
+  updateExamNav();
+  updateTestButtons();
+}
+
+function selectMCOption(idx,qId){
+  responses[qId]=idx;
+  if(currentMode==='diagnose'){
+    setTimeout(()=>checkInputAnswer(),300);
+  }else{
+    document.querySelectorAll(`#question-card .mc-opt`).forEach((btn,i)=>{
+      btn.classList.toggle('selected',i===idx);
+    });
+  }
+}
+
+function selectTFOption(val,qId){
+  responses[qId]=val;
+  if(currentMode==='diagnose'){
+    setTimeout(()=>checkInputAnswer(),300);
+  }else{
+    document.querySelectorAll(`#question-card .tf-btn`).forEach(btn=>{
+      const isTrue=btn.classList.contains('true-btn');
+      btn.classList.toggle('selected',(isTrue&&val)||(! isTrue&&!val));
+    });
+  }
+}
+
+const attemptTracker = {};
+function checkInputAnswer(){
+  const q=Q[currentQIndex];
+  if(responses[q.id]===undefined){ alert('Bitte antworten Sie zuerst.'); return; }
+  if (!attemptTracker[q.id]) attemptTracker[q.id] = { attempts: 0, hintShown: false };
+  attemptTracker[q.id].attempts++;
+  let isCorrect=false;
+  if(q.type==='mc'||q.type==='tf') isCorrect=responses[q.id]===q.answer;
+  else if(q.type==='input'){ const userVal=parseFloat(responses[q.id]); isCorrect=Math.abs(userVal-q.answer)<=(q.tol||0); }
+  if (!isCorrect && attemptTracker[q.id].attempts === 1) {
+    attemptTracker[q.id].hintShown = true;
+    const savedResp = responses[q.id]; delete responses[q.id]; renderTestQuestion();
+    const mvCode = (q.optMV && q.optMV[savedResp]) || q.mv_nok;
+    const mv = mvCode ? MV[mvCode] : null;
+    const hintText = mv ? mv.name || mv.label || mvCode : 'Lies die Aufgabe noch einmal genau.';
+    const hintHtml = `<div class="feedback wrong show" style="border-left:4px solid #FBBF24;background:rgba(251,191,36,0.08);"><div class="fb-header" style="color:#D97706;">💡 Hinweis — Versuch es noch einmal!</div><div class="fb-text">Achte darauf: <strong>${hintText}</strong></div><div style="margin-top:8px;font-size:0.8rem;color:#92400E;">Zweiter Versuch — du kannst deine Antwort ändern.</div></div>`;
+    const container = document.getElementById('calibration-container') || document.querySelector('.test-content');
+    if (container) { const ex = container.querySelector('.feedback'); if (ex) ex.outerHTML = hintHtml; else container.insertAdjacentHTML('beforeend', hintHtml); }
+    return;
+  }
+  if(isCorrect){ xp += attemptTracker[q.id].hintShown ? Math.round(q.xp*0.5) : q.xp; updateLevel(); }
+  const mvToTrigger=isCorrect?null:(q.optMV&&q.optMV[responses[q.id]])||q.mv_nok;
+  if(mvToTrigger && MV[mvToTrigger]) updateSRData(mvToTrigger,isCorrect);
+  const _cc=document.getElementById('calibration-container');if(_cc)_cc.innerHTML='';
+  renderTestQuestion();
+  if(currentMode==='diagnose'){ document.getElementById('btn-check').style.display='none'; document.getElementById('btn-next').style.display='inline-flex'; }
+}
+
+function updateSRData(mvCode,correct){
+  if(!srData[mvCode]) srData[mvCode]={interval:1,easeFactor:2.5,nextReview:new Date(),quality:0};
+  const sr=srData[mvCode];
+  if(correct){
+    sr.quality=4;
+    sr.interval=sr.interval*sr.easeFactor;
+  }else{
+    sr.quality=1;
+    sr.interval=1;
+  }
+  sr.easeFactor=Math.max(1.3,sr.easeFactor+0.1*(sr.quality-2.5));
+  sr.nextReview=new Date(Date.now()+sr.interval*86400000).toISOString().split('T')[0];
+  saveSRData();
+}
+
+function renderFeedback(q){
+  if(responses[q.id]===undefined) return '';
+
+  let isCorrect=false;
+  if(q.type==='mc'||q.type==='tf'){
+    isCorrect=responses[q.id]===q.answer;
+  }else if(q.type==='input'){
+    const userVal=parseFloat(responses[q.id]);
+    isCorrect=Math.abs(userVal-q.answer)<=(q.tol||0);
+  }
+
+  const mvCode=!isCorrect?((q.optMV&&q.optMV[responses[q.id]])||q.mv_nok):null;
+  const mv=mvCode?MV[mvCode]:null;
+
+  const conf=confidenceData[q.id]||0;
+  const isDeepMV=!isCorrect&&conf>=4;
+
+  let html=`<div class="feedback${isCorrect?' correct':' wrong'} show">`;
+  if(isDeepMV) html+=`<div class="deep-mv-badge">⚠️ Tiefsitzende Fehlvorstellung — du warst sicher, lagst aber falsch. Besonders wichtig zu üben!</div>`;
+  html+=`<div class="fb-header">${isCorrect?'✓ Richtig!':'✗ Falsch'}</div>`;
+  html+=`<div class="fb-text">${isCorrect?q.fb_ok:q.fb_nok}</div>`;
+
+  if(!isCorrect && q.denkfehler){
+    html+=`<div class="fb-section" style="margin-top:12px;">
+      <div class="fb-section-label">Was war dein Denkfehler?</div>
+      <div class="fb-text" style="font-size:0.85rem;">${q.denkfehler}</div>
+    </div>`;
+  }
+
+  if(!isCorrect && q.naechster_schritt){
+    html+=`<div class="fb-section">
+      <div class="fb-section-label">Nächster Schritt</div>
+      <div class="fb-text" style="font-size:0.85rem;">${q.naechster_schritt}</div>
+    </div>`;
+  }
+
+  if(q.video){
+    html+=`<a href="${q.video}" target="_blank" class="fb-video-link">Video anschauen</a>`;
+  }
+
+  html+=`</div>`;
+  return html;
+}
+
+function updateLevel(){
+  const levels=['Anfänger','Einsteiger','Fortgeschritten','Experte','Meister'];
+  const idx=Math.min(Math.floor(xp/50),levels.length-1);
+  level=levels[idx];
+  document.getElementById('level-pill').textContent=level;
+}
+
+function nextQuestion(){
+  currentQIndex++;
+  document.getElementById('calibration-container').innerHTML='';
+  renderQuestion();
+}
+
+function toggleFlag(){
+  const q=Q[currentQIndex];
+  flagged.toggle(q.id);
+  document.getElementById('btn-flag').style.opacity=flagged.has(q.id)?'1':'0.5';
+}
+
+function updateProgress(){
+  const total=Q.filter(q=>q.type!=='multi').length;
+  const pct=Math.round((currentQIndex/total)*100);
+  document.getElementById('prog-label').textContent=`Frage ${currentQIndex+1} von ${total}`;
+  document.getElementById('prog-pct').textContent=`${pct}%`;
+  document.getElementById('prog-fill').style.width=`${pct}%`;
+  document.getElementById('hdr-xp').textContent=`${xp} XP`;
+}
+
+function updateExamNav(){
+  if(currentMode!=='exam') return;
+  const nav=Q.map((q,i)=>`
+    <button class="exam-nav-btn${i===currentQIndex?' current':''}${responses[q.id]!==undefined?' answered':''}${flagged.has(q.id)?' flagged':''}" onclick="jumpToQuestion(${i})">${i+1}</button>
+  `).join('');
+  const container=document.getElementById('exam-nav');
+  container.innerHTML=nav;
+  container.classList.add('show');
+}
+
+function jumpToQuestion(idx){
+  currentQIndex=idx;
+  document.getElementById('calibration-container').innerHTML='';
+  renderQuestion();
+}
+
+function updateTestButtons(){
+  const q=Q[currentQIndex];
+  const answered=responses[q.id]!==undefined;
+  document.getElementById('btn-check').style.display=(answered && currentMode==='diagnose')?'none':'inline-flex';
+  document.getElementById('btn-next').style.display=(answered && currentMode==='diagnose')?'inline-flex':'none';
+  document.getElementById('btn-flag').style.opacity=flagged.has(q.id)?'1':'0.5';
+  document.getElementById('btn-submit-exam').style.display=currentMode==='exam'?'inline-flex':'none';
+}
+
+function startTimer(){
+  timer=setInterval(()=>{
+    timeLeft--;
+    const m=Math.floor(timeLeft/60);
+    const s=timeLeft%60;
+    document.getElementById('timer-display').textContent=`${m}:${s.toString().padStart(2,'0')}`;
+    if(timeLeft<=0){
+      clearInterval(timer);
+      submitExam();
+    }
+  },1000);
+}
+
+function submitExam(){
+  if(timer) clearInterval(timer);
+  document.getElementById('hdr-timer').classList.remove('show');
+  renderResults();
+  showScreen('screen-result');
+  // Save to hub
+  const _total=Q.filter(q=>q.type!=='multi').length;const _correct=Object.entries(responses).filter(([qId,resp])=>{const q=Q.find(x=>x.id===qId);if(!q||q.type==='multi')return false;if(q.type==='mc'||q.type==='tf')return resp===q.answer;if(q.type==='input')return Math.abs(parseFloat(resp)-q.answer)<=(q.tol||0);}).length;const _pct=Math.round((_correct/_total)*100);saveResultsToHub(_pct,xp,_correct,_total);
+}
+
+function renderResults(){
+  const total=Q.length;
+  const correctCount=Object.entries(responses).filter(([qId,resp])=>{
+    const q=Q.find(x=>x.id===qId);
+    if(q.type==='mc'||q.type==='tf') return resp===q.answer;
+    if(q.type==='input') return Math.abs(parseFloat(resp)-q.answer)<=(q.tol||0);
+  }).length;
+  const pct=Math.round((correctCount/total)*100);
+
+  let circleClass='critical';
+  if(pct>=80) circleClass='excellent';
+  else if(pct>=60) circleClass='good';
+  else if(pct>=40) circleClass='ok';
+
+  let resultHtml=`
+    <div class="score-circle ${circleClass}">${pct}%</div>
+    <h2 class="result-heading">${pct>=80?'Ausgezeichnet!':pct>=60?'Gut gemacht!':pct>=40?'Noch Luft nach oben':'Viel Potential'}</h2>
+    <p class="result-sub">${correctCount} von ${total} Fragen korrekt beantwortet</p>
+  `;
+  document.getElementById('result-top').innerHTML=resultHtml;
+
+  const statsHtml=`
+    <div class="stat-item"><div class="stat-num">${correctCount}</div><div class="stat-lbl">Korrekt</div></div>
+    <div class="stat-item"><div class="stat-num">${total-correctCount}</div><div class="stat-lbl">Falsch</div></div>
+    <div class="stat-item"><div class="stat-num">${xp}</div><div class="stat-lbl">Punkte</div></div>
+    <div class="stat-item"><div class="stat-num">${level}</div><div class="stat-lbl">Level</div></div>
+  `;
+  document.getElementById('stats-strip').innerHTML=statsHtml;
+
+  renderCalibrationStats();
+  renderPFComparison();
+  renderPrereqChains();
+  renderSRDue();
+  renderABProfile();
+  renderLBKProfile();
+  renderKLPProfile();
+  renderMVCards();
+
+  // FEATURE A: Load reflexion history on result screen
+  loadReflexionHistory();
+}
+
+function renderCalibrationStats(){
+  const html='<div class="self-assess-comparison" style="background:var(--warning-light);border:1px solid var(--warning);"><div class="comparison-title">📊 Kalibrierungs-Feedback</div><p style="font-size:0.9rem;color:var(--text);">Vergleiche deine Selbstsicherheit mit deinen tatsächlichen Ergebnissen.</p></div>';
+  const container=document.getElementById('calibration-stats-container');
+  if(Object.keys(calibrationData).length>0) container.innerHTML=html;
+}
+
+function renderPFComparison(){
+  if(!PRODUCTIVE_FAILURE) return;
+  const container=document.getElementById('pf-comparison-container');
+  if(pfAnswered){
+    const html=`<div style="background:var(--primary-light);border:1px solid var(--primary);border-radius:14px;padding:16px;margin:20px 0;"><h3 style="font-weight:700;margin-bottom:8px;color:var(--primary);">🚀 Verbesserung seit der Aufwärm-Aufgabe</h3><p style="font-size:0.9rem;">Du kannst bei dieser komplexen Aufgabe jetzt besser umgehen!</p></div>`;
+    container.innerHTML=html;
+  }
+}
+
+function renderPrereqChains(){
+  const container=document.getElementById('prereq-chain-container');
+  const detectedMVs=new Set();
+  Object.entries(responses).forEach(([qId,resp])=>{
+    const q=Q.find(x=>x.id===qId);
+    if(!resp) return;
+    let isCorrect=false;
+    if(q.type==='mc'||q.type==='tf') isCorrect=resp===q.answer;
+    else if(q.type==='input') isCorrect=Math.abs(parseFloat(resp)-q.answer)<=(q.tol||0);
+    if(!isCorrect){
+      const mv=(q.optMV&&q.optMV[resp])||q.mv_nok;
+      if(mv) detectedMVs.add(mv);
+    }
+  });
+
+  let html='';
+  detectedMVs.forEach(mvCode=>{
+    const mv=MV[mvCode];
+    if(mv && mv.prereq && mv.prereq.length>0){
+      const prereqMVs=mv.prereq.map(p=>MV[p]?.title||p).join(', ');
+      html+=`<div class="prereq-chain"><div class="prereq-chain-title">📌 Empfehlung: ${mv.title}</div><div class="prereq-chain-text">Du hast Schwierigkeiten mit <strong>${mv.title}</strong>. Das könnte daran liegen, dass dir Grundlagen bei <strong>${prereqMVs}</strong> fehlen. → Übe zuerst die Voraussetzungen!</div></div>`;
+    }
+  });
+  if(html) container.innerHTML=html;
+}
+
+function renderSRDue(){
+  const today=new Date().toISOString().split('T')[0];
+  const dueItems=Object.entries(srData).filter(([mvCode,sr])=>sr.nextReview<=today).map(([mvCode])=>mvCode);
+  if(dueItems.length>0){
+    const container=document.getElementById('sr-due-container');
+    const html=`<div class="sr-due-card"><div class="sr-due-title">🔄 Wiederholung fällig</div><div class="sr-due-items">${dueItems.map(mv=>`<span class="sr-due-badge">${mv}: ${MV[mv]?.title||mv}</span>`).join('')}</div></div>`;
+    container.innerHTML=html;
+  }
+}
+
+function renderABProfile(){
+  const abCounts={1:0,2:0,3:0};
+  const abCorrect={1:0,2:0,3:0};
+  Q.forEach(q=>{
+    if(!q.ab) return;
+    abCounts[q.ab]++;
+    let isCorrect=false;
+    if(q.type==='mc'||q.type==='tf') isCorrect=responses[q.id]===q.answer;
+    else if(q.type==='input') isCorrect=Math.abs(parseFloat(responses[q.id])-q.answer)<=(q.tol||0);
+    if(isCorrect) abCorrect[q.ab]++;
+  });
+
+  const html=`
+    <div class="ab-profile">
+      <div class="ab-stat"><div class="ab-stat-label" style="color:#059669;">AB I</div><div class="ab-stat-value" style="color:#059669;">${abCorrect[1]}/${abCounts[1]}</div></div>
+      <div class="ab-stat"><div class="ab-stat-label" style="color:#D97706;">AB II</div><div class="ab-stat-value" style="color:#D97706;">${abCorrect[2]}/${abCounts[2]}</div></div>
+      <div class="ab-stat"><div class="ab-stat-label" style="color:#DC2626;">AB III</div><div class="ab-stat-value" style="color:#DC2626;">${abCorrect[3]}/${abCounts[3]}</div></div>
+    </div>
+  `;
+  document.getElementById('ab-profile').innerHTML=html;
+}
+
+function renderLBKProfile(){
+  const lbkCounts={};
+  const lbkCorrect={};
+  Q.forEach(q=>{
+    if(!q.l) return;
+    if(!lbkCounts[q.l]) lbkCounts[q.l]=0;
+    if(!lbkCorrect[q.l]) lbkCorrect[q.l]=0;
+    lbkCounts[q.l]++;
+    let isCorrect=false;
+    if(q.type==='mc'||q.type==='tf') isCorrect=responses[q.id]===q.answer;
+    else if(q.type==='input') isCorrect=Math.abs(parseFloat(responses[q.id])-q.answer)<=(q.tol||0);
+    if(isCorrect) lbkCorrect[q.l]++;
+  });
+
+  const html=`<div class="lbk-profile">${Object.entries(LBK).map(([key,lbk])=>{
+    const count=lbkCounts[lbk.code]||0;
+    const correct=lbkCorrect[lbk.code]||0;
+    return `<div class="lbk-badge"><div class="lbk-code">${lbk.code}</div><div style="font-size:0.8rem;margin:4px 0;">${correct}/${count}</div><div class="lbk-name">${lbk.name}</div></div>`;
+  }).join('')}</div>`;
+  document.getElementById('lbk-profile').innerHTML=html;
+}
+
+function renderKLPProfile(){
+  const klpCounts={};
+  const klpCorrect={};
+  Q.forEach(q=>{
+    if(!klpCounts[q.klp]) klpCounts[q.klp]=0;
+    if(!klpCorrect[q.klp]) klpCorrect[q.klp]=0;
+    klpCounts[q.klp]++;
+    let isCorrect=false;
+    if(q.type==='mc'||q.type==='tf') isCorrect=responses[q.id]===q.answer;
+    else if(q.type==='input') isCorrect=Math.abs(parseFloat(responses[q.id])-q.answer)<=(q.tol||0);
+    if(isCorrect) klpCorrect[q.klp]++;
+  });
+
+  const html=Object.entries(klpCorrect).map(([code,correct])=>`
+    <div style="background:var(--surface-alt);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px;">
+      <div style="font-weight:700;color:var(--primary);">${code}: ${KLP[code]?.name||code}</div>
+      <div style="font-size:0.9rem;color:var(--text-secondary);margin-top:4px;">${correct}/${klpCounts[code]} Punkte</div>
+    </div>
+  `).join('');
+  document.getElementById('klp-profile').innerHTML=html;
+}
+
+function renderMVCards(){
+  const detectedMVs={};
+  Object.entries(responses).forEach(([qId,resp])=>{
+    if(!resp) return;
+    const q=Q.find(x=>x.id===qId);
+    let isCorrect=false;
+    if(q.type==='mc'||q.type==='tf') isCorrect=resp===q.answer;
+    else if(q.type==='input') isCorrect=Math.abs(parseFloat(resp)-q.answer)<=(q.tol||0);
+    if(!isCorrect){
+      const mv=(q.optMV&&q.optMV[resp])||q.mv_nok;
+      if(mv){
+        if(!detectedMVs[mv]) detectedMVs[mv]=0;
+        detectedMVs[mv]++;
+      }
+    }
+  });
+
+  const html=Object.entries(MV).map(([code,mv])=>{
+    const isDetected=!!detectedMVs[code];
+    return `
+      <div class="mv-card${isDetected?' detected':' ok'}">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="mv-badge">${code}</div>
+          <div><div class="mv-title">${mv.title}</div></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  document.getElementById('mv-cards').innerHTML=html;
+}
+
+function startFoerder(){
+  showScreen('screen-foerder');
+  renderFoerderQuestions();
+}
+
+function renderFoerderQuestions(){
+  const detectedMVs=new Set();
+  Object.entries(responses).forEach(([qId,resp])=>{
+    if(!resp) return;
+    const q=Q.find(x=>x.id===qId);
+    let isCorrect=false;
+    if(q.type==='mc'||q.type==='tf') isCorrect=resp===q.answer;
+    else if(q.type==='input') isCorrect=Math.abs(parseFloat(resp)-q.answer)<=(q.tol||0);
+    if(!isCorrect){
+      const mv=(q.optMV&&q.optMV[resp])||q.mv_nok;
+      if(mv) detectedMVs.add(mv);
+    }
+  });
+
+  // FEATURE B: Render Worked Examples first
+  renderWorkedExamples(detectedMVs);
+
+  let html='';
+  detectedMVs.forEach(mvCode=>{
+    const questions=FOERDER_DATA[mvCode]||[];
+    if(questions.length>0){
+      html+=`<div><h3 style="color:var(--primary);font-weight:700;margin:20px 0 12px;">${mvCode}: ${MV[mvCode]?.title||mvCode}</h3>`;
+      questions.forEach(q=>{
+        html+=`
+          <div class="foerder-card">
+            <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;">
+              <span class="diff-badge diff-${q.diff}">${q.diff}</span>
+            </div>
+            <div class="foerder-q-text">${q.text}</div>
+            <details class="foerder-hint"><summary></summary><div class="foerder-hint-body">${q.hint}</div></details>
+          </div>
+        `;
+      });
+      html+=`</div>`;
+    }
+  });
+  document.getElementById('foerder-container').innerHTML=html;
+}
+
+// FEATURE B: Worked Examples with Scaffolding
+function renderWorkedExamples(detectedMVs){
+  const container=document.getElementById('worked-examples-container');
+  const examplesContent=document.getElementById('worked-examples-content');
+
+  if(detectedMVs.size===0){
+    container.style.display='none';
+    return;
+  }
+
+  container.style.display='block';
+  let html='';
+
+  detectedMVs.forEach(mvCode=>{
+    const example=WORKED_EXAMPLES[mvCode];
+    if(!example) return;
+
+    html+=`
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:20px;">
+        <h4 style="color:var(--primary);font-weight:700;margin-bottom:12px;">📖 ${example.title}</h4>
+
+        <div style="background:var(--surface-alt);padding:16px;border-radius:12px;margin-bottom:16px;">
+          <div style="font-weight:600;margin-bottom:8px;color:var(--text);">Vollständige Lösung:</div>
+          ${example.steps.map(step=>`<div style="font-size:0.9rem;line-height:1.6;color:var(--text);margin-bottom:6px;">${step}</div>`).join('')}
+          <div style="font-size:1rem;font-weight:700;color:var(--primary);margin-top:12px;padding:12px;background:var(--primary-light);border-radius:8px;">
+            ✅ ${example.finalAnswer}
+          </div>
+        </div>
+
+        <div style="font-weight:600;margin-bottom:12px;color:var(--text);">Jetzt du: Fülle die Lücken!</div>
+        ${example.scaffolded.slice(0,2).map((scaff,i)=>`
+          <div style="background:rgba(91,108,240,0.05);border:1px dashed var(--primary);border-radius:10px;padding:12px;margin-bottom:10px;">
+            <div style="font-size:0.9rem;line-height:1.5;margin-bottom:8px;">
+              ${scaff.text.replace('?','<input type="text" id="scaff_${example.mv}_${i}" placeholder="Antwort..." style="background:white;border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-weight:600;color:var(--primary);min-width:60px;text-align:center;" maxlength="20">')}
+            </div>
+            <button style="font-size:0.8rem;padding:6px 12px;background:var(--primary);color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;" onclick="checkScaffoldAnswer('${example.mv}', ${i}, '${scaff.answer}')">✓ Überprüfen</button>
+            <div id="scaff_feedback_${example.mv}_${i}" style="margin-top:6px;font-size:0.85rem;"></div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  });
+
+  examplesContent.innerHTML=html;
+}
+
+function checkScaffoldAnswer(mv,idx,correctAnswer){
+  const input=document.getElementById(`scaff_${mv}_${idx}`);
+  const feedback=document.getElementById(`scaff_feedback_${mv}_${idx}`);
+
+  const userAnswer=input.value.trim().toLowerCase();
+  const answer=correctAnswer.toLowerCase();
+
+  if(userAnswer===answer){
+    feedback.style.color='var(--success)';
+    feedback.textContent='✅ Richtig! Sehr gut.';
+    input.style.borderColor='var(--success)';
+  }else{
+    feedback.style.color='var(--danger)';
+    feedback.textContent=`❌ Falsch. Versuch: "${userAnswer}", Richtig: "${correctAnswer}"`;
+    input.style.borderColor='var(--danger)';
+  }
+}
+
+// FEATURE A: Metakognitive Reflexion
+function saveReflexion(){
+  const learned=document.getElementById('reflexion-learned').value.trim();
+  const surprised=document.getElementById('reflexion-surprised').value.trim();
+  const next=document.getElementById('reflexion-next').value.trim();
+
+  if(!learned && !surprised && !next){
+    alert('Bitte fülle mindestens ein Feld aus.');
+    return;
+  }
+
+  const today=new Date().toISOString().split('T')[0];
+  const reflexionKey=`zp10_reflexion_${MODULE_ID}_${today}`;
+  const reflexionData={date:today,learned,surprised,next,timestamp:Date.now()};
+
+  localStorage.setItem(reflexionKey,JSON.stringify(reflexionData));
+
+  const feedback=document.getElementById('reflexion-feedback');
+  feedback.innerHTML='✅ <strong>Reflexion gespeichert!</strong> Deine Gedanken helfen dir beim Lernen.';
+  feedback.style.color='var(--success)';
+
+  // Load and show history
+  loadReflexionHistory();
+}
+
+function loadReflexionHistory(){
+  const historyContainer=document.getElementById('reflexion-history');
+  const historyContent=document.getElementById('reflexion-history-content');
+
+  const allReflexions=[];
+  for(let i=0;i<localStorage.length;i++){
+    const key=localStorage.key(i);
+    if(key.startsWith(`zp10_reflexion_${MODULE_ID}`)){
+      const data=JSON.parse(localStorage.getItem(key));
+      allReflexions.push(data);
+    }
+  }
+
+  if(allReflexions.length>0){
+    historyContainer.style.display='block';
+    const html=allReflexions.map(r=>`
+      <div style="padding:12px;border-left:3px solid var(--primary);background:rgba(91,108,240,0.05);margin-bottom:10px;border-radius:6px;">
+        <div style="font-weight:600;color:var(--primary);margin-bottom:4px;">${r.date}</div>
+        <div style="font-size:0.85rem;line-height:1.5;">
+          ${r.learned?`<div><strong>Gelernt:</strong> ${r.learned}</div>`:''}
+          ${r.surprised?`<div><strong>Überraschung:</strong> ${r.surprised}</div>`:''}
+          ${r.next?`<div><strong>Nächstes:</strong> ${r.next}</div>`:''}
+        </div>
+      </div>
+    `).join('');
+    historyContent.innerHTML=html;
+  }
+}
+
+
+// D3: Confidence-based Assessment
+function setConfidence(qId, level){
+  confidenceData[qId]=level;
+  document.querySelectorAll(`#conf-row-${qId} .conf-btn`).forEach((btn,i)=>{
+    btn.classList.toggle('selected',i+1===level);
+  });
+}
+
+// ===== SAVE RESULTS TO HUB =====
+function saveResultsToHub(pct, xpTotal, correctCount, total) {
+  const resultData = {
+    score: correctCount,
+    maxScore: total,
+    percentage: pct,
+    xp: xpTotal,
+    lastDate: new Date().toISOString(),
+    mode: currentMode,
+    studentCode: localStorage.getItem('zp10_student_code') || null,
+    confidence: Object.assign({}, confidenceData)
+  };
+  localStorage.setItem('zp10_' + MODULE_ID + '_latest', JSON.stringify(resultData));
+
+  // Append to history
+  const histKey = 'zp10_' + MODULE_ID + '_history';
+  const hist = JSON.parse(localStorage.getItem(histKey) || '[]');
+  hist.push(resultData);
+  if (hist.length > 20) hist.shift();
+  localStorage.setItem(histKey, JSON.stringify(hist));
+
+  // Update hub XP
+  const hubRaw = localStorage.getItem('zp10_hub_data');
+  if (hubRaw) {
+    const hub = JSON.parse(hubRaw);
+    hub.totalXP = (hub.totalXP || 0) + xpTotal;
+    localStorage.setItem('zp10_hub_data', JSON.stringify(hub));
+  }
+
+  if (typeof SpacedRepetition !== 'undefined') {
+    const triggeredMVs = Object.keys(srData).filter(mv => srData[mv].quality < 3);
+    SpacedRepetition.updateAfterDiagnostic(MODULE_ID, triggeredMVs, Object.keys(srData));
+  }
+  if (typeof ZP10Storage !== 'undefined') ZP10Storage.saveModuleResult(MODULE_ID, resultData).catch(() => {});
+}
+function restartTest(){
+  xp=0;
+  level='Einsteiger';
+  currentQIndex=0;
+  responses={};
+  selfAssess={};
+  flagged=new Set();
+  calibrationData={};
+  confidenceData={};
+  pfAnswered=false;
+  pfCorrect=false;
+  document.getElementById('btn-check').style.display='inline-flex';
+  document.getElementById('btn-next').style.display='none';
+  document.getElementById('hdr-xp').textContent='0 XP';
+  document.getElementById('level-pill').textContent='Einsteiger';
+  showScreen('screen-start');
+}
+
+// Initialize on load
+window.addEventListener('load',()=>{
+  loadTheme();
+  const titleEl=document.getElementById('start-h2');
+  if(titleEl) titleEl.textContent=TITEL;
+  document.getElementById('hdr-title-h1').textContent=TITEL;
+  const clipEl=document.getElementById('info-chips');
+  if(clipEl) clipEl.innerHTML=INFO_CHIPS.map(c=>`<div class="chip">${c}</div>`).join('');
+  const klpGrid=document.getElementById('klp-grid');
+  if(klpGrid) klpGrid.innerHTML=Object.values(KLP).map(k=>`<div class="lbk-badge"><div class="lbk-code">${k.code}</div><div class="lbk-name">${k.name}</div></div>`).join('');
+  const lbkGrid=document.getElementById('lbk-grid');
+  if(lbkGrid) lbkGrid.innerHTML=Object.values(LBK).map(l=>`<div class="lbk-badge"><div class="lbk-code">${l.code}</div><div class="lbk-name">${l.name}</div></div>`).join('');
+  const mvGrid=document.getElementById('mv-preview-start');
+  if(mvGrid) mvGrid.innerHTML=Object.values(MV).map(m=>`<div class="lbk-badge"><div class="lbk-code">${m.code}</div><div class="lbk-name">${m.title}</div></div>`).join('');
+});
+</script>
+</body>
+</html>

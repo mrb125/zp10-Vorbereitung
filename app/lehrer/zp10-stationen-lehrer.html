@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZP10 Stationen - Lehreransicht</title>
+    <link rel="stylesheet" href="zp10-stationen-lehrer.css">
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>📊 ZP10 Stationen-Diagnose | Lehreransicht</h1>
+        <p>Überwachung der Schüler-Fortschritte in Echtzeit</p>
+    </div>
+
+    <div class="toolbar">
+        <button class="btn-primary" onclick="loadDemoData()">📋 Demo-Daten laden</button>
+        <button class="btn-secondary" onclick="clearAllData()">🗑️ Alle Daten löschen</button>
+        <button class="btn-secondary" onclick="exportToCSV()">📥 Als CSV exportieren</button>
+        <label class="file-input-wrapper">
+            <button class="btn-secondary">📤 JSON importieren</button>
+            <input type="file" id="fileInput" accept=".json" onchange="importData(event)">
+        </label>
+    </div>
+
+    <div class="import-area" id="importArea" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" onclick="document.getElementById('fileInput').click()">
+        <p>💾 Schüler-Ergebnisse (JSON) hier ablegen</p>
+        <p style="font-size: 0.85rem;">oder klicken zum Durchsuchen</p>
+    </div>
+
+    <!-- Results Table -->
+    <div class="results-wrapper">
+        <table class="results-table">
+            <thead>
+                <tr>
+                    <th>Schüler</th>
+                    <th>Station 1</th>
+                    <th>Station 2</th>
+                    <th>Station 3</th>
+                    <th>Station 4</th>
+                    <th>Station 5</th>
+                    <th>Station 6</th>
+                    <th>Station 7</th>
+                    <th>Station 8</th>
+                    <th>Ø Score</th>
+                </tr>
+            </thead>
+            <tbody id="resultsBody">
+                <tr>
+                    <td colspan="10" style="text-align: center; color: var(--text-light); padding: 40px;">
+                        Keine Daten vorhanden. Demo-Daten laden oder Ergebnisse importieren.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Analysis Section -->
+    <div class="analysis-section" id="analysisSection"></div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal" id="detailModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalTitle"></h2>
+            <button class="close-btn" onclick="closeModal()">✕</button>
+        </div>
+        <div id="modalDetails"></div>
+    </div>
+</div>
+
+<script>
+    const stations = [
+        'Terme & Grundlagen',
+        'Funktionen I',
+        'Gleichungen & LGS',
+        'Potenzen & Wurzeln',
+        'Geometrie',
+        'Stochastik & Prozent',
+        'Wachstum & Expo',
+        'Strahlensatz & Muster'
+    ];
+
+    let allData = {};
+
+    function init() {
+        loadFromLocalStorage();
+        render();
+    }
+
+    function loadFromLocalStorage() {
+        allData = {};
+
+        // Scan localStorage for station results
+        for (let i = 1; i <= 8; i++) {
+            for (let key in localStorage) {
+                if (key.startsWith('zp10_station_')) {
+                    const data = JSON.parse(localStorage[key]);
+                    if (data.name && data.completed) {
+                        if (!allData[data.name]) allData[data.name] = {};
+                        const stationNum = parseInt(key.split('_')[2]);
+                        allData[data.name][stationNum] = data;
+                    }
+                }
+            }
+        }
+    }
+
+    function loadDemoData() {
+        allData = {
+            'Alice M.': {
+                1: { score: 100, completed: true, answers: { s1q1: { correct: true }, s1q2: { correct: true }, s1q3: { correct: true }, s1q4: { correct: true }, s1q5: { correct: true } }, time: 234 },
+                2: { score: 80, completed: true, answers: { s2q1: { correct: true }, s2q2: { correct: true }, s2q3: { correct: true }, s2q4: { correct: false }, s2q5: { correct: true } }, time: 312 },
+                3: { score: 60, completed: true, answers: { s3q1: { correct: true }, s3q2: { correct: false }, s3q3: { correct: true }, s3q4: { correct: false }, s3q5: { correct: true } }, time: 401 },
+            },
+            'Bob K.': {
+                1: { score: 80, completed: true, answers: { s1q1: { correct: true }, s1q2: { correct: false }, s1q3: { correct: true }, s1q4: { correct: true }, s1q5: { correct: true } }, time: 198 },
+                2: { score: 60, completed: true, answers: { s2q1: { correct: true }, s2q2: { correct: false }, s2q3: { correct: false }, s2q4: { correct: true }, s2q5: { correct: true } }, time: 356 },
+                4: { score: 100, completed: true, answers: { s4q1: { correct: true }, s4q2: { correct: true }, s4q3: { correct: true }, s4q4: { correct: true }, s4q5: { correct: true } }, time: 289 },
+            },
+            'Claire Z.': {
+                1: { score: 100, completed: true, answers: { s1q1: { correct: true }, s1q2: { correct: true }, s1q3: { correct: true }, s1q4: { correct: true }, s1q5: { correct: true } }, time: 156 },
+                2: { score: 100, completed: true, answers: { s2q1: { correct: true }, s2q2: { correct: true }, s2q3: { correct: true }, s2q4: { correct: true }, s2q5: { correct: true } }, time: 212 },
+                3: { score: 80, completed: true, answers: { s3q1: { correct: true }, s3q2: { correct: true }, s3q3: { correct: true }, s3q4: { correct: false }, s3q5: { correct: true } }, time: 334 },
+                5: { score: 100, completed: true, answers: { s5q1: { correct: true }, s5q2: { correct: true }, s5q3: { correct: true }, s5q4: { correct: true }, s5q5: { correct: true } }, time: 267 },
+                6: { score: 60, completed: true, answers: { s6q1: { correct: true }, s6q2: { correct: false }, s6q3: { correct: true }, s6q4: { correct: false }, s6q5: { correct: true } }, time: 445 },
+            }
+        };
+        render();
+    }
+
+    function render() {
+        renderTable();
+        renderAnalysis();
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('resultsBody');
+        tbody.innerHTML = '';
+
+        if (Object.keys(allData).length === 0) {
+            tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; color: var(--text-light); padding: 40px;">Keine Daten vorhanden.</td></tr>';
+            return;
+        }
+
+        // Average row
+        const averages = {};
+        for (let s = 1; s <= 8; s++) averages[s] = { total: 0, count: 0 };
+
+        const students = Object.keys(allData).sort();
+        students.forEach(studentName => {
+            let row = `<tr><td class="student-name">${studentName}</td>`;
+            let studentTotal = 0;
+            let studentCount = 0;
+
+            for (let s = 1; s <= 8; s++) {
+                const result = allData[studentName][s];
+                if (result) {
+                    const score = result.score;
+                    row += `<td class="station-cell ${getCellClass(score)}" onclick="showDetails('${studentName}', ${s})">${score}%</td>`;
+                    averages[s].total += score;
+                    averages[s].count += 1;
+                    studentTotal += score;
+                    studentCount += 1;
+                } else {
+                    row += '<td class="station-cell cell-empty">—</td>';
+                }
+            }
+
+            const studentAvg = studentCount > 0 ? Math.round(studentTotal / studentCount) : 0;
+            row += `<td style="text-align: center; font-weight: 700; color: var(--primary);">${studentAvg}%</td></tr>`;
+            tbody.innerHTML += row;
+        });
+
+        // Average row
+        let avgRow = '<tr class="avg-row"><td>Ø Klasse</td>';
+        for (let s = 1; s <= 8; s++) {
+            const avg = averages[s].count > 0 ? Math.round(averages[s].total / averages[s].count) : 0;
+            avgRow += `<td style="text-align: center;">${avg}%</td>`;
+        }
+        const overallAvg = Object.keys(averages).reduce((sum, s) => sum + (averages[s].count > 0 ? Math.round(averages[s].total / averages[s].count) : 0), 0) / 8;
+        avgRow += `<td style="text-align: center;">${Math.round(overallAvg)}%</td></tr>`;
+        tbody.innerHTML += avgRow;
+    }
+
+    function renderAnalysis() {
+        const section = document.getElementById('analysisSection');
+        section.innerHTML = '';
+
+        // Schwächste Stationen
+        const stationStats = {};
+        for (let s = 1; s <= 8; s++) {
+            let total = 0, count = 0;
+            for (const student in allData) {
+                if (allData[student][s]) {
+                    total += allData[student][s].score;
+                    count += 1;
+                }
+            }
+            stationStats[s] = count > 0 ? Math.round(total / count) : 0;
+        }
+
+        const weakStations = Object.keys(stationStats)
+            .map(s => ({ station: s, avg: stationStats[s] }))
+            .sort((a, b) => a.avg - b.avg)
+            .slice(0, 3);
+
+        let html = `<div class="analysis-card">
+            <h3>📉 Schwächste Stationen</h3>`;
+        weakStations.forEach(item => {
+            html += `<div class="analysis-item">
+                <span class="analysis-label">Station ${item.station}: ${stations[item.station - 1]}</span>
+                <span class="analysis-value">${item.avg}%</span>
+            </div>`;
+        });
+        html += '</div>';
+
+        // Beste Stationen
+        const strongStations = Object.keys(stationStats)
+            .map(s => ({ station: s, avg: stationStats[s] }))
+            .sort((a, b) => b.avg - a.avg)
+            .slice(0, 3);
+
+        html += `<div class="analysis-card">
+            <h3>📈 Stärkste Stationen</h3>`;
+        strongStations.forEach(item => {
+            html += `<div class="analysis-item">
+                <span class="analysis-label">Station ${item.station}: ${stations[item.station - 1]}</span>
+                <span class="analysis-value">${item.avg}%</span>
+            </div>`;
+        });
+        html += '</div>';
+
+        // Schüler-Statistik
+        const studentStats = Object.keys(allData).map(name => {
+            let total = 0, count = 0;
+            for (const s in allData[name]) {
+                total += allData[name][s].score;
+                count += 1;
+            }
+            return { name, avg: count > 0 ? Math.round(total / count) : 0 };
+        }).sort((a, b) => b.avg - a.avg);
+
+        html += `<div class="analysis-card">
+            <h3>👥 Beste Schüler</h3>`;
+        studentStats.slice(0, 3).forEach(item => {
+            html += `<div class="analysis-item">
+                <span class="analysis-label">${item.name}</span>
+                <span class="analysis-value">${item.avg}%</span>
+            </div>`;
+        });
+        html += '</div>';
+
+        section.innerHTML = html;
+    }
+
+    function getCellClass(score) {
+        if (score >= 80) return 'cell-good';
+        if (score >= 50) return 'cell-ok';
+        return 'cell-weak';
+    }
+
+    function showDetails(studentName, stationNum) {
+        const result = allData[studentName][stationNum];
+        if (!result) return;
+
+        const modal = document.getElementById('detailModal');
+        const title = document.getElementById('modalTitle');
+        const details = document.getElementById('modalDetails');
+
+        title.textContent = `${studentName} • Station ${stationNum}`;
+
+        let html = `<div class="modal-details">
+            <div class="detail-row">
+                <span class="detail-label">Punktzahl:</span>
+                <span class="detail-value">${result.score}%</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Zeit:</span>
+                <span class="detail-value">${Math.round(result.time / 60)}:${(result.time % 60).toString().padStart(2, '0')} min</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Bearbeitet am:</span>
+                <span class="detail-value">${result.timestamp ? new Date(result.timestamp).toLocaleString('de') : '—'}</span>
+            </div>
+        </div>`;
+
+        html += '<h3 style="margin-top: 20px; margin-bottom: 12px; color: var(--primary);">Antworten</h3>';
+
+        const questionTopics = {
+            1: ['Terme vereinfachen', 'Vorzeichenregeln', 'Ausklammern', 'Distributivgesetz', 'Einfache Gleichung'],
+            2: ['Steigung ablesen', 'y-Achsenabschnitt', 'Nullstelle', 'Parabel Scheitelpunkt', 'Geradengleichung'],
+            3: ['Lineare Gleichung', 'Quadratische Gleichung', 'Bruchgleichung', 'LGS Einsetzung', 'LGS Gleichsetzung'],
+            4: ['Potenzgesetz', 'Negative Exponenten', 'Wurzel vereinfachen', 'Wissenschaftliche Notation', 'Potenz mit Bruch'],
+            5: ['Pythagoras', 'Trigonometrie', 'Flächeninhalt Dreieck', 'Volumen Zylinder', 'Oberflächeninhalt'],
+            6: ['Wahrscheinlichkeit', 'Baumdiagramm', 'Prozentrechnung', 'Zinseszins', 'Relative Häufigkeit'],
+            7: ['Wachstumsfaktor', 'Halbwertszeit', 'f(x)=a·b^x', 'Verdopplungszeit', 'Exponentieller Zerfall'],
+            8: ['1. Strahlensatz', '2. Strahlensatz', 'Zahlenfolge Regel', 'Bildmuster Anzahl', 'Ähnliche Dreiecke']
+        };
+
+        const topics = questionTopics[stationNum] || [];
+        topics.forEach((topic, idx) => {
+            const qId = `s${stationNum}q${idx + 1}`;
+            const answer = result.answers[qId];
+            if (answer) {
+                html += `<div class="question-detail ${answer.correct ? 'correct' : 'incorrect'}">
+                    <div class="question-title">${idx + 1}. ${topic}</div>
+                    <div class="question-answer">${answer.correct ? '✓ Richtig' : '✗ Falsch'}</div>
+                </div>`;
+            }
+        });
+
+        details.innerHTML = html;
+        modal.classList.add('show');
+    }
+
+    function closeModal() {
+        document.getElementById('detailModal').classList.remove('show');
+    }
+
+    function exportToCSV() {
+        let csv = 'Schüler,Station 1,Station 2,Station 3,Station 4,Station 5,Station 6,Station 7,Station 8,Ø Score\n';
+
+        const students = Object.keys(allData).sort();
+        students.forEach(name => {
+            let row = `"${name}"`;
+            let total = 0, count = 0;
+            for (let s = 1; s <= 8; s++) {
+                if (allData[name][s]) {
+                    row += `,${allData[name][s].score}`;
+                    total += allData[name][s].score;
+                    count += 1;
+                } else {
+                    row += ',—';
+                }
+            }
+            const avg = count > 0 ? Math.round(total / count) : 0;
+            row += `,${avg}`;
+            csv += row + '\n';
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'ZP10_Stationen_Ergebnisse.csv';
+        a.click();
+    }
+
+    function importData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = JSON.parse(e.target.result);
+                allData = data;
+                render();
+                alert('✓ Daten erfolgreich importiert!');
+            } catch (err) {
+                alert('✗ Fehler beim Importieren: ' + err.message);
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    function handleDragOver(e) {
+        e.preventDefault();
+        document.getElementById('importArea').classList.add('dragover');
+    }
+
+    function handleDragLeave(e) {
+        e.preventDefault();
+        document.getElementById('importArea').classList.remove('dragover');
+    }
+
+    function handleDrop(e) {
+        e.preventDefault();
+        document.getElementById('importArea').classList.remove('dragover');
+        const file = e.dataTransfer.files[0];
+        if (file && file.type === 'application/json') {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                try {
+                    const data = JSON.parse(ev.target.result);
+                    allData = data;
+                    render();
+                    alert('✓ Daten erfolgreich importiert!');
+                } catch (err) {
+                    alert('✗ Fehler beim Importieren: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+    }
+
+    function clearAllData() {
+        if (confirm('Alle Daten wirklich löschen?')) {
+            allData = {};
+            localStorage.clear();
+            render();
+            alert('✓ Alle Daten gelöscht.');
+        }
+    }
+
+    // Close modal on escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeModal();
+    });
+
+    // Init
+    document.addEventListener('DOMContentLoaded', init);
+</script>
+
+</body>
+</html>

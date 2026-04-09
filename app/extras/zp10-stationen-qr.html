@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZP10 QR-Codes zum Drucken</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <link rel="stylesheet" href="zp10-stationen-qr.css">
+</head>
+<body>
+
+<div class="header">
+    <h1>🎯 ZP10 Stationen-Diagnose</h1>
+    <p>QR-Codes zum Drucken und an den Stationen anbringen</p>
+</div>
+
+<div class="controls">
+    <div class="control-group">
+        <label class="control-label">Basis-URL (optional):</label>
+        <input
+            type="text"
+            id="baseUrl"
+            class="control-input"
+            placeholder="z.B. https://mein-server.de/mathe/ oder leer für relative Pfade"
+        >
+    </div>
+    <button onclick="updateAllQRCodes()">↻ Aktualisieren</button>
+    <button class="secondary" onclick="window.print()">🖨️ Drucken</button>
+</div>
+
+<div class="info-box">
+    <strong>ℹ️ Hinweis:</strong> Wenn die BASE-URL leer bleibt, werden relative Pfade verwendet. Das funktioniert, wenn diese Datei im gleichen Verzeichnis wie zp10-stationen.html liegt.
+</div>
+
+<div class="qr-container" id="qrContainer"></div>
+
+<script>
+    const stations = [
+        { id: 1, title: 'Terme & Grundlagen' },
+        { id: 2, title: 'Funktionen I' },
+        { id: 3, title: 'Gleichungen & LGS' },
+        { id: 4, title: 'Potenzen & Wurzeln' },
+        { id: 5, title: 'Geometrie' },
+        { id: 6, title: 'Stochastik & Prozent' },
+        { id: 7, title: 'Wachstum & Expo' },
+        { id: 8, title: 'Strahlensatz & Muster' }
+    ];
+
+    function getQRUrl(stationId) {
+        const baseUrl = document.getElementById('baseUrl').value.trim();
+        const relativePath = `zp10-stationen.html?station=${stationId}`;
+
+        if (baseUrl) {
+            return baseUrl.replace(/\/$/, '') + '/' + relativePath;
+        }
+        return relativePath;
+    }
+
+    function generateQRCodes() {
+        const container = document.getElementById('qrContainer');
+        container.innerHTML = '';
+
+        stations.forEach(station => {
+            const url = getQRUrl(station.id);
+
+            const card = document.createElement('div');
+            card.className = 'qr-card';
+            card.innerHTML = `
+                <div class="qr-number">Station ${station.id}</div>
+                <div class="qr-title">${station.title}</div>
+                <div class="qr-code" id="qr-${station.id}"></div>
+                <div class="qr-instruction">📱 Scanne mich!</div>
+            `;
+
+            container.appendChild(card);
+
+            // Generate QR code
+            const qrElement = document.getElementById(`qr-${station.id}`);
+            new QRCode(qrElement, {
+                text: url,
+                width: 200,
+                height: 200,
+                colorDark: '#1F2937',
+                colorLight: '#FFFFFF',
+                correctLevel: QRCode.CorrectLevel.M
+            });
+        });
+    }
+
+    function updateAllQRCodes() {
+        generateQRCodes();
+    }
+
+    // Initial generation
+    document.addEventListener('DOMContentLoaded', () => {
+        generateQRCodes();
+    });
+
+    // Update when URL input changes (debounced)
+    let urlTimeout;
+    document.getElementById('baseUrl').addEventListener('change', () => {
+        clearTimeout(urlTimeout);
+        urlTimeout = setTimeout(updateAllQRCodes, 500);
+    });
+</script>
+
+</body>
+</html>

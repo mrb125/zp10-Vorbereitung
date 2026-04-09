@@ -1,0 +1,381 @@
+/* ===== CREATURE SYSTEM STYLES ===== */
+
+/* Creature Section Card */
+.creature-card {
+    background: var(--surface, #1e293b);
+    border: 2px solid rgba(124,106,245,0.25);
+    border-radius: 16px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.creature-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary, #5B6CF0), #ffd166);
+    opacity: 0.6;
+}
+
+.creature-main {
+    display: flex;
+    gap: 1.25rem;
+    align-items: flex-start;
+}
+
+.creature-sprite-wrap {
+    position: relative;
+    flex-shrink: 0;
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.creature-sprite {
+    max-width: 100px;
+    max-height: 100px;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 12px rgba(124,106,245,0.3));
+    animation: creatureBob 3s ease-in-out infinite;
+}
+
+@keyframes creatureBob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+}
+
+.creature-placeholder {
+    font-size: 3.5rem;
+    animation: creatureBob 3s ease-in-out infinite;
+}
+
+.creature-mood {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    border: 2px solid var(--surface, #1e293b);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.creature-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.creature-name {
+    font-family: 'Nunito Sans', 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 1.2rem;
+    margin-bottom: 2px;
+}
+
+.creature-type {
+    font-size: 0.8rem;
+    color: var(--text-secondary, #94a3b8);
+    margin-bottom: 0.5rem;
+}
+
+.creature-mood-text {
+    font-size: 0.8rem;
+    color: var(--text-secondary, #94a3b8);
+    margin-bottom: 0.6rem;
+}
+
+.creature-xp-section {
+    margin-bottom: 0.5rem;
+}
+
+.creature-xp-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--text-secondary, #94a3b8);
+    margin-bottom: 4px;
+}
+
+.creature-xp-bar {
+    height: 6px;
+    background: rgba(100,100,150,0.2);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.creature-xp-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.6s cubic-bezier(.4,0,.2,1);
+}
+
+.creature-hint {
+    font-size: 0.78rem;
+    color: var(--text-secondary, #94a3b8);
+    font-style: italic;
+    padding: 6px 10px;
+    background: rgba(124,106,245,0.08);
+    border-radius: 8px;
+    border-left: 3px solid var(--primary, #5B6CF0);
+}
+
+.creature-change-btn {
+    display: block;
+    margin-top: 0.75rem;
+    padding: 4px 12px;
+    background: transparent;
+    border: 1px solid var(--border, #334155);
+    border-radius: 8px;
+    color: var(--text-secondary, #94a3b8);
+    font-size: 0.75rem;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.creature-change-btn:hover {
+    border-color: var(--primary, #5B6CF0);
+    color: var(--primary, #5B6CF0);
+}
+
+/* Creature Picker */
+.creature-picker {
+    padding: 1rem;
+}
+
+.creature-picker-title {
+    font-family: 'Nunito Sans', 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 1.3rem;
+    text-align: center;
+    margin-bottom: 0.3rem;
+    background: linear-gradient(135deg, var(--primary, #5B6CF0), #ffd166);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.creature-picker-subtitle {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-secondary, #94a3b8);
+    margin-bottom: 1.25rem;
+}
+
+.creature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 10px;
+}
+
+.creature-option {
+    background: var(--surface, #1e293b);
+    border: 2px solid var(--border, #334155);
+    border-radius: 14px;
+    padding: 14px 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+}
+
+.creature-option:hover {
+    border-color: var(--cr-color, var(--primary));
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(124,106,245,0.15);
+}
+
+.creature-option.selected {
+    border-color: #ffd166;
+    box-shadow: 0 0 0 2px #ffd166;
+}
+
+.creature-option-img {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.creature-option-img img {
+    max-width: 80px;
+    max-height: 80px;
+    object-fit: contain;
+}
+
+.creature-option-name {
+    font-weight: 800;
+    font-size: 0.8rem;
+}
+
+.creature-option-stage {
+    font-size: 0.7rem;
+    color: var(--text-tertiary, #6b7280);
+}
+
+.creature-option-check {
+    position: absolute;
+    top: 4px;
+    right: 6px;
+    background: #ffd166;
+    color: #1a1000;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+/* Toast notification */
+.creature-toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #7c6af5, #5248d4);
+    color: #fff;
+    padding: 10px 24px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    box-shadow: 0 8px 28px rgba(124,106,245,0.4);
+    z-index: 1000;
+    animation: toastIn 0.3s ease;
+    transition: opacity 0.3s;
+}
+
+@keyframes toastIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* Evolution Overlay */
+.evolution-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 500;
+    background: radial-gradient(ellipse, rgba(124,106,245,0.3), rgba(0,0,0,0.92));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.evolution-title {
+    font-family: 'Nunito Sans', 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 1.8rem;
+    text-align: center;
+    background: linear-gradient(135deg, var(--primary, #818CF8), #ffd166);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.evolution-sprites {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.evolution-sprite {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.evolution-sprite img {
+    max-width: 120px;
+    max-height: 120px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 16px var(--primary, #818CF8));
+}
+
+.evolution-sprite-name {
+    font-family: 'Nunito Sans', 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.95rem;
+    color: var(--primary, #818CF8);
+}
+
+.evolution-arrow {
+    font-size: 2rem;
+    color: #ffd166;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.25); }
+}
+
+.evolution-sub {
+    font-size: 0.9rem;
+    color: var(--text-secondary, #94a3b8);
+    text-align: center;
+}
+
+.evolution-close {
+    padding: 10px 28px;
+    background: linear-gradient(135deg, #7c6af5, #5248d4);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-weight: 800;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.evolution-close:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(124,106,245,0.4);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .creature-main {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    .creature-hint {
+        border-left: none;
+        border-top: 3px solid var(--primary, #5B6CF0);
+    }
+    .creature-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .evolution-sprites {
+        gap: 1rem;
+    }
+    .evolution-sprite img {
+        max-width: 90px;
+        max-height: 90px;
+    }
+}

@@ -1,0 +1,256 @@
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #5B6CF0;
+            --accent: #FF6B8A;
+            --success: #10B981;
+            --bg: #F0F4FF;
+            --bg-light: #FFFFFF;
+            --text: #1F2937;
+            --text-light: #6B7280;
+            --border: #E5E7EB;
+            --radius: 20px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0F172A;
+                --bg-light: #1E293B;
+                --text: #F1F5F9;
+                --text-light: #CBD5E1;
+                --border: #334155;
+            }
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--bg) 0%, var(--bg) 100%);
+            color: var(--text);
+            padding: 24px;
+            min-height: 100vh;
+        }
+
+        h1, h2 {
+            font-family: 'Nunito Sans', sans-serif;
+            font-weight: 700;
+        }
+
+        .header {
+            max-width: 1200px;
+            margin: 0 auto 32px;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+            background: var(--bg-light);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .control-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .control-label {
+            font-weight: 600;
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        .control-input {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 0.95rem;
+            min-width: 200px;
+        }
+
+        .control-input::placeholder {
+            color: var(--text-light);
+        }
+
+        button {
+            padding: 8px 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background: #4A57D4;
+            transform: translateY(-2px);
+        }
+
+        button.secondary {
+            background: var(--border);
+            color: var(--text);
+        }
+
+        button.secondary:hover {
+            background: #D1D5DB;
+        }
+
+        .qr-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .qr-card {
+            background: var(--bg-light);
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            padding: 32px 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        .qr-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .qr-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--text);
+        }
+
+        .qr-code {
+            background: white;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        .qr-code canvas {
+            display: block;
+            width: 200px !important;
+            height: 200px !important;
+        }
+
+        .qr-instruction {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin-top: 12px;
+        }
+
+        .info-box {
+            background: rgba(91, 108, 240, 0.1);
+            border: 1px solid var(--primary);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+            color: var(--text);
+        }
+
+        .info-box strong {
+            color: var(--primary);
+        }
+
+        @media print {
+            body {
+                padding: 0;
+                background: white;
+            }
+
+            .header {
+                margin-bottom: 12px;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+                background: none;
+                -webkit-text-fill-color: unset;
+                color: var(--primary);
+            }
+
+            .header p,
+            .controls,
+            .info-box {
+                display: none;
+            }
+
+            .qr-container {
+                gap: 16px;
+                margin-bottom: 0;
+            }
+
+            .qr-card {
+                padding: 24px 16px;
+                border: 1px solid var(--border);
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+
+            .qr-number {
+                font-size: 2rem;
+            }
+
+            .qr-title {
+                font-size: 1rem;
+            }
+
+            @page {
+                margin: 10mm;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .qr-container {
+                grid-template-columns: 1fr;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .control-input {
+                width: 100%;
+            }
+        }
+    

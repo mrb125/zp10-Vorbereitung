@@ -1,0 +1,1567 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagnose-App · Exponentialfunktionen</title>
+<style>
+  :root {
+    --bg:#0f172a; --card:#1e293b; --card2:#273449; --border:#334155;
+    --text:#e2e8f0; --text2:#94a3b8;
+    --blue:#3b82f6; --green:#22c55e; --red:#ef4444; --yellow:#eab308;
+    --orange:#f97316; --purple:#a855f7; --teal:#14b8a6;
+    --r:12px; --sh:0 4px 20px rgba(0,0,0,.4); --trans:0.18s ease;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center}
+
+  /* HEADER */
+  header{width:100%;background:linear-gradient(135deg,#0c1526,#1a2744);color:var(--text);padding:14px 24px;border-bottom:1px solid var(--border)}
+  .hdr-inner{max-width:740px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .hdr-title h1{font-size:1.15rem;letter-spacing:.01em}
+  .hdr-title p{font-size:.78rem;color:var(--text2);margin-top:2px}
+  .hdr-xp{display:flex;align-items:center;gap:12px;flex-shrink:0}
+  .xp-block{text-align:right}
+  .xp-num{font-size:1.3rem;font-weight:800;color:var(--blue)}
+  .xp-lbl{font-size:.68rem;color:var(--text2)}
+  .level-pill{background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:3px 12px;font-size:.78rem;font-weight:700;color:var(--text)}
+  .streak-pill{background:#7c2d12;color:#fb923c;border-radius:20px;padding:3px 10px;font-size:.78rem;font-weight:700;display:none}
+  .streak-pill.show{display:inline-block}
+
+  /* WRAPPER */
+  #app{width:100%;max-width:740px;padding:22px 14px 60px}
+
+  /* SCREENS */
+  .screen{display:none}
+  .screen.active{display:block;animation:fadeIn .3s}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  /* CARD */
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh);padding:24px;margin-bottom:14px}
+
+  /* START */
+  .start-hero{text-align:center;padding:28px 16px}
+  .hero-icon{font-size:3.5rem;margin-bottom:14px}
+  .start-hero h2{font-size:1.5rem;color:var(--text);margin-bottom:10px}
+  .start-hero p{color:var(--text2);line-height:1.7;max-width:500px;margin:0 auto 20px}
+  .info-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:16px 0}
+  .info-chip{background:var(--card2);color:var(--blue);border:1px solid var(--border);border-radius:20px;padding:5px 14px;font-size:.82rem;font-weight:600}
+  .mv-preview{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin:14px 0;text-align:left}
+  .mvp-item{background:var(--card2);border-radius:8px;padding:9px 12px;font-size:.8rem;border-left:3px solid var(--blue);color:var(--text)}
+  .mvp-code{font-weight:700;color:var(--blue)}
+
+  /* KLP info */
+  .klp-intro{background:var(--card2);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;margin-bottom:14px}
+  .klp-intro h3{color:var(--teal);font-size:.9rem;margin-bottom:8px}
+  .klp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px}
+  .klp-item{background:var(--card);border-radius:8px;padding:8px 12px;font-size:.78rem;border-left:3px solid var(--teal);color:var(--text)}
+  .klp-code{font-weight:700;color:var(--teal);font-size:.75rem}
+
+  /* GAMIFICATION STRIP */
+  .gami-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+  .gami-item{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center}
+  .gami-icon{font-size:1.5rem;margin-bottom:4px}
+  .gami-label{font-size:.75rem;color:var(--purple);font-weight:600}
+
+  /* PROGRESS */
+  .prog-wrap{margin-bottom:18px}
+  .prog-meta{display:flex;justify-content:space-between;align-items:center;font-size:.82rem;color:var(--text2);margin-bottom:5px}
+  .prog-meta .streak-badge{background:#7c2d12;color:#fb923c;border-radius:10px;padding:2px 8px;font-size:.75rem;font-weight:700;display:none}
+  .prog-meta .streak-badge.show{display:inline-block}
+  .prog-track{background:var(--card2);border-radius:10px;height:8px;overflow:hidden}
+  .prog-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--blue),#6366f1);transition:width .4s cubic-bezier(.4,0,.2,1)}
+
+  /* XP POP */
+  .xp-pop{position:fixed;top:80px;right:20px;background:var(--green);color:#0f172a;padding:10px 18px;border-radius:12px;font-weight:700;font-size:1rem;z-index:9999;opacity:0;transform:translateY(-10px);pointer-events:none;transition:opacity .3s,transform .3s}
+  .xp-pop.show{opacity:1;transform:none}
+
+  /* QUESTION */
+  .q-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+  .q-category{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--blue);background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.25);border-radius:20px;padding:3px 10px}
+  .klp-tag{font-size:.7rem;font-weight:700;border-radius:20px;padding:3px 9px}
+  .klp-tag.K1{background:#1e1b4b;color:#818cf8}
+  .klp-tag.K2{background:#022c22;color:#34d399}
+  .klp-tag.K3{background:#500724;color:#f472b6}
+  .klp-tag.K4{background:#431407;color:#fb923c}
+  .klp-tag.K5{background:#2e1065;color:#a78bfa}
+  .klp-tag.K6{background:#0c4a6e;color:#38bdf8}
+  .q-text{font-size:1rem;line-height:1.6;margin-bottom:16px;color:var(--text)}
+  .q-formula{font-family:'Georgia',serif;background:var(--card2);border-left:3px solid #6366f1;border-radius:8px;padding:7px 14px;display:inline-block;font-size:1rem;color:#a5b4fc;margin:4px 0 12px;font-weight:600}
+  .q-hint{font-size:.8rem;color:var(--text2);background:var(--card2);padding:7px 11px;border-radius:8px;margin-bottom:12px;border:1px solid var(--border)}
+
+  /* MC */
+  .mc-grid{display:flex;flex-direction:column;gap:7px}
+  .mc-opt{display:flex;align-items:center;gap:11px;border:2px solid var(--border);border-radius:10px;padding:11px 14px;cursor:pointer;transition:all .15s;background:var(--card2);text-align:left;font-size:.93rem;width:100%;color:var(--text)}
+  .mc-opt:hover:not(:disabled){border-color:var(--blue);background:#1d3a5f}
+  .opt-letter{width:26px;height:26px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.78rem;flex-shrink:0;color:var(--text2)}
+  .mc-opt:hover:not(:disabled) .opt-letter,.mc-opt.selected .opt-letter{background:var(--blue);color:#fff}
+  .mc-opt.selected{border-color:var(--blue);background:#1d3a5f}
+  .mc-opt.correct{border-color:var(--green)!important;background:#14532d!important;color:#86efac}
+  .mc-opt.correct .opt-letter{background:var(--green);color:#0f172a}
+  .mc-opt.wrong{border-color:var(--red)!important;background:#450a0a!important;color:#fca5a5}
+  .mc-opt.wrong .opt-letter{background:var(--red);color:#fff}
+  .mc-opt:disabled{cursor:default}
+
+  /* TF */
+  .tf-row{display:flex;gap:10px}
+  .tf-btn{flex:1;padding:13px;border:2px solid var(--border);border-radius:10px;cursor:pointer;font-size:.95rem;font-weight:600;background:var(--card2);color:var(--text);transition:all .15s}
+  .tf-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.4)}
+  .tf-btn.true-btn:hover:not(:disabled),.tf-btn.true-btn.selected{border-color:var(--green);background:#14532d;color:#86efac}
+  .tf-btn.false-btn:hover:not(:disabled),.tf-btn.false-btn.selected{border-color:var(--red);background:#450a0a;color:#fca5a5}
+  .tf-btn.correct{border-color:var(--green)!important;background:#14532d!important;color:#86efac}
+  .tf-btn.wrong{border-color:var(--red)!important;background:#450a0a!important;color:#fca5a5}
+  .tf-btn:disabled{cursor:default}
+
+  /* INPUT */
+  .input-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .input-row input{border:2px solid var(--border);border-radius:8px;padding:9px 13px;font-size:.95rem;width:150px;transition:border-color .2s;background:var(--card2);color:var(--text)}
+  .input-row input:focus{outline:none;border-color:var(--blue)}
+  .input-row input.correct{border-color:var(--green);background:#14532d;color:#86efac}
+  .input-row input.wrong{border-color:var(--red);background:#450a0a;color:#fca5a5}
+  .unit-lbl{color:var(--text2);font-size:.88rem}
+
+  /* FEEDBACK */
+  .feedback{border-radius:10px;padding:14px 16px;margin-top:14px;display:none}
+  .feedback.show{display:block;animation:fadeIn .25s}
+  .feedback.correct{background:#052e16;border:1.5px solid #166534;color:#86efac}
+  .feedback.wrong{background:#1c0505;border:1.5px solid #7f1d1d;color:#fca5a5}
+  .fb-header{font-weight:700;font-size:.95rem;margin-bottom:7px;display:flex;align-items:center;gap:7px}
+  .feedback.correct .fb-header{color:#86efac}
+  .feedback.wrong .fb-header{color:#fca5a5}
+  .fb-text{font-size:.88rem;line-height:1.6}
+  .fb-solution{font-family:'Georgia',serif;background:var(--card2);border-radius:6px;padding:5px 11px;display:inline-block;margin-top:7px;font-size:.92rem;border:1px solid var(--border);color:var(--text)}
+  .mv-alert{margin-top:9px;background:#431407;border:1px solid var(--orange);border-radius:8px;padding:9px 13px;font-size:.83rem;color:#fdba74}
+  .mv-alert strong{display:block;margin-bottom:2px}
+  .klp-feedback{margin-top:9px;background:rgba(20,184,166,.1);border:1px solid rgba(20,184,166,.3);border-radius:8px;padding:8px 12px;font-size:.8rem;color:#5eead4}
+  .klp-feedback strong{color:var(--teal)}
+
+  /* XP GAINED */
+  .xp-gained{display:inline-flex;align-items:center;gap:5px;background:var(--purple);color:#fff;border-radius:20px;padding:3px 10px;font-size:.78rem;font-weight:700;margin-top:7px}
+
+  /* BUTTONS */
+  .btn{padding:10px 22px;border:none;border-radius:10px;cursor:pointer;font-size:.92rem;font-weight:600;transition:all .15s;display:inline-flex;align-items:center;gap:6px;justify-content:center}
+  .btn-primary{background:linear-gradient(135deg,#3b82f6,#6366f1);color:#fff}
+  .btn-primary:hover{opacity:.88;transform:translateY(-1px)}
+  .btn-large{padding:13px 34px;font-size:1rem;border-radius:12px}
+  .btn-outline{background:var(--card2);color:var(--text);border:1px solid var(--border)}
+  .btn-outline:hover{background:var(--card);border-color:var(--blue)}
+  .btn-row{display:flex;gap:9px;margin-top:16px;justify-content:flex-end;flex-wrap:wrap}
+
+  /* RESULT */
+  .result-top{text-align:center;padding:24px 16px 16px;border-bottom:1px solid var(--border);margin-bottom:20px}
+  .score-circle{width:100px;height:100px;border-radius:50%;margin:0 auto 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:1.8rem;font-weight:800;border:5px solid}
+  .score-circle.excellent{border-color:var(--green);color:var(--green);background:rgba(34,197,94,.12)}
+  .score-circle.good{border-color:var(--blue);color:var(--blue);background:rgba(59,130,246,.12)}
+  .score-circle.ok{border-color:var(--yellow);color:var(--yellow);background:rgba(234,179,8,.12)}
+  .score-circle.critical{border-color:var(--red);color:var(--red);background:rgba(239,68,68,.12)}
+  .score-lbl{font-size:.65rem;letter-spacing:.05em;font-weight:500}
+  .result-heading{font-size:1.25rem;font-weight:700;margin-bottom:6px;color:var(--text)}
+  .result-sub{color:var(--text2);font-size:.87rem}
+  .stats-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:4px}
+  .stat-item{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:11px;text-align:center}
+  .stat-num{font-size:1.4rem;font-weight:800;color:var(--blue)}
+  .stat-lbl{font-size:.68rem;color:var(--text2);margin-top:2px}
+
+  /* ACHIEVEMENTS */
+  .ach-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+  .ach-card{border-radius:10px;padding:12px 14px;display:flex;gap:10px;align-items:center}
+  .ach-card.unlocked{background:#1a0533;border:1px solid var(--purple)}
+  .ach-card.locked{background:var(--card2);border:1px solid var(--border);opacity:.45}
+  .ach-icon{font-size:1.6rem}
+  .ach-title{font-weight:700;font-size:.85rem}
+  .ach-card.unlocked .ach-title{color:#d8b4fe}
+  .ach-desc{font-size:.72rem;color:var(--text2)}
+
+  /* KLP PROFILE */
+  .klp-komp-row{margin-bottom:12px}
+  .klp-komp-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-size:.84rem}
+  .klp-bar-wrap{background:var(--card2);border-radius:8px;height:9px;overflow:hidden}
+  .klp-bar-fill{height:100%;border-radius:8px;transition:width .6s}
+
+  /* MV CARDS */
+  .mv-card{border-radius:var(--r);padding:16px 18px;margin-bottom:12px;border:1.5px solid}
+  .mv-card.detected{background:rgba(120,53,15,.25);border-color:#92400e}
+  .mv-card.ok{background:rgba(22,101,52,.2);border-color:#166534}
+  .mv-card.untested{background:var(--card2);border-color:var(--border);opacity:.7}
+  .mv-header{display:flex;align-items:flex-start;gap:11px;margin-bottom:8px}
+  .mv-badge{flex-shrink:0;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.8rem}
+  .mv-card.detected .mv-badge{background:var(--orange);color:#0f172a}
+  .mv-card.ok .mv-badge{background:var(--green);color:#0f172a}
+  .mv-card.untested .mv-badge{background:var(--text2);color:#0f172a}
+  .mv-title{font-weight:700;font-size:.92rem}
+  .mv-card.detected .mv-title{color:#fdba74}
+  .mv-card.ok .mv-title{color:#86efac}
+  .mv-sub{font-size:.75rem;color:var(--text2);margin-top:2px}
+  .mv-false{background:rgba(120,53,15,.3);border-radius:7px;padding:7px 11px;font-size:.83rem;margin:5px 0;border-left:3px solid var(--orange);color:#fdba74;font-style:italic}
+  .mv-false::before{content:'❌ Gedacht: ';font-style:normal;font-weight:600}
+  .mv-correct{background:rgba(22,101,52,.3);border-radius:7px;padding:7px 11px;font-size:.83rem;margin:5px 0;border-left:3px solid var(--green);color:#86efac}
+  .mv-correct::before{content:'✅ Richtig: ';font-weight:600}
+  .mv-example{font-family:'Georgia',serif;background:var(--card2);border-radius:6px;padding:5px 11px;display:inline-block;margin-top:5px;font-size:.88rem;border:1px solid var(--border);color:var(--text)}
+
+  /* RECS */
+  .rec-box{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);border-radius:var(--r);padding:16px 18px}
+  .rec-box h3{color:var(--blue);margin-bottom:9px;font-size:.92rem}
+  .rec-list{list-style:none}
+  .rec-list li{padding:4px 0;font-size:.85rem;display:flex;gap:7px;color:var(--text)}
+  .rec-list li::before{content:'→';color:var(--blue);font-weight:700;flex-shrink:0}
+  .retry-row{text-align:center;margin-top:22px}
+
+  /* TOAST */
+  #toast{position:fixed;bottom:18px;right:18px;background:var(--card);color:var(--text);padding:10px 18px;border-radius:10px;font-size:.88rem;z-index:9999;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none;max-width:300px;border:1px solid var(--border)}
+  #toast.show{transform:none;opacity:1}
+  #toast.green{background:#052e16;color:#86efac;border-color:#166534}
+  #toast.orange{background:#431407;color:#fdba74;border-color:#92400e}
+
+  /* GRAPH */
+  .q-graph{margin:10px 0;text-align:center}
+
+  /* TEXT TASK TAGS */
+  .q-category.text-tag{background:rgba(249,115,22,.15);color:var(--orange);border-color:rgba(249,115,22,.25)}
+  .q-category.reason-tag{background:rgba(168,85,247,.15);color:var(--purple);border-color:rgba(168,85,247,.25)}
+  .q-category.graph-tag{background:rgba(20,184,166,.15);color:var(--teal);border-color:rgba(20,184,166,.25)}
+
+  /* LINKS */
+  .links-section{margin-top:8px}
+  .links-section h3{font-size:.92rem;color:var(--blue);margin-bottom:12px}
+  .links-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
+  .link-card{display:flex;align-items:center;gap:10px;background:var(--card2);border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;text-decoration:none;color:var(--text);font-size:.83rem;font-weight:600;transition:all .15s}
+  .link-card:hover{background:var(--card);border-color:var(--blue);transform:translateY(-1px)}
+  .link-icon{font-size:1.4rem;flex-shrink:0}
+  .link-desc{font-size:.72rem;color:var(--text2);font-weight:400;margin-top:2px}
+
+  /* FOERDER-LEVEL */
+  .foerder-hero{text-align:center;padding:20px 16px 14px}
+  .foerder-hero h2{font-size:1.3rem;color:var(--text);margin-bottom:6px}
+  .foerder-hero p{font-size:.85rem;color:var(--text2);max-width:480px;margin:0 auto}
+  .foerder-section{margin-bottom:24px}
+  .foerder-section-title{font-size:.75rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text2);margin-bottom:10px;padding:0 2px}
+  .foerder-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh);padding:20px;margin-bottom:12px;border-top:3px solid var(--blue)}
+  .foerder-card.mv-card-f{border-top-color:var(--orange)}
+  .foerder-card.klp-card-f{border-top-color:var(--teal)}
+  .foerder-card-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+  .foerder-mv-tag{font-size:.72rem;font-weight:700;background:rgba(249,115,22,.15);color:var(--orange);border:1px solid rgba(249,115,22,.25);border-radius:20px;padding:3px 9px}
+  .foerder-klp-tag{font-size:.72rem;font-weight:700;background:rgba(20,184,166,.15);color:var(--teal);border:1px solid rgba(20,184,166,.25);border-radius:20px;padding:3px 9px}
+  .diff-badge{font-size:.68rem;font-weight:700;border-radius:20px;padding:2px 9px}
+  .diff-leicht{background:#14532d;color:#86efac}
+  .diff-mittel{background:#713f12;color:#fde68a}
+  .diff-schwer{background:#3b0764;color:#d8b4fe}
+  .foerder-q-text{font-size:.95rem;line-height:1.6;margin-bottom:12px;color:var(--text)}
+  .foerder-hint{margin-bottom:12px}
+  .foerder-hint summary{font-size:.8rem;color:var(--blue);cursor:pointer;font-weight:600;padding:4px 0;user-select:none;list-style:none}
+  .foerder-hint summary::-webkit-details-marker{display:none}
+  .foerder-hint summary::before{content:"💡 Tipp anzeigen";display:inline-block}
+  .foerder-hint[open] summary::before{content:"💡 Tipp verbergen"}
+  .foerder-hint-body{background:#0c2340;border:1px solid #1e40af;border-radius:8px;padding:10px 13px;font-size:.83rem;color:#93c5fd;margin-top:6px;line-height:1.6}
+  .foerder-result{border-radius:8px;padding:10px 13px;margin-top:10px;font-size:.85rem;font-weight:600;display:none}
+  .foerder-result.show{display:block}
+  .foerder-result.ok{background:#052e16;color:#86efac;border:1px solid #166534}
+  .foerder-result.bad{background:#1c0505;color:#fca5a5;border:1px solid #7f1d1d}
+  .foerder-sol{font-family:'Georgia',serif;background:var(--card2);border-radius:5px;padding:4px 10px;display:inline-block;margin-top:5px;font-size:.88rem;border:1px solid var(--border);font-weight:400;color:var(--text)}
+  .foerder-empty{text-align:center;padding:40px 20px;color:var(--text2)}
+  .foerder-empty .fi{font-size:2.5rem;margin-bottom:10px}
+
+  @media(max-width:500px){
+    .stats-strip{grid-template-columns:repeat(2,1fr)}
+    .tf-row{flex-direction:column}
+    .mv-preview{grid-template-columns:1fr}
+    .hdr-inner{justify-content:center;text-align:center}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hdr-inner">
+    <div class="hdr-title">
+      <h1>🔬 Diagnose-App · Exponentialfunktionen</h1>
+      <p>Klasse 10 · NRW Gymnasium · Fehlvorstellungen &amp; Kernlehrplan Sek I</p>
+    </div>
+    <div class="hdr-xp">
+      <div class="xp-block">
+        <div class="xp-num" id="hdr-xp">0 XP</div>
+        <div class="xp-lbl">Punkte</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+        <div class="level-pill" id="hdr-level">Einsteiger</div>
+        <div class="streak-pill" id="hdr-streak">🔥 0er-Serie</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div id="app">
+
+<!-- ═══════════════════════ START ═══════════════════════ -->
+<div id="screen-start" class="screen active">
+  <div class="card start-hero">
+    <div class="hero-icon">🧪</div>
+    <h2>Wie gut kennst du Exponentialfunktionen?</h2>
+    <p>Diese Diagnose prüft deine Antworten, erkennt gezielt <strong>Fehlvorstellungen</strong>
+      und ordnet jede Frage den Kompetenzen des <strong>NRW-Kernlehrplans</strong> zu.</p>
+    <div class="info-row">
+      <span class="info-chip">📝 28 Fragen</span>
+      <span class="info-chip">⏱️ ca. 22 Min.</span>
+      <span class="info-chip">🔬 10 Fehlvorstellungen</span>
+      <span class="info-chip">📝 Textaufgaben</span>
+      <span class="info-chip">💬 Begründungen</span>
+      <span class="info-chip">📈 Graphenaufgaben</span>
+      <span class="info-chip">🎖️ Errungenschaften</span>
+    </div>
+    <button class="btn btn-primary btn-large" onclick="startTest()">🚀 Diagnose starten</button>
+  </div>
+
+  <div class="klp-intro">
+    <h3>📜 Kernlehrplan NRW – Prozessbezogene Kompetenzen (Sek I Gymnasium)</h3>
+    <p style="font-size:.8rem;color:var(--text2);margin-bottom:10px">Jede Frage ist einer der 6 Kompetenzen zugeordnet, die im KLP Mathematik Gymnasium NRW (2019) verankert sind:</p>
+    <div class="klp-grid">
+      <div class="klp-item"><span class="klp-code">K1</span> Argumentieren &amp; Beweisen</div>
+      <div class="klp-item"><span class="klp-code">K2</span> Problemlösen &amp; Erkunden</div>
+      <div class="klp-item"><span class="klp-code">K3</span> Modellieren</div>
+      <div class="klp-item"><span class="klp-code">K4</span> Darstellungen nutzen</div>
+      <div class="klp-item"><span class="klp-code">K5</span> Kommunizieren</div>
+      <div class="klp-item"><span class="klp-code">K6</span> Werkzeuge nutzen</div>
+    </div>
+    <p style="font-size:.75rem;color:var(--text2);margin-top:8px">Inhaltlich: <em>Funktionen</em> (Inhaltsbereich 4), Schwerpunkt Wachstums- &amp; Zerfallsprozesse, Jahrgang 9/10.</p>
+  </div>
+
+  <div class="card" style="padding:18px">
+    <h3 style="font-size:.92rem;color:var(--blue);margin-bottom:10px">🎮 Gamification</h3>
+    <div class="gami-strip">
+      <div class="gami-item"><div class="gami-icon">⭐</div><div class="gami-label">XP pro Frage</div></div>
+      <div class="gami-item"><div class="gami-icon">🔥</div><div class="gami-label">Streak-Bonus</div></div>
+      <div class="gami-item"><div class="gami-icon">🏅</div><div class="gami-label">Errungenschaften</div></div>
+    </div>
+    <p style="font-size:.78rem;color:var(--text2)">Richtige Antworten geben XP. Streaks geben Bonus-XP. Schalte Errungenschaften frei!</p>
+  </div>
+
+  <div class="card" style="padding:18px">
+    <h3 style="font-size:.92rem;color:var(--blue);margin-bottom:10px">🧠 Geprüfte Fehlvorstellungen</h3>
+    <div class="mv-preview">
+      <div class="mvp-item"><span class="mvp-code">M1</span> Nullstellen-Irrtum</div>
+      <div class="mvp-item"><span class="mvp-code">M2</span> Rate ↔ Faktor</div>
+      <div class="mvp-item"><span class="mvp-code">M3</span> Negative Exponenten</div>
+      <div class="mvp-item"><span class="mvp-code">M4</span> Anfangswert falsch</div>
+      <div class="mvp-item"><span class="mvp-code">M5</span> Halbwertszeit ohne log</div>
+      <div class="mvp-item"><span class="mvp-code">M6</span> Asymptoten-Irrtum</div>
+      <div class="mvp-item"><span class="mvp-code">M7</span> Basis-Einschränkung</div>
+      <div class="mvp-item"><span class="mvp-code">M8</span> Definitions-/Wertemenge</div>
+      <div class="mvp-item"><span class="mvp-code">M9</span> Zwei-Punkte-Methode</div>
+      <div class="mvp-item"><span class="mvp-code">M10</span> Vorzeichen von a</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ TEST ═══════════════════════ -->
+<div id="screen-test" class="screen">
+  <div class="prog-wrap">
+    <div class="prog-meta">
+      <span id="prog-label">Frage 1 von 28</span>
+      <span>
+        <span class="streak-badge" id="streak-badge">🔥 0er-Serie</span>
+        &nbsp;<span id="prog-pct">0 %</span>
+      </span>
+    </div>
+    <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  </div>
+  <div class="card" id="question-card"></div>
+  <div class="btn-row" id="nav-row">
+    <button class="btn btn-primary" id="btn-check" onclick="checkAnswer()" style="display:none">Antwort prüfen</button>
+    <button class="btn btn-primary" id="btn-next" onclick="nextQuestion()" style="display:none">Weiter →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════ RESULT ═══════════════════════ -->
+<div id="screen-result" class="screen">
+  <div class="card">
+    <div class="result-top" id="result-top"></div>
+    <div class="stats-strip" id="stats-strip"></div>
+  </div>
+  <div class="card">
+    <h2 style="font-size:1.05rem;color:var(--blue);margin-bottom:14px">🎖️ Errungenschaften</h2>
+    <div class="ach-grid" id="ach-grid"></div>
+  </div>
+  <div class="card">
+    <h2 style="font-size:1.05rem;color:var(--teal);margin-bottom:14px">📜 Kernlehrplan-Kompetenzprofil</h2>
+    <p style="font-size:.8rem;color:var(--text2);margin-bottom:12px">Auswertung nach prozessbezogenen Kompetenzen (KLP NRW Gymnasium Sek I, Mathematik)</p>
+    <div id="klp-profile"></div>
+  </div>
+  <div class="card">
+    <h2 style="font-size:1.05rem;color:var(--orange);margin-bottom:6px">🧠 Fehlvorstellungs-Diagnose</h2>
+    <p style="font-size:.82rem;color:var(--text2);margin-bottom:14px">Detailanalyse aller geprüften Fehlvorstellungen.</p>
+    <div id="mv-cards"></div>
+  </div>
+  <div class="card"><div class="rec-box" id="recs"></div></div>
+  <div class="card">
+    <div class="links-section">
+      <h3>▶️ Lernvideos – konkrete Empfehlungen</h3>
+      <div class="links-grid">
+        <a class="link-card" href="https://www.youtube.com/results?search_query=Lehrerschmidt+Exponentialfunktionen+Grundlagen" target="_blank" rel="noopener">
+          <span class="link-icon">🎬</span>
+          <div><div>Lehrerschmidt · Grundlagen</div><div class="link-desc">Einführung: f(x)=a·bˣ, Basis, Anfangswert</div></div>
+        </a>
+        <a class="link-card" href="https://www.youtube.com/results?search_query=Lehrerschmidt+Zwei+Punkte+Methode+Exponentialfunktion" target="_blank" rel="noopener">
+          <span class="link-icon">🎬</span>
+          <div><div>Lehrerschmidt · Zwei-Punkte-Methode</div><div class="link-desc">a und b aus zwei Punkten bestimmen</div></div>
+        </a>
+        <a class="link-card" href="https://www.youtube.com/results?search_query=Daniel+Jung+Exponentialfunktion+Wachstumsfaktor+Rate" target="_blank" rel="noopener">
+          <span class="link-icon">🎬</span>
+          <div><div>Daniel Jung · Wachstumsrate &amp; -faktor</div><div class="link-desc">b=1+p/100 sicher unterscheiden</div></div>
+        </a>
+        <a class="link-card" href="https://www.youtube.com/results?search_query=Lehrerschmidt+Halbwertszeit+Logarithmus+Exponentialfunktion" target="_blank" rel="noopener">
+          <span class="link-icon">🎬</span>
+          <div><div>Lehrerschmidt · Halbwertszeit</div><div class="link-desc">T½ = log(0,5)/log(b) herleiten &amp; anwenden</div></div>
+        </a>
+        <a class="link-card" href="https://www.youtube.com/results?search_query=Daniel+Jung+Asymptote+Exponentialfunktion+erklaerung" target="_blank" rel="noopener">
+          <span class="link-icon">🎬</span>
+          <div><div>Daniel Jung · Asymptote y=0</div><div class="link-desc">Warum der Graph y=0 nie erreicht</div></div>
+        </a>
+        <a class="link-card" href="https://www.youtube.com/results?search_query=Mathehilfe24+Exponentialfunktion+Wertemenge+Definitionsmenge" target="_blank" rel="noopener">
+          <span class="link-icon">🎬</span>
+          <div><div>Mathehilfe24 · Definitions-/Wertemenge</div><div class="link-desc">D=ℝ und W=(0;+∞) verständlich erklärt</div></div>
+        </a>
+      </div>
+      <h3 style="margin-top:16px">📝 Übungsaufgaben – direkte Links</h3>
+      <div class="links-grid">
+        <a class="link-card" href="https://de.serlo.org/mathe/funktionen/exponentialfunktionen" target="_blank" rel="noopener">
+          <span class="link-icon">📚</span>
+          <div><div>Serlo · Aufgaben &amp; Erklärungen</div><div class="link-desc">Interaktive Aufgaben mit Lösungsweg</div></div>
+        </a>
+        <a class="link-card" href="https://www.aufgabenfuchs.de/mathematik/exponentialfunktion.shtml" target="_blank" rel="noopener">
+          <span class="link-icon">🦊</span>
+          <div><div>Aufgabenfuchs · Übungsaufgaben</div><div class="link-desc">Klassenarbeits-Aufgaben mit Lösungen</div></div>
+        </a>
+        <a class="link-card" href="https://www.matheretter.de/rechner/exponentialfunktion" target="_blank" rel="noopener">
+          <span class="link-icon">🧮</span>
+          <div><div>Matheretter · Online-Rechner</div><div class="link-desc">Zwei-Punkte-Methode Schritt für Schritt</div></div>
+        </a>
+        <a class="link-card" href="https://www.geogebra.org/m/xhkvrkbm" target="_blank" rel="noopener">
+          <span class="link-icon">📐</span>
+          <div><div>GeoGebra · Graph-Explorer</div><div class="link-desc">a und b interaktiv verschieben</div></div>
+        </a>
+        <a class="link-card" href="https://www.mathebibel.de/exponentialfunktion" target="_blank" rel="noopener">
+          <span class="link-icon">📖</span>
+          <div><div>Mathebibel · Theorie &amp; Aufgaben</div><div class="link-desc">Kompaktes Skript mit Beispielen</div></div>
+        </a>
+        <a class="link-card" href="https://de.khanacademy.org/math/algebra/x2f8bb11595b61c86:exponential-growth-decay" target="_blank" rel="noopener">
+          <span class="link-icon">🌍</span>
+          <div><div>Khan Academy · Wachstum &amp; Zerfall</div><div class="link-desc">Videos + Übungen auf Deutsch</div></div>
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="retry-row" style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+    <button class="btn btn-primary btn-large" id="btn-foerder" onclick="startFoerder()" style="display:none">🎯 Förder-Level starten</button>
+    <button class="btn btn-outline btn-large" onclick="restartTest()">🔄 Diagnose wiederholen</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════ FÖRDER-LEVEL ═══════════════════════ -->
+<div id="screen-foerder" class="screen">
+  <div class="card">
+    <div class="foerder-hero">
+      <div style="font-size:2.5rem;margin-bottom:8px">🎯</div>
+      <h2>Förder-Level – gezielte Übungen</h2>
+      <p>Aufgaben genau zu den Kompetenzen und Fehlvorstellungen, bei denen Lücken erkannt wurden. Von leicht bis schwer.</p>
+    </div>
+  </div>
+  <div id="foerder-content"></div>
+  <div style="text-align:center;margin-top:20px;padding-bottom:20px">
+    <button class="btn btn-outline" onclick="restartTest()">🔄 Diagnose wiederholen</button>
+  </div>
+</div>
+
+</div><!-- #app -->
+
+<div id="toast"></div>
+<div class="xp-pop" id="xp-pop"></div>
+
+<script>
+// ══════════════════════════════════════
+// KLP MAPPING
+// ══════════════════════════════════════
+const KLP = {
+  K1:{name:'Argumentieren & Beweisen', color:'var(--teal)', bg:'var(--teal-l)'},
+  K2:{name:'Problemlösen & Erkunden',  color:'var(--purple)', bg:'var(--purple-l)'},
+  K3:{name:'Modellieren',              color:'var(--orange)', bg:'var(--orange-l)'},
+  K4:{name:'Darstellungen nutzen',     color:'#0369a1', bg:'#e0f2fe'},
+  K5:{name:'Kommunizieren',            color:'var(--green)', bg:'var(--green-l)'},
+  K6:{name:'Werkzeuge nutzen',         color:'#9d174d', bg:'#fce7f3'}
+};
+
+// ══════════════════════════════════════
+// FEHLVORSTELLUNGEN
+// ══════════════════════════════════════
+const MV = {
+  M1:{code:'M1',title:'Nullstellen-Irrtum',sub:'Glaube, Exponentialfunktionen hätten Nullstellen',
+    false_belief:'f(x) = a·bˣ hat eine Nullstelle, weil der Graph fast die x-Achse berührt.',
+    correct:'Für a ≠ 0 und b > 0 ist a·bˣ immer ≠ 0. Die x-Achse ist Asymptote – wird nie erreicht.',
+    example:'f(x)=2·0,5ˣ → f(x)>0 für alle x∈ℝ, niemals =0'},
+  M2:{code:'M2',title:'Rate ↔ Faktor Verwechslung',sub:'Wachstumsfaktor und Wachstumsrate werden verwechselt',
+    false_belief:'b=1,07 bedeutet 107% Wachstum.',
+    correct:'b=1+p/100, also b=1,07 → p=7%. Der Faktor enthält den Startwert "1" plus die Rate.',
+    example:'b=1,07 → p=(1,07−1)·100=7%'},
+  M3:{code:'M3',title:'Negative Exponenten falsch',sub:'f(x) mit x<0 wird fälschlich als negativ angesehen',
+    false_belief:'Wenn x<0, dann wird f(x)=a·bˣ auch negativ.',
+    correct:'b⁻ˣ=1/bˣ>0 (für b>0). Das Vorzeichen hängt nur von a ab.',
+    example:'f(−2)=3·2⁻²=3·(1/4)=0,75>0'},
+  M4:{code:'M4',title:'Anfangswert falsch verstanden',sub:'a wird nicht als f(0) erkannt',
+    false_belief:'Der Anfangswert ist f(1), nicht f(0).',
+    correct:'a=f(0)=a·b⁰=a·1=a. Der y-Achsenabschnitt ist immer a.',
+    example:'f(x)=5·3ˣ → f(0)=5·1=5'},
+  M5:{code:'M5',title:'Halbwertszeit ohne Logarithmus',sub:'Halbwertszeit durch b oder 1/b berechnet',
+    false_belief:'T½ ist einfach b oder 1/b – kein Logarithmus nötig.',
+    correct:'Man löst bᵀ½=0,5 nach T½ auf: T½=log(0,5)/log(b).',
+    example:'b=0,8 → T½=log(0,5)/log(0,8)≈3,11 ≠ 0,8'},
+  M6:{code:'M6',title:'Asymptoten-Irrtum',sub:'Glaube, der Graph erreiche oder schneide y=0',
+    false_belief:'Der Graph berührt irgendwann die Asymptote y=0.',
+    correct:'Der Graph nähert sich y=0 beliebig nahe, erreicht es aber nie für endliches x.',
+    example:'0,5^100 ≈ 7,9·10⁻³¹ ≠ 0'},
+  M7:{code:'M7',title:'Basis-Einschränkung unbekannt',sub:'b=0, b=1 oder b<0 werden als gültig angesehen',
+    false_belief:'Die Basis b kann auch 0, 1 oder negativ sein.',
+    correct:'Es muss b>0 und b≠1 gelten. Für b=1 wäre f konstant; b≤0 nicht reell definiert.',
+    example:'b=−2: (−2)^0,5=√(−2) nicht reell'},
+  M8:{code:'M8',title:'Definitions-/Wertemenge falsch',sub:'Definitionsmenge als x>0 angenommen',
+    false_belief:'Exponentialfunktionen sind nur für x>0 definiert.',
+    correct:'Definitionsmenge: ℝ. Wertemenge (a>0): (0;+∞).',
+    example:'f(−3)=2·(1,5)⁻³≈0,59 ∈ ℝ ✓'},
+  M9:{code:'M9',title:'Zwei-Punkte-Methode fehlerhaft',sub:'a wird direkt als erster y-Wert genommen',
+    false_belief:'a ist immer der erste y-Wert P₁.',
+    correct:'Nur wenn x₁=0 gilt a=y₁ direkt. Sonst erst b durch Division, dann a rückwärts.',
+    example:'P(1|6),P(3|54): b²=54/6=9→b=3, dann a=6/3=2'},
+  M10:{code:'M10',title:'Vorzeichen von a',sub:'Negatives a wird als ungültig angesehen',
+    false_belief:'f(x)=−2·3ˣ kann keine Exponentialfunktion sein.',
+    correct:'a<0 ist erlaubt. Der Graph liegt komplett unterhalb der x-Achse.',
+    example:'f(x)=−2·3ˣ → Wertemenge (−∞;0), Asymptote y=0'}
+};
+
+// ══════════════════════════════════════
+// FRAGEN (18 Stück)
+// ══════════════════════════════════════
+const Q = [
+  {id:'q1',klp:'K1',mvTarget:'M1',type:'tf',xp:10,
+   cat:'📌 Grundeigenschaften',klpDesc:'K1 – Argumentieren: Begründe, warum Nullstellen (nicht) existieren.',
+   text:'Die Funktion f(x) = 3 · 0,5ˣ hat mindestens eine Nullstelle.',
+   answer:false,
+   fb_ok:'Richtig – f(x)=3·0,5ˣ>0 für alle x∈ℝ. Da a=3>0 und 0,5ˣ>0, kann der Graph die x-Achse nie schneiden.',
+   fb_nok:'Falsch. 3·0,5ˣ ist für alle x positiv (a>0, bˣ>0). Der Graph nähert sich nur der x-Achse an.',
+   mv_nok:'M1', sol:'f(x)>0 für alle x∈ℝ → keine Nullstelle'},
+  {id:'q2',klp:'K5',mvTarget:'M2',type:'mc',xp:10,
+   cat:'🔄 Wachstumsrate & Faktor',klpDesc:'K5 – Kommunizieren: Fachbegriffe korrekt interpretieren.',
+   text:'Ein Wachstumsfaktor von b = 1,05 entspricht einer Wachstumsrate von:',
+   opts:['105 %','1,05 %','5 %','0,05 %'],answer:2,
+   fb_ok:'Korrekt! p=(b−1)·100=(1,05−1)·100=5%. Der Faktor enthält schon den Grundwert 1.',
+   fb_nok:'Falsch. p=(b−1)·100=(1,05−1)·100=5%. Nicht 105%, das wäre der Faktor selbst.',
+   mv_nok:'M2', sol:'p=(1,05−1)·100=5%'},
+  {id:'q3',klp:'K1',mvTarget:'M3',type:'mc',xp:10,
+   cat:'🔢 Negative Exponenten',klpDesc:'K1 – Argumentieren: Potenzregeln korrekt anwenden.',
+   text:'Was ergibt f(−2) für f(x) = 4 · 2ˣ?',
+   opts:['−16','−1','1','1/4'],answer:2,
+   fb_ok:'Richtig! f(−2)=4·2⁻²=4·(1/4)=1. Negative Exponenten erzeugen Kehrwerte, keine negativen Werte.',
+   fb_nok:'Falsch. 2⁻²=1/2²=1/4. Also f(−2)=4·(1/4)=1. Negative x → kein negatives f(x)!',
+   mv_nok:'M3', sol:'f(−2)=4·2⁻²=4·¼=1'},
+  {id:'q4',klp:'K4',mvTarget:'M4',type:'mc',xp:10,
+   cat:'📍 Anfangswert (a)',klpDesc:'K4 – Darstellungen nutzen: Graph und Formel verknüpfen.',
+   text:'Welchen Wert hat der y-Achsenabschnitt von f(x) = 7 · 3ˣ?',
+   opts:['3','21','7','1'],answer:2,
+   fb_ok:'Korrekt! f(0)=7·3⁰=7·1=7. Der y-Achsenabschnitt ist immer a, weil b⁰=1.',
+   fb_nok:'Falsch. Setze x=0: f(0)=7·3⁰=7·1=7. Da b⁰=1, gilt f(0)=a immer!',
+   mv_nok:'M4', sol:'f(0)=7·3⁰=7·1=7'},
+  {id:'q5',klp:'K5',mvTarget:'M2',type:'mc',xp:10,
+   cat:'🔄 Wachstumsrate & Faktor',klpDesc:'K5 – Kommunizieren: Abnahme korrekt als negativen Prozentsatz ausdrücken.',
+   text:'Eine Abnahme von 20 % pro Jahr entspricht dem Wachstumsfaktor:',
+   opts:['0,20','0,80','1,20','−0,20'],answer:1,
+   fb_ok:'Richtig! b=1+(−20)/100=1−0,2=0,8. Abnahme = negative Rate.',
+   fb_nok:'Falsch. b=1+p/100. Für p=−20: b=0,8. 0,20 wäre 80% Abnahme!',
+   mv_nok:'M2', sol:'b=1+(−20)/100=0,8'},
+  {id:'q6',klp:'K1',mvTarget:'M6',type:'tf',xp:10,
+   cat:'📉 Asymptote',klpDesc:'K1 – Argumentieren: Grenzverhalten von Exponentialfunktionen begründen.',
+   text:'Der Graph von f(x) = 5 · 0,3ˣ erreicht für hinreichend großes x irgendwann den Wert 0.',
+   answer:false,
+   fb_ok:'Richtig! Die x-Achse ist Asymptote. Der Graph nähert sich y=0 an, erreicht es nie.',
+   fb_nok:'Falsch. 0,3ˣ wird für x→+∞ extrem klein, aber niemals exakt 0 (z.B. 0,3^100≈3·10⁻⁵²).',
+   mv_nok:'M6', sol:'0,3ˣ→0 für x→∞, aber niemals =0'},
+  {id:'q7',klp:'K6',mvTarget:'M5',type:'mc',xp:10,
+   cat:'⏱️ Halbwertszeit',klpDesc:'K6 – Werkzeuge nutzen: TR-Taste log() korrekt einsetzen.',
+   text:'Wie berechnet man die Halbwertszeit T½ bei f(x) = a · bˣ mit 0 < b < 1?',
+   opts:['T½ = b / 2','T½ = 1 / b','T½ = log(0,5) / log(b)','T½ = b − 0,5'],answer:2,
+   fb_ok:'Korrekt! bᵀ½=0,5 → T½·log(b)=log(0,5) → T½=log(0,5)/log(b).',
+   fb_nok:'Falsch. bᵀ½=0,5 muss nach T½ aufgelöst werden. Das erfordert Logarithmus: T½=log(0,5)/log(b).',
+   mv_nok:'M5', sol:'T½=log(0,5)/log(b)'},
+  {id:'q8',klp:'K1',mvTarget:'M7',type:'mc',xp:10,
+   cat:'⚙️ Gültige Basis',klpDesc:'K1 – Argumentieren: Definitionsbedingungen korrekt angeben.',
+   text:'Welcher Wert ist als Basis b NICHT erlaubt?',
+   opts:['b = 0,01','b = 100','b = 1','b = 1,5'],answer:2,
+   fb_ok:'Richtig! Für b=1 wäre f(x)=a·1ˣ=a – eine Konstante, keine Exponentialfunktion.',
+   fb_nok:'Falsch. b=1 ist ausgeschlossen (konstante Funktion). Bedingung: b>0 und b≠1.',
+   mv_nok:'M7', sol:'b≠1 und b>0 sind Pflicht'},
+  {id:'q9',klp:'K4',mvTarget:'M8',type:'tf',xp:10,
+   cat:'🔭 Definitionsmenge',klpDesc:'K4 – Darstellungen nutzen: Graph richtig ablesen und Def.menge bestimmen.',
+   text:'Die Funktion f(x) = 2 · 3ˣ ist nur für x > 0 definiert.',
+   answer:false,
+   fb_ok:'Richtig! Die Definitionsmenge ist ℝ – also auch negative und nicht-ganzzahlige x sind erlaubt.',
+   fb_nok:'Falsch. Definitionsmenge: ℝ. z.B. f(−2)=2·3⁻²=2·(1/9)≈0,22 ∈ ℝ.',
+   mv_nok:'M8', sol:'Definitionsmenge: ℝ (alle reellen Zahlen)'},
+  {id:'q10',klp:'K2',mvTarget:'M9',type:'mc',xp:15,
+   cat:'✏️ Zwei-Punkte-Methode',klpDesc:'K2 – Problemlösen: Gleichungssystem aus zwei Punkten aufstellen und lösen.',
+   text:'f(x)=a·bˣ durch P₁(1|6) und P₂(3|54). Was gilt für b?',
+   opts:['b = 9','b = 3','b = 6','b = 54'],answer:1,
+   fb_ok:'Richtig! 54/6=b^(3−1)=b²=9 → b=3. Division kürzt a heraus.',
+   fb_nok:'Falsch. Teile: y₂/y₁=b^(x₂−x₁). 54/6=b²=9 → b=√9=3.',
+   mv_nok:'M9', sol:'54/6=b²=9 → b=3'},
+  {id:'q11',klp:'K1',mvTarget:'M10',type:'tf',xp:10,
+   cat:'➖ Negatives a',klpDesc:'K1 – Argumentieren: Eigenschaften mit negativem Anfangswert begründen.',
+   text:'Die Funktion f(x) = −3 · 2ˣ ist eine gültige Exponentialfunktion mit Wertemenge (−∞; 0).',
+   answer:true,
+   fb_ok:'Richtig! a=−3 ist erlaubt. f(x)=−3·2ˣ<0 immer, Wertemenge (−∞;0), Asymptote y=0.',
+   fb_nok:'Falsch. a=−3 ist erlaubt. Der Graph liegt komplett unter der x-Achse.',
+   mv_nok:'M10', sol:'f(x)=−3·2ˣ<0 für alle x; Wertemenge (−∞;0)'},
+  {id:'q12',klp:'K6',mvTarget:'M5',type:'input',xp:15,
+   cat:'⏱️ Halbwertszeit berechnen',klpDesc:'K6 – Werkzeuge nutzen: Logarithmusfunktion am TR anwenden.',
+   text:'Berechne die Halbwertszeit T½ von f(x)=200·0,9ˣ.',
+   hint:'T½=log(0,5)/log(b). Runde auf 2 Dezimalstellen.',
+   formula:'T½=log(0,5)/log(0,9)',
+   answer:6.58,tol:0.05,unit:'',
+   fb_ok:'Richtig! T½=log(0,5)/log(0,9)≈−0,3010/(−0,0458)≈6,58.',
+   fb_nok:'Falsch. T½=log(0,5)/log(0,9)≈6,58. Den Logarithmus nicht vergessen!',
+   mv_nok:'M5', sol:'log(0,5)/log(0,9)≈6,58'},
+  {id:'q13',klp:'K1',mvTarget:'M1',type:'mc',xp:10,
+   cat:'📌 Nullstellen',klpDesc:'K1 – Argumentieren: Nullstellenfreiheit formal begründen.',
+   text:'Für welchen x-Wert gilt f(x)=0 bei f(x)=10·1,5ˣ?',
+   opts:['x=0','x=−10','x=log(10)/log(1,5)','Es gibt keinen solchen Wert'],answer:3,
+   fb_ok:'Korrekt! 1,5ˣ>0 immer, 10≠0 → f(x) ist stets positiv, keine Nullstelle.',
+   fb_nok:'Falsch. f(x)=10·1,5ˣ ist immer positiv. Keine Lösung für f(x)=0.',
+   mv_nok:'M1', sol:'Keine Nullstelle: 10·1,5ˣ>0 für alle x'},
+  {id:'q14',klp:'K5',mvTarget:'M2',type:'mc',xp:10,
+   cat:'🔄 Wachstumsrate ablesen',klpDesc:'K5 – Kommunizieren: Fachsprachlich korrekt zwischen Rate und Faktor unterscheiden.',
+   text:'Ein Wachstumsfaktor b=0,95 bedeutet:',
+   opts:['95 % Wachstum','−5 % (5 % Abnahme)','−95 % Wachstum','0,95 % Wachstum'],answer:1,
+   fb_ok:'Richtig! p=(0,95−1)·100=−5%. b=0,95 bedeutet 5% Abnahme pro Einheit.',
+   fb_nok:'Falsch. p=(b−1)·100=(0,95−1)·100=−5%. Nicht 95% Wachstum!',
+   mv_nok:'M2', sol:'p=(0,95−1)·100=−5%'},
+  {id:'q15',klp:'K2',mvTarget:'M9',type:'mc',xp:15,
+   cat:'✏️ Zwei-Punkte-Methode',klpDesc:'K2 – Problemlösen: a rückwärts aus einem Punkt berechnen.',
+   text:'f(x)=a·2ˣ verläuft durch P(3|24). Berechne a.',
+   opts:['a=8','a=3','a=24','a=12'],answer:1,
+   fb_ok:'Richtig! 24=a·2³=a·8 → a=24/8=3.',
+   fb_nok:'Falsch. Einsetzen: 24=a·2³=a·8 → a=24/8=3.',
+   mv_nok:'M9', sol:'24=a·2³=a·8 → a=3'},
+  {id:'q16',klp:'K4',mvTarget:'M8',type:'mc',xp:10,
+   cat:'🔭 Wertemenge',klpDesc:'K4 – Darstellungen nutzen: Graph und Wertemenge verknüpfen.',
+   text:'Was ist die Wertemenge von f(x)=4·3ˣ?',
+   opts:['ℝ','(0;+∞)','[0;+∞)','(−∞;0)'],answer:1,
+   fb_ok:'Richtig! 4>0 und 3ˣ>0 → f(x)>0 immer. Wertemenge: (0;+∞). Die 0 ist nicht enthalten!',
+   fb_nok:'Falsch. f(x)=4·3ˣ>0 immer. 0 ist ausgeschlossen (Asymptote) → (0;+∞), nicht [0;+∞) oder ℝ.',
+   mv_nok:'M8', sol:'Wertemenge: (0;+∞) — 0 ausgeschlossen'},
+  {id:'q17',klp:'K1',mvTarget:'M6',type:'mc',xp:10,
+   cat:'📉 Asymptote',klpDesc:'K1 – Argumentieren: Asymptotisches Verhalten korrekt beschreiben.',
+   text:'Welche Aussage über die Asymptote von f(x)=100·0,1ˣ ist RICHTIG?',
+   opts:['Asymptote: y=100','Asymptote: y=0,1','Asymptote: y=0, wird nie erreicht','Keine Asymptote'],answer:2,
+   fb_ok:'Richtig! Asymptote ist immer y=0. Der Graph nähert sich an, erreicht sie nie.',
+   fb_nok:'Falsch. Die waagerechte Asymptote jeder Exponentialfunktion f(x)=a·bˣ ist y=0.',
+   mv_nok:'M6', sol:'Asymptote y=0 (wird nie erreicht)'},
+  {id:'q18',klp:'K1',mvTarget:'M7',type:'mc',xp:10,
+   cat:'⚙️ Gültige Basis',klpDesc:'K1 – Argumentieren: Unzulässige Basis anhand Definitionsbedingung erkennen.',
+   text:'Welche ist KEINE gültige Exponentialfunktion f(x)=a·bˣ?',
+   opts:['f(x)=−5·2ˣ','f(x)=3·(−2)ˣ','f(x)=0,01·1000ˣ','f(x)=7·(1/3)ˣ'],answer:1,
+   fb_ok:'Richtig! b=−2 ist nicht erlaubt: (−2)^0,5=√(−2) nicht reell.',
+   fb_nok:'Falsch. b=−2 ist unzulässig. Für viele x (z.B. x=0,5) ist (−2)ˣ nicht reell.',
+   mv_nok:'M7', sol:'b=−2 verboten: (−2)^0,5 nicht reell'},
+
+  // ── TEXTAUFGABEN ──────────────────────────────────────────
+  {id:'q19',klp:'K3',mvTarget:'M4',type:'mc',xp:12,
+   cat:'📝 Textaufgabe · Zinseszins',klpDesc:'K3 – Modellieren: Reale Situation in Funktionsterm übersetzen.',
+   text:'Ein Sparkonto hat einen Anfangsstand von <strong>800 €</strong>. Es wird jährlich mit <strong>4 %</strong> verzinst (Zinseszins). Welcher Funktionsterm beschreibt das Kapital K(t) nach t Jahren?',
+   opts:['K(t) = 800 + 4t','K(t) = 800 · 1,04ᵗ','K(t) = 800 · 0,04ᵗ','K(t) = 804ᵗ'],answer:1,
+   fb_ok:'Richtig! Anfangswert a=800, Wachstumsfaktor b=1+4/100=1,04. K(t)=800·1,04ᵗ.',
+   fb_nok:'Falsch. b=1+p/100=1,04. Startwert a=800 (kein lineares Wachstum!). K(t)=800·1,04ᵗ.',
+   mv_nok:'M4', sol:'K(t)=800·1,04ᵗ  (a=800, b=1,04)'},
+  {id:'q20',klp:'K3',mvTarget:'M5',type:'mc',xp:12,
+   cat:'📝 Textaufgabe · Radioaktiver Zerfall',klpDesc:'K3 – Modellieren: Zerfallsprozess mit Halbwertszeit beschreiben.',
+   text:'Ein radioaktiver Stoff hat eine Halbwertszeit von <strong>T½ = 5 Jahren</strong> und eine Anfangsmenge von <strong>200 g</strong>. Welcher <em>jährliche</em> Wachstumsfaktor b beschreibt den Zerfall?',
+   opts:['b = 0,5','b = 0,5^(1/5) ≈ 0,871','b = 5','b = 0,5 / 200'],answer:1,
+   fb_ok:'Richtig! b^5=0,5 → b=0,5^(1/5)≈0,871. Nach 5 Jahren: 0,871⁵≈0,5 ✓',
+   fb_nok:'Falsch. b^5=0,5 → b=0,5^(1/5)≈0,871. b=0,5 wäre Halbierung pro Jahr – viel zu schnell!',
+   mv_nok:'M5', sol:'b=0,5^(1/5)≈0,871 (Halbierung nach 5 Jahren)'},
+  {id:'q21',klp:'K3',mvTarget:'M9',type:'mc',xp:15,
+   cat:'📝 Textaufgabe · Bakterienwachstum',klpDesc:'K3 – Modellieren: Zwei-Punkte-Methode im Sachkontext anwenden.',
+   text:'Bei t = 0 h gibt es <strong>200 Bakterien</strong>, bei t = 3 h sind es <strong>1600</strong>. Welche Funktion beschreibt die Anzahl B(t)?',
+   opts:['B(t) = 200 · 8ᵗ','B(t) = 200 · 2ᵗ','B(t) = 1600 · 2ᵗ','B(t) = 200 + 1400t'],answer:1,
+   fb_ok:'Richtig! b³=1600/200=8 → b=∛8=2. Startwert a=200. B(t)=200·2ᵗ.',
+   fb_nok:'Falsch. b³=1600/200=8 → b=∛8=2. Dann a=200 (bei t=0). B(t)=200·2ᵗ.',
+   mv_nok:'M9', sol:'b=∛(1600/200)=∛8=2 → B(t)=200·2ᵗ'},
+
+  // ── BEGRÜNDUNGEN WÄHLEN ───────────────────────────────────
+  {id:'q22',klp:'K1',mvTarget:'M1',type:'mc',xp:12,
+   cat:'💬 Begründung wählen · Nullstellen',klpDesc:'K1 – Argumentieren: Fachlich korrekte Begründung auswählen.',
+   text:'Warum hat f(x) = 5 · 2ˣ <em>keine Nullstelle</em>? Wähle die <strong>fachlich korrekte Begründung</strong>:',
+   opts:[
+     'Weil der Graph zu steil ist und die x-Achse überspringt.',
+     'Weil 2ˣ > 0 für alle x ∈ ℝ gilt und a = 5 ≠ 0, ist f(x) > 0 für alle x.',
+     'Weil Exponentialfunktionen nur für x > 0 definiert sind.',
+     'Weil der Graph parallel zur x-Achse verläuft.'
+   ],answer:1,
+   fb_ok:'Richtig! Die korrekte Begründung: bˣ > 0 (Basis 2 positiv) und a = 5 ≠ 0, also f(x) > 0 stets.',
+   fb_nok:'Falsch. Korrekte Begründung: 2ˣ > 0 für alle x ∈ ℝ, und da a=5≠0, folgt f(x)=5·2ˣ>0 immer.',
+   mv_nok:'M1', sol:'2ˣ > 0 für alle x ∈ ℝ  →  5·2ˣ > 0  →  keine Nullstelle'},
+  {id:'q23',klp:'K1',mvTarget:'M7',type:'mc',xp:12,
+   cat:'💬 Begründung wählen · Basis',klpDesc:'K1 – Argumentieren: Unzulässige Basis korrekt begründen.',
+   text:'Warum ist b = −3 als Basis einer Exponentialfunktion <em>nicht zulässig</em>? Wähle die <strong>richtige Begründung</strong>:',
+   opts:[
+     'Weil negative Basen keine Potenzgesetze erfüllen.',
+     'Weil (−3)ˣ für nicht-ganzzahlige x wie x = ½ nicht reell ist: √(−3) ∉ ℝ.',
+     'Weil Basen immer größer als 1 sein müssen.',
+     'Weil der Graph dann unterhalb der x-Achse liegt.'
+   ],answer:1,
+   fb_ok:'Korrekt! (−3)^(1/2)=√(−3) ∉ ℝ – für viele x-Werte ist die Funktion nicht reell definiert.',
+   fb_nok:'Falsch. b=−3 ist problematisch, weil z.B. (−3)^0,5=√(−3) nicht reell ist.',
+   mv_nok:'M7', sol:'(−3)^½ = √(−3) ∉ ℝ  →  b < 0 nicht erlaubt'},
+  {id:'q24',klp:'K1',mvTarget:'M6',type:'mc',xp:12,
+   cat:'💬 Begründung wählen · Asymptote',klpDesc:'K1 – Argumentieren: Asymptotisches Verhalten korrekt begründen.',
+   text:'Warum erreicht der Graph von f(x) = 3 · 0,5ˣ die Asymptote y = 0 <em>niemals</em>? Wähle die <strong>korrekte Begründung</strong>:',
+   opts:[
+     'Weil 0,5ˣ immer eine positive Zahl ist – egal wie groß x wird.',
+     'Weil der Graph für x > 100 aufhört.',
+     'Weil die Funktion für große x nicht definiert ist.',
+     'Weil y = 0 kein Funktionswert von Polynomen ist.'
+   ],answer:0,
+   fb_ok:'Richtig! 0,5ˣ > 0 für alle x ∈ ℝ. Also ist 3·0,5ˣ stets positiv – y=0 wird nie angenommen.',
+   fb_nok:'Falsch. Korrekte Begründung: 0,5ˣ > 0 für alle x (Potenz mit positiver Basis ist immer positiv).',
+   mv_nok:'M6', sol:'0,5ˣ > 0 für alle x  →  f(x) = 3·0,5ˣ > 0 stets  →  y=0 nie erreicht'},
+
+  // ── GRAPHENAUFGABEN ───────────────────────────────────────
+  {id:'q25',klp:'K4',mvTarget:'M4',type:'mc',xp:12,
+   cat:'📈 Graphenaufgabe · Anfangswert',klpDesc:'K4 – Darstellungen nutzen: Anfangswert am Graphen ablesen.',
+   svg:`<svg viewBox="0 0 220 155" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:300px;display:block;margin:10px auto;border:1px solid #334155;border-radius:8px;background:#0f172a;padding:4px">
+  <line x1="32" y1="8" x2="32" y2="140" stroke="#475569" stroke-width="1.5"/>
+  <line x1="20" y1="128" x2="215" y2="128" stroke="#475569" stroke-width="1.5"/>
+  <text x="26" y="148" font-size="11" fill="#94a3b8">0</text>
+  <text x="12" y="50" font-size="10" fill="#94a3b8">80</text>
+  <text x="12" y="95" font-size="10" fill="#94a3b8">40</text>
+  <line x1="28" y1="90" x2="36" y2="90" stroke="#475569" stroke-width="1"/>
+  <line x1="28" y1="45" x2="36" y2="45" stroke="#475569" stroke-width="1"/>
+  <polyline points="32,90 47,86 57,82 67,77 77,71 87,65 97,57 107,49 117,39 127,28 137,16 145,8" stroke="#2563eb" stroke-width="2.5" fill="none" stroke-linejoin="round"/>
+  <circle cx="32" cy="90" r="5" fill="#dc2626"/>
+  <text x="37" y="88" font-size="10" fill="#dc2626" font-weight="bold">(0 | a)</text>
+</svg>`,
+   text:'Der Graph einer Exponentialfunktion f(x) = a · bˣ schneidet die y-Achse bei <strong>y = 40</strong>. Welchen Wert hat der Anfangswert <strong>a</strong>?',
+   opts:['a = 0','a = 40','a = 1','a = b'],answer:1,
+   fb_ok:'Richtig! f(0)=a·b⁰=a·1=a. Der y-Achsenabschnitt ist direkt der Anfangswert a=40.',
+   fb_nok:'Falsch. f(0)=a·b⁰=a. Der y-Achsenabschnitt gibt direkt den Anfangswert a an.',
+   mv_nok:'M4', sol:'a = f(0) = 40  (y-Achsenabschnitt ablesen)'},
+  {id:'q26',klp:'K4',mvTarget:'M8',type:'mc',xp:12,
+   cat:'📈 Graphenaufgabe · Definitionsmenge',klpDesc:'K4 – Darstellungen nutzen: Definitionsmenge am Graphen bestimmen.',
+   svg:`<svg viewBox="0 0 220 155" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:300px;display:block;margin:10px auto;border:1px solid #334155;border-radius:8px;background:#0f172a;padding:4px">
+  <line x1="110" y1="8" x2="110" y2="148" stroke="#475569" stroke-width="1.5"/>
+  <line x1="10" y1="128" x2="215" y2="128" stroke="#475569" stroke-width="1.5"/>
+  <text x="105" y="148" font-size="11" fill="#94a3b8">0</text>
+  <text x="55" y="148" font-size="10" fill="#94a3b8">–2</text>
+  <text x="148" y="148" font-size="10" fill="#94a3b8">2</text>
+  <line x1="15" y1="128" x2="210" y2="128" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="5,4"/>
+  <text x="148" y="124" font-size="9" fill="#ca8a04">Asymptote y=0</text>
+  <polyline points="15,127 30,127 43,126 55,124 65,122 77,118 88,112 100,101 110,88 122,70 133,48 141,33 149,20 155,11 160,5" stroke="#2563eb" stroke-width="2.5" fill="none" stroke-linejoin="round"/>
+</svg>`,
+   text:'Der Graph zeigt eine Exponentialfunktion f(x) = 2ˣ. Auch für <em>negative x-Werte</em> existiert der Graph. Welche <strong>Definitionsmenge</strong> ist korrekt?',
+   opts:['D = (0; +∞)','D = ℝ','D = {1; 2; 3; …}','D = [0; +∞)'],answer:1,
+   fb_ok:'Richtig! Exponentialfunktionen sind für alle reellen Zahlen definiert: D = ℝ.',
+   fb_nok:'Falsch. Der Graph existiert auch links der y-Achse (x < 0) → D = ℝ.',
+   mv_nok:'M8', sol:'D = ℝ  (alle reellen Zahlen, auch negative x)'},
+  {id:'q27',klp:'K4',mvTarget:'M2',type:'mc',xp:12,
+   cat:'📈 Graphenaufgabe · Wachstum vs. Zerfall',klpDesc:'K4 – Darstellungen nutzen: Wachstumsfaktor aus Graphverlauf bestimmen.',
+   svg:`<svg viewBox="0 0 220 160" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:300px;display:block;margin:10px auto;border:1px solid #334155;border-radius:8px;background:#0f172a;padding:4px">
+  <line x1="32" y1="8" x2="32" y2="148" stroke="#475569" stroke-width="1.5"/>
+  <line x1="20" y1="128" x2="215" y2="128" stroke="#475569" stroke-width="1.5"/>
+  <text x="26" y="148" font-size="11" fill="#94a3b8">0</text>
+  <polyline points="32,120 52,117 72,113 92,108 112,101 132,91 152,78 167,65 182,49 197,30 210,14" stroke="#16a34a" stroke-width="2.5" fill="none" stroke-linejoin="round"/>
+  <text x="186" y="12" font-size="12" fill="#16a34a" font-weight="bold">A</text>
+  <polyline points="32,22 52,40 72,56 92,70 112,81 132,90 152,97 172,103 192,108 210,112" stroke="#dc2626" stroke-width="2.5" fill="none" stroke-linejoin="round"/>
+  <text x="186" y="125" font-size="12" fill="#dc2626" font-weight="bold">B</text>
+</svg>`,
+   text:'Graph <strong>A</strong> (grün) steigt, Graph <strong>B</strong> (rot) fällt. Welche Aussage zu den Wachstumsfaktoren b ist <strong>richtig</strong>?',
+   opts:[
+     'Beide Graphen haben b > 1.',
+     'A: b > 1 (Wachstum),  B: 0 < b < 1 (Zerfall)',
+     'A: b < 0,  B: b > 1',
+     'Beide haben 0 < b < 1.'
+   ],answer:1,
+   fb_ok:'Richtig! Steigender Graph ↔ b>1 (Wachstum); fallender Graph ↔ 0<b<1 (Zerfall).',
+   fb_nok:'Falsch. Wachsender Graph → b>1; fallender Graph → 0<b<1.',
+   mv_nok:'M2', sol:'Wachstum: b > 1  |  Zerfall: 0 < b < 1'},
+
+  // ── EXTRA INPUT ───────────────────────────────────────────
+  {id:'q28',klp:'K2',mvTarget:'M2',type:'input',xp:15,
+   cat:'📝 Textaufgabe · Faktor berechnen',klpDesc:'K2 – Problemlösen: Wachstumsfaktor aus zwei Werten berechnen.',
+   text:'Eine Investition wächst von <strong>500 €</strong> auf <strong>605 €</strong> in einem Jahr. Berechne den Wachstumsfaktor <strong>b</strong> auf 2 Dezimalstellen.',
+   hint:'b = Endwert ÷ Anfangswert',
+   formula:'b = 605 ÷ 500',
+   answer:1.21,tol:0.005,unit:'',
+   fb_ok:'Richtig! b=605/500=1,21. Das entspricht 21 % Wachstum pro Jahr.',
+   fb_nok:'Falsch. b=Endwert/Anfangswert=605/500=1,21.',
+   mv_nok:'M2', sol:'b = 605 / 500 = 1,21'}
+];
+
+// ══════════════════════════════════════
+// ACHIEVEMENTS
+// ══════════════════════════════════════
+const ACH = [
+  {id:'first',  icon:'🌟', title:'Erster Schritt',  desc:'Erste Frage richtig', check:s=>s.correct>=1},
+  {id:'streak3',icon:'🔥', title:'Heiße Serie',     desc:'3 in Folge richtig',  check:s=>s.maxStreak>=3},
+  {id:'streak5',icon:'⚡', title:'Blitz-Serie',     desc:'5 in Folge richtig',  check:s=>s.maxStreak>=5},
+  {id:'perfect', icon:'💯', title:'Fehlerlos',      desc:'Alle 28 richtig',     check:s=>s.correct===Q.length},
+  {id:'noMV',    icon:'🧠', title:'Kein Irrtum',    desc:'Keine Fehlvorstellung', check:s=>s.triggeredMVs.length===0},
+  {id:'xp100',   icon:'💰', title:'Punktesammler',  desc:'100 XP gesammelt',    check:s=>s.xp>=100},
+  {id:'xp180',   icon:'🏆', title:'Profi',          desc:'250+ XP gesammelt',   check:s=>s.xp>=250},
+  {id:'klpAll',  icon:'📜', title:'KLP-Kenner',     desc:'In allen 6 K-Bereichen mind. 1 Punkt', check:s=>Object.values(s.klp).every(v=>v.total>0&&v.right>0)}
+];
+
+// ══════════════════════════════════════
+// STATE
+// ══════════════════════════════════════
+let gs = {
+  xp:0, current:0, streak:0, maxStreak:0, correct:0,
+  answers:[],     // {qId,correct,mv}
+  triggeredMVs:[], // unique MV codes
+  klp: Object.fromEntries(Object.keys(KLP).map(k=>[k,{right:0,total:0}])),
+  selected:null, checked:false,
+  achievements:{}
+};
+
+// ══════════════════════════════════════
+// HEADER UPDATE
+// ══════════════════════════════════════
+const LEVELS=[{n:'Einsteiger',min:0},{n:'Lernender',min:50},{n:'Fortgeschritten',min:120},{n:'Experte',min:200}];
+function getLevel(xp){return([...LEVELS].reverse().find(l=>xp>=l.min)||LEVELS[0]).n}
+
+function updateHdr(){
+  document.getElementById('hdr-xp').textContent = gs.xp+' XP';
+  document.getElementById('hdr-level').textContent = getLevel(gs.xp);
+  const sp = document.getElementById('hdr-streak');
+  if(gs.streak>=2){sp.textContent=`🔥 ${gs.streak}er-Serie`;sp.classList.add('show')}
+  else sp.classList.remove('show');
+}
+
+function showXpPop(amount){
+  const el=document.getElementById('xp-pop');
+  el.textContent=`+${amount} XP`;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),1400);
+}
+
+// ══════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════
+let _tt;
+function toast(msg,cls='',dur=2400){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='show '+(cls||'');
+  clearTimeout(_tt); _tt=setTimeout(()=>t.className='',dur);
+}
+
+// ══════════════════════════════════════
+// SCREENS
+// ══════════════════════════════════════
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function startTest(){
+  gs={xp:0,current:0,streak:0,maxStreak:0,correct:0,answers:[],triggeredMVs:[],selected:null,checked:false,achievements:{},
+      klp:Object.fromEntries(Object.keys(KLP).map(k=>[k,{right:0,total:0}]))};
+  updateHdr();
+  showScreen('test');
+  renderQ();
+}
+
+// ══════════════════════════════════════
+// RENDER QUESTION
+// ══════════════════════════════════════
+function renderQ(){
+  const q=Q[gs.current]; const tot=Q.length;
+  gs.selected=null; gs.checked=false;
+  const pct=Math.round((gs.current/tot)*100);
+  document.getElementById('prog-label').textContent=`Frage ${gs.current+1} von ${tot}`;
+  document.getElementById('prog-pct').textContent=pct+' %';
+  document.getElementById('prog-fill').style.width=pct+'%';
+  const sb=document.getElementById('streak-badge');
+  if(gs.streak>=2){sb.textContent=`🔥 ${gs.streak}er-Serie`;sb.classList.add('show')}
+  else sb.classList.remove('show');
+
+  const klpInfo=KLP[q.klp];
+  let html=`<div class="q-top">
+    <span class="q-category">${q.cat}</span>
+    <span class="klp-tag ${q.klp}" title="${q.klpDesc}">${q.klp} · ${klpInfo.name.split(' ')[0]}</span>
+  </div>`;
+  html+=`<div class="q-text">${q.text}</div>`;
+  if(q.svg) html+=`<div class="q-graph">${q.svg}</div>`;
+  if(q.formula) html+=`<div class="q-formula">${q.formula}</div>`;
+  if(q.hint) html+=`<div class="q-hint">💡 ${q.hint}</div>`;
+
+  if(q.type==='mc'){
+    const L=['A','B','C','D'];
+    html+=`<div class="mc-grid">`;
+    q.opts.forEach((o,i)=>html+=`<button class="mc-opt" id="opt-${i}" onclick="selMC(${i})">`+
+      `<span class="opt-letter">${L[i]}</span>${o}</button>`);
+    html+=`</div>`;
+  } else if(q.type==='tf'){
+    html+=`<div class="tf-row">
+      <button class="tf-btn true-btn" id="tf-t" onclick="selTF(true)">✅ Wahr</button>
+      <button class="tf-btn false-btn" id="tf-f" onclick="selTF(false)">❌ Falsch</button>
+    </div>`;
+  } else {
+    html+=`<div class="input-row">
+      <input type="text" id="inp" placeholder="Ergebnis…" onkeydown="if(event.key==='Enter'&&!gs.checked)checkAnswer()">
+      ${q.unit?`<span class="unit-lbl">${q.unit}</span>`:''}
+    </div>`;
+  }
+  html+=`<div class="feedback" id="fb"></div>`;
+  document.getElementById('question-card').innerHTML=html;
+  document.getElementById('btn-check').style.display=q.type==='input'?'inline-block':'none';
+  document.getElementById('btn-next').style.display='none';
+  if(q.type==='input') setTimeout(()=>{const i=document.getElementById('inp');if(i)i.focus()},50);
+}
+
+function selMC(i){if(gs.checked)return;gs.selected=i;document.querySelectorAll('.mc-opt').forEach((e,j)=>e.classList.toggle('selected',j===i));checkAnswer()}
+function selTF(v){if(gs.checked)return;gs.selected=v;document.getElementById('tf-t').classList.toggle('selected',v===true);document.getElementById('tf-f').classList.toggle('selected',v===false);checkAnswer()}
+
+// ══════════════════════════════════════
+// CHECK
+// ══════════════════════════════════════
+function checkAnswer(){
+  if(gs.checked)return;
+  const q=Q[gs.current];
+  let ok=false;
+  if(q.type==='input'){
+    const v=parseFloat((document.getElementById('inp')?.value||'').replace(',','.'));
+    ok=!isNaN(v)&&Math.abs(v-q.answer)<=(q.tol||0.05);
+    const inp=document.getElementById('inp');
+    if(inp)inp.classList.add(ok?'correct':'wrong');
+  } else if(q.type==='mc'){
+    if(gs.selected===null)return;
+    ok=gs.selected===q.answer;
+  } else {
+    if(gs.selected===null)return;
+    ok=gs.selected===q.answer;
+  }
+  gs.checked=true;
+
+  // XP + streak
+  let xpGain=0;
+  if(ok){
+    const bonus=gs.streak>=4?5:gs.streak>=2?3:0;
+    xpGain=q.xp+bonus;
+    gs.xp+=xpGain; gs.streak++; gs.correct++;
+    if(gs.streak>gs.maxStreak)gs.maxStreak=gs.streak;
+    if(bonus>0)toast(`🔥 Streak-Bonus! +${bonus} XP`,'orange');
+    else showXpPop(xpGain);
+  } else {
+    gs.streak=0;
+    if(q.mv_nok&&!gs.triggeredMVs.includes(q.mv_nok))gs.triggeredMVs.push(q.mv_nok);
+  }
+  gs.klp[q.klp].total++;
+  if(ok)gs.klp[q.klp].right++;
+  gs.answers.push({qId:q.id,correct:ok,mv:ok?null:q.mv_nok});
+  updateHdr();
+
+  // Mark options
+  if(q.type==='mc'){
+    document.querySelectorAll('.mc-opt').forEach((e,i)=>{
+      e.disabled=true; e.classList.remove('selected');
+      if(i===q.answer)e.classList.add('correct');
+      else if(i===gs.selected&&!ok)e.classList.add('wrong');
+    });
+  } else if(q.type==='tf'){
+    const bt=document.getElementById('tf-t'),bf=document.getElementById('tf-f');
+    if(bt)bt.disabled=true; if(bf)bf.disabled=true;
+    bt?.classList.remove('selected'); bf?.classList.remove('selected');
+    if(q.answer===true)bt?.classList.add('correct'); else bf?.classList.add('correct');
+    if(!ok){if(gs.selected===true)bt?.classList.add('wrong');else bf?.classList.add('wrong');}
+  }
+
+  // Feedback
+  const fb=document.getElementById('fb');
+  fb.className='feedback show '+(ok?'correct':'wrong');
+  const klpInfo=KLP[q.klp];
+  let html=`<div class="fb-header">${ok?'✅ Richtig!':'❌ Falsch!'}</div>`;
+  html+=`<div class="fb-text">${ok?q.fb_ok:q.fb_nok}</div>`;
+  html+=`<div class="fb-solution">${q.sol}</div>`;
+  html+=`<div class="klp-feedback"><strong>${q.klp} – ${klpInfo.name}:</strong> ${q.klpDesc}</div>`;
+  if(ok)html+=`<div class="xp-gained">+${xpGain} XP${xpGain>q.xp?` (inkl. ${xpGain-q.xp} Streak-Bonus)`:''}</div>`;
+  if(!ok&&q.mv_nok){
+    const mv=MV[q.mv_nok];
+    html+=`<div class="mv-alert"><strong>⚠️ Fehlvorstellung ${mv.code}: ${mv.title}</strong>${mv.false_belief}</div>`;
+  }
+  fb.innerHTML=html;
+
+  document.getElementById('btn-check').style.display='none';
+  document.getElementById('btn-next').style.display='inline-block';
+  document.getElementById('btn-next').textContent=gs.current+1<Q.length?'Weiter →':'📊 Auswertung';
+  checkAchievements();
+}
+
+function nextQuestion(){
+  if(gs.current+1<Q.length){gs.current++;renderQ();window.scrollTo({top:0,behavior:'smooth'});}
+  else showResult();
+}
+
+// ══════════════════════════════════════
+// ACHIEVEMENTS CHECK
+// ══════════════════════════════════════
+function checkAchievements(){
+  ACH.forEach(a=>{
+    if(!gs.achievements[a.id]&&a.check(gs)){
+      gs.achievements[a.id]=true;
+      toast(`🏅 Errungenschaft: ${a.title}!`,'orange',3000);
+    }
+  });
+}
+
+// ══════════════════════════════════════
+// RESULT
+// ══════════════════════════════════════
+function showResult(){
+  checkAchievements();
+  showScreen('result');
+  const tot=Q.length, right=gs.correct, pct=Math.round((right/tot)*100);
+  const mvCount=gs.triggeredMVs.length;
+
+  // Sync result to hub
+  const hubData=JSON.parse(localStorage.getItem('zp10_hub_data')||'{"extras":{}}');
+  if(!hubData.extras)hubData.extras={};
+  hubData.extras['exponentialfunktionen-1']={lastScore:pct,lastDate:new Date().toISOString(),attempts:(hubData.extras['exponentialfunktionen-1']?.attempts||0)+1};
+  localStorage.setItem('zp10_hub_data',JSON.stringify(hubData));
+
+  // Top
+  const cls=pct>=80?'excellent':pct>=60?'good':pct>=40?'ok':'critical';
+  const msg=pct>=80?'Ausgezeichnet!':pct>=60?'Gut gemacht!':pct>=40?'Übung macht den Meister!':'Viel Potenzial – gezielt üben!';
+  document.getElementById('result-top').innerHTML=`
+    <div class="score-circle ${cls}"><span>${pct}</span><span class="score-lbl">%</span></div>
+    <div class="result-heading">${msg}</div>
+    <div class="result-sub">${right}/${tot} richtig · ${mvCount} Fehlvorstellung${mvCount!==1?'en':''} · ${gs.xp} XP gesammelt</div>
+  `;
+
+  // Stats
+  document.getElementById('stats-strip').innerHTML=`
+    <div class="stat-item"><div class="stat-num">${right}</div><div class="stat-lbl">Richtig</div></div>
+    <div class="stat-item"><div class="stat-num">${tot-right}</div><div class="stat-lbl">Falsch</div></div>
+    <div class="stat-item"><div class="stat-num">${gs.xp}</div><div class="stat-lbl">XP</div></div>
+    <div class="stat-item"><div class="stat-num">${gs.maxStreak}</div><div class="stat-lbl">Max. Serie</div></div>
+  `;
+
+  // Achievements
+  document.getElementById('ach-grid').innerHTML=ACH.map(a=>{
+    const ul=!!gs.achievements[a.id];
+    return`<div class="ach-card ${ul?'unlocked':'locked'}">
+      <div class="ach-icon">${a.icon}</div>
+      <div><div class="ach-title">${a.title}${ul?' ✅':' 🔒'}</div><div class="ach-desc">${a.desc}</div></div>
+    </div>`;
+  }).join('');
+
+  // KLP profile
+  let klpHtml='';
+  Object.entries(gs.klp).forEach(([k,d])=>{
+    if(d.total===0)return;
+    const p=Math.round((d.right/d.total)*100);
+    const c=p>=70?'var(--green)':p>=40?'var(--yellow)':'var(--red)';
+    const info=KLP[k];
+    klpHtml+=`<div class="klp-komp-row">
+      <div class="klp-komp-label">
+        <span><strong class="klp-tag ${k}" style="display:inline-block;margin-right:6px">${k}</strong>${info.name}</span>
+        <span style="color:${c};font-weight:700">${d.right}/${d.total} (${p}%)</span>
+      </div>
+      <div class="klp-bar-wrap"><div class="klp-bar-fill" style="width:${p}%;background:${c}"></div></div>
+      ${p<70?`<div style="font-size:.72rem;color:var(--text2);margin-top:3px">${klpHint(k)}</div>`:''}
+    </div>`;
+  });
+  document.getElementById('klp-profile').innerHTML=klpHtml;
+
+  // MV cards
+  let mvHtml='';
+  const tested=Q.map(q=>q.mvTarget);
+  Object.keys(MV).forEach(k=>{
+    if(!tested.includes(k))return;
+    const det=gs.triggeredMVs.includes(k), mv=MV[k];
+    mvHtml+=`<div class="mv-card ${det?'detected':'ok'}">
+      <div class="mv-header">
+        <div class="mv-badge">${mv.code}</div>
+        <div><div class="mv-title">${det?'⚠️':'✅'} ${mv.title}</div><div class="mv-sub">${mv.sub}</div></div>
+      </div>
+      ${det?`<div class="mv-false">${mv.false_belief}</div>
+             <div class="mv-correct">${mv.correct}</div>
+             <div class="mv-example">${mv.example}</div>`
+           :`<div style="font-size:.83rem;color:var(--green)">Keine Fehlvorstellung erkennbar ✓</div>`}
+    </div>`;
+  });
+  document.getElementById('mv-cards').innerHTML=mvHtml;
+
+  // Recommendations
+  const recs=buildRecs();
+  document.getElementById('recs').innerHTML=`
+    <h3>📖 Persönliche Empfehlungen</h3>
+    <ul class="rec-list">${recs.map(r=>`<li><span>${r}</span></li>`).join('')}</ul>
+  `;
+  maybeShowFoerderBtn();
+}
+
+function klpHint(k){
+  return{
+    K1:'Übe Begründungen: Warum hat f keine Nullstellen? Warum ist b>0 nötig?',
+    K2:'Zwei-Punkte-Methode mehrfach schriftlich durcharbeiten.',
+    K3:'Modellierungsaufgaben lösen: Zinseszins, Zerfall, Wachstum.',
+    K4:'Graphen skizzieren und Eigenschaften ablesen üben.',
+    K5:'Fachbegriffe (Rate, Faktor, Asymptote) klar unterscheiden.',
+    K6:'Taschenrechner-Einsatz für Logarithmus und Potenzrechnung üben.'
+  }[k]||'';
+}
+
+function buildRecs(){
+  const r=[];
+  if(gs.triggeredMVs.includes('M1'))r.push('Merke: Exponentialfunktionen haben <em>keine Nullstellen</em> – die x-Achse ist nur Asymptote.');
+  if(gs.triggeredMVs.includes('M2'))r.push('Übe: b=1+p/100 und p=(b−1)·100. b=0,95 → p=−5%, nicht 95%!');
+  if(gs.triggeredMVs.includes('M3'))r.push('Potenzregel: b⁻ˣ=1/bˣ>0. Negative x liefern nie negative f(x) (bei a>0).');
+  if(gs.triggeredMVs.includes('M4'))r.push('y-Achsenabschnitt: immer f(0)=a·b⁰=a. Nicht f(1)!');
+  if(gs.triggeredMVs.includes('M5'))r.push('Halbwertszeit: T½=log(0,5)/log(b) – Logarithmus am TR zwingend nötig!');
+  if(gs.triggeredMVs.includes('M6'))r.push('Asymptote y=0 wird nur angenähert, nie erreicht. Kein x liefert f(x)=0.');
+  if(gs.triggeredMVs.includes('M7'))r.push('Basis-Bedingung: b>0 und b≠1. b=1 → Konstante; b≤0 → nicht reell für alle x.');
+  if(gs.triggeredMVs.includes('M8'))r.push('Definitionsmenge: ℝ (auch negative x erlaubt). Wertemenge (a>0): (0;+∞).');
+  if(gs.triggeredMVs.includes('M9'))r.push('Zwei-Punkte: y₂/y₁=b^(x₂−x₁) → b. Dann a rückwärts. Probe nicht vergessen!');
+  if(gs.triggeredMVs.includes('M10'))r.push('a<0 ist erlaubt – der Graph liegt dann komplett unterhalb der x-Achse.');
+  const weakKlp=Object.entries(gs.klp).filter(([,d])=>d.total>0&&d.right/d.total<0.5).map(([k])=>k);
+  if(weakKlp.length) r.push(`Kompetenzbereich${weakKlp.length>1?'e':''} ${weakKlp.join(', ')} zeigen Lücken – ${weakKlp.map(k=>KLP[k].name).join(', ')} gezielt üben.`);
+  if(r.length===0) r.push('Ausgezeichnet! Keine Fehlvorstellungen erkannt – perfekte Grundlage für die Klassenarbeit!');
+  return r;
+}
+
+// Show Förder-Level button if there are weaknesses
+function maybeShowFoerderBtn(){
+  const triggered=gs.triggeredMVs;
+  const weakKlp=Object.entries(gs.klp).filter(([,d])=>d.total>0&&d.right/d.total<0.5);
+  const btn=document.getElementById('btn-foerder');
+  if(btn&&(triggered.length>0||weakKlp.length>0)) btn.style.display='inline-block';
+}
+
+function restartTest(){startTest()}
+
+// ══════════════════════════════════════
+// FÖRDER-LEVEL DATA
+// ══════════════════════════════════════
+const FOERDER_DATA = {
+  M1:[
+    {diff:'leicht',type:'tf',
+     text:'Kann die Funktion f(x) = 6 · 2ˣ jemals den Wert 0 annehmen?',
+     answer:false,
+     hint:'Überlege: Kann eine Potenz 2ˣ jemals den Wert 0 ergeben? Was gilt für a = 6?',
+     fb_ok:'Richtig! 2ˣ > 0 für alle x ∈ ℝ, und da a = 6 ≠ 0, bleibt f(x) immer positiv.',
+     fb_nok:'Nein – 2ˣ ist immer positiv, und 6 · (positiv) bleibt immer positiv. Keine Nullstelle möglich.',
+     sol:'f(x) = 6·2ˣ > 0 für alle x  →  keine Nullstelle'},
+    {diff:'mittel',type:'mc',
+     text:'Warum hat f(x) = a · bˣ mit a ≠ 0 und b > 0 keine Nullstelle? Wähle die richtige Begründung.',
+     opts:['Der Graph verläuft parallel zur x-Achse.','bˣ > 0 für alle x ∈ ℝ, also ist a·bˣ ≠ 0.','Die Funktion ist für x < 0 nicht definiert.','Weil a positiv ist.'],
+     answer:1,
+     hint:'Überlege, welche Werte bˣ für eine positive Basis b annehmen kann.',
+     fb_ok:'Korrekt! Da b > 0 gilt bˣ > 0 für alle x. Damit ist a·bˣ ≠ 0 (weil a ≠ 0).',
+     fb_nok:'Richtig wäre: bˣ > 0 für alle x ∈ ℝ (positive Basis), also f(x) = a·bˣ ≠ 0.',
+     sol:'bˣ > 0  →  a·bˣ ≠ 0  →  keine Nullstelle'},
+    {diff:'schwer',type:'mc',
+     text:'Der Graph von f(x) = 0,001 · 0,1ˣ nähert sich für x → +∞ immer mehr dem Wert 0. Was schlussfolgern wir daraus?',
+     opts:['Der Graph erreicht y = 0 bei x = 1000.','y = 0 ist eine waagerechte Asymptote – der Graph erreicht sie nie.','Die Funktion hat eine Nullstelle bei x = 0,001.','Der Graph liegt für große x unter der x-Achse.'],
+     answer:1,
+     hint:'Asymptote = Gerade, der sich der Graph beliebig nähert, sie aber nie schneidet. Was gilt für 0,1ˣ wenn x → +∞?',
+     fb_ok:'Richtig! 0,1ˣ → 0 für x → +∞, aber 0,1ˣ > 0 immer. y = 0 ist Asymptote, wird nie erreicht.',
+     fb_nok:'0,1ˣ wird extrem klein, bleibt aber immer > 0. y = 0 ist Asymptote – kein Schnittpunkt.',
+     sol:'0,1ˣ > 0 stets  →  y = 0 ist Asymptote, keine Nullstelle'}
+  ],
+  M2:[
+    {diff:'leicht',type:'mc',
+     text:'Ein Wachstumsfaktor b = 1,08 entspricht einer Wachstumsrate von:',
+     opts:['108 %','80 %','8 %','0,08 %'],answer:2,
+     hint:'Formel: p = (b − 1) · 100',
+     fb_ok:'Richtig! p = (1,08 − 1) · 100 = 8 %.',
+     fb_nok:'p = (b − 1) · 100 = (1,08 − 1) · 100 = 8 %. Der Faktor enthält die 1 für den Startwert.',
+     sol:'p = (1,08 − 1) · 100 = 8 %'},
+    {diff:'mittel',type:'mc',
+     text:'Eine jährliche Abnahme von 15 % entspricht dem Wachstumsfaktor:',
+     opts:['b = 1,15','b = 0,15','b = 0,85','b = −0,15'],answer:2,
+     hint:'b = 1 + p/100. Bei Abnahme: p ist negativ.',
+     fb_ok:'Richtig! b = 1 + (−15)/100 = 1 − 0,15 = 0,85.',
+     fb_nok:'b = 1 + p/100. Für p = −15: b = 1 − 0,15 = 0,85.',
+     sol:'b = 1 − 0,15 = 0,85'},
+    {diff:'schwer',type:'input',
+     text:'Ein Konto wächst von 400 € auf 484 € in einem Jahr. Berechne die Wachstumsrate p (in %).',
+     hint:'Erst b = Endwert / Anfangswert, dann p = (b − 1) · 100.',
+     answer:21, tol:0.5,unit:'%',
+     fb_ok:'Richtig! b = 484/400 = 1,21 → p = (1,21 − 1) · 100 = 21 %.',
+     fb_nok:'b = 484/400 = 1,21 → p = 21 %.',
+     sol:'b = 484/400 = 1,21  →  p = 21 %'}
+  ],
+  M3:[
+    {diff:'leicht',type:'mc',
+     text:'Was ergibt f(−1) für f(x) = 10 · 2ˣ?',
+     opts:['−20','−5','5','10'],answer:2,
+     hint:'2⁻¹ = 1/2. Negative Exponenten erzeugen Kehrwerte, keine negativen Werte.',
+     fb_ok:'Richtig! f(−1) = 10 · 2⁻¹ = 10 · ½ = 5.',
+     fb_nok:'2⁻¹ = 1/2, also f(−1) = 10 · ½ = 5. Nicht negativ!',
+     sol:'f(−1) = 10·2⁻¹ = 10·½ = 5'},
+    {diff:'mittel',type:'tf',
+     text:'Für f(x) = 3 · 4ˣ gilt: f(−2) ist eine negative Zahl.',
+     answer:false,
+     hint:'4⁻² = 1/4² = 1/16. Positive Basis hoch negativem Exponenten bleibt positiv.',
+     fb_ok:'Richtig! f(−2) = 3 · 4⁻² = 3 · (1/16) = 3/16 > 0.',
+     fb_nok:'f(−2) = 3 · 4⁻² = 3/16 > 0. Negativer Exponent → Kehrwert, kein negatives Vorzeichen!',
+     sol:'f(−2) = 3·4⁻² = 3/16 > 0  →  falsch'},
+    {diff:'schwer',type:'mc',
+     text:'f(x) = 5 · 3ˣ. Welche Wertemenge hat f für alle x ∈ ℝ?',
+     opts:['ℝ','[0; +∞)','(0; +∞)','(−∞; 0)'],answer:2,
+     hint:'3ˣ > 0 für alle x. Was bedeutet das für 5 · 3ˣ?',
+     fb_ok:'Richtig! 5 > 0 und 3ˣ > 0 → f(x) > 0 immer. Die 0 ist ausgeschlossen (Asymptote).',
+     fb_nok:'5·3ˣ > 0 für alle x. Wertemenge: (0; +∞) – ohne die 0!',
+     sol:'W = (0; +∞)  (0 ausgeschlossen)'}
+  ],
+  M4:[
+    {diff:'leicht',type:'mc',
+     text:'Welchen Wert hat f(0) für f(x) = 9 · 5ˣ?',
+     opts:['0','5','45','9'],answer:3,
+     hint:'Setze x = 0 ein. Wie lautet der Wert von 5⁰?',
+     fb_ok:'Richtig! f(0) = 9 · 5⁰ = 9 · 1 = 9.',
+     fb_nok:'f(0) = 9 · 5⁰ = 9 · 1 = 9. b⁰ = 1 für alle b ≠ 0!',
+     sol:'f(0) = 9 · 5⁰ = 9 · 1 = 9'},
+    {diff:'mittel',type:'tf',
+     text:'Bei f(x) = 12 · 2ˣ ist der y-Achsenabschnitt gleich f(1) = 24.',
+     answer:false,
+     hint:'y-Achsenabschnitt = f(0), nicht f(1).',
+     fb_ok:'Richtig! y-Achsenabschnitt = f(0) = 12 · 2⁰ = 12, nicht f(1) = 24.',
+     fb_nok:'y-Achsenabschnitt = f(0) = 12 · 1 = 12. f(1) = 24 ist nicht der y-Achsenabschnitt.',
+     sol:'y-Achsenabschnitt = f(0) = 12  (nicht f(1) = 24)'},
+    {diff:'schwer',type:'input',
+     text:'Eine Exponentialfunktion f(x) = a · 3ˣ hat den y-Achsenabschnitt 7. Bestimme a.',
+     hint:'y-Achsenabschnitt = f(0) = a · 3⁰ = a · 1 = a.',
+     answer:7,tol:0.01,unit:'',
+     fb_ok:'Richtig! f(0) = a · 3⁰ = a = 7.',
+     fb_nok:'f(0) = a · 1 = a = 7.',
+     sol:'a = f(0) = 7'}
+  ],
+  M5:[
+    {diff:'leicht',type:'mc',
+     text:'Welche Formel berechnet die Halbwertszeit T½ bei f(x) = a · bˣ (0 < b < 1)?',
+     opts:['T½ = b / 2','T½ = 1 / b','T½ = log(0,5) / log(b)','T½ = b − 0,5'],answer:2,
+     hint:'Man löst bᵀ½ = 0,5 nach T½ auf. Welche Rechenoperation macht das rückgängig?',
+     fb_ok:'Richtig! bᵀ½ = 0,5 → T½ · log(b) = log(0,5) → T½ = log(0,5)/log(b).',
+     fb_nok:'Richtig: T½ = log(0,5)/log(b). Der Logarithmus löst die Gleichung bᵀ½ = 0,5.',
+     sol:'T½ = log(0,5) / log(b)'},
+    {diff:'mittel',type:'input',
+     text:'Berechne T½ für f(x) = 500 · 0,75ˣ. Runde auf 2 Dezimalstellen.',
+     hint:'T½ = log(0,5) / log(0,75). Taschenrechner: log(0,5) ÷ log(0,75).',
+     answer:2.41,tol:0.05,unit:'',
+     fb_ok:'Richtig! T½ = log(0,5)/log(0,75) ≈ −0,301/(−0,125) ≈ 2,41.',
+     fb_nok:'T½ = log(0,5)/log(0,75) ≈ 2,41.',
+     sol:'T½ = log(0,5)/log(0,75) ≈ 2,41'},
+    {diff:'schwer',type:'mc',
+     text:'Ein Stoff hat b = 0,9 (pro Jahr). Wie viele Jahre dauert es, bis noch 25 % der Ausgangsmenge vorhanden sind?',
+     opts:['ca. 6,6 Jahre','ca. 13,2 Jahre','ca. 4,0 Jahre','ca. 25 Jahre'],answer:1,
+     hint:'25 % = 0,25. Löse 0,9ᵗ = 0,25. Das sind zwei Halbwertszeiten (0,5² = 0,25).',
+     fb_ok:'Richtig! T½ ≈ 6,58 J. Für 25 % = (0,5)² braucht man 2 · T½ ≈ 13,16 J.',
+     fb_nok:'0,9ᵗ = 0,25 → t = log(0,25)/log(0,9) ≈ 13,16. Oder: 2 × T½ ≈ 2 × 6,58.',
+     sol:'t = log(0,25)/log(0,9) ≈ 13,16 Jahre  (= 2 Halbwertszeiten)'}
+  ],
+  M6:[
+    {diff:'leicht',type:'tf',
+     text:'Der Graph von f(x) = 4 · 0,5ˣ liegt für alle x ∈ ℝ vollständig oberhalb der x-Achse.',
+     answer:true,
+     hint:'Gilt 0,5ˣ > 0 für alle x? Und was ist das Vorzeichen von a = 4?',
+     fb_ok:'Richtig! 0,5ˣ > 0 und a = 4 > 0, also f(x) > 0 immer.',
+     fb_nok:'f(x) = 4·0,5ˣ > 0 immer (beide Faktoren positiv). Der Graph liegt immer über y = 0.',
+     sol:'f(x) > 0 für alle x  →  wahr'},
+    {diff:'mittel',type:'mc',
+     text:'Welchen Wert hat 0,2^1000?',
+     opts:['Genau 0','Negativ','Sehr klein, aber > 0','Unbestimmt'],answer:2,
+     hint:'0,2ˣ ist immer positiv, wird aber für große x extrem klein.',
+     fb_ok:'Richtig! 0,2^1000 ≈ 10⁻⁶⁹⁹ – unvorstellbar klein, aber positiv und ≠ 0.',
+     fb_nok:'0,2^1000 ist winzig, aber immer noch > 0. Exponentialfunktionen erreichen 0 nie.',
+     sol:'0,2^1000 ≈ 10⁻⁶⁹⁹ > 0  (nicht 0!)'},
+    {diff:'schwer',type:'mc',
+     text:'Beachte: f(x) = 3 · 0,8ˣ + 2. Welche waagerechte Asymptote hat dieser Graph?',
+     opts:['y = 0','y = 2','y = 3','y = 5'],answer:1,
+     hint:'Was passiert mit 0,8ˣ für x → +∞? Der Summand 2 bleibt immer bestehen.',
+     fb_ok:'Richtig! 0,8ˣ → 0, also f(x) → 0 + 2 = 2. Asymptote: y = 2.',
+     fb_nok:'0,8ˣ → 0 für x → ∞, also f(x) → 3·0 + 2 = 2. Asymptote: y = 2.',
+     sol:'Asymptote y = 2  (nicht y = 0, wegen +2)'}
+  ],
+  M7:[
+    {diff:'leicht',type:'mc',
+     text:'Welcher Wert darf NICHT als Basis b einer Exponentialfunktion verwendet werden?',
+     opts:['b = 0,5','b = 2','b = 1','b = 100'],answer:2,
+     hint:'Was passiert, wenn man f(x) = a·1ˣ auswertet? Welcher Funktionstyp wäre das?',
+     fb_ok:'Richtig! b = 1 ergibt f(x) = a · 1 = a – eine Konstante, keine Exponentialfunktion.',
+     fb_nok:'b = 1 ist verboten: f(x) = a·1ˣ = a ist konstant. Bedingung: b > 0 und b ≠ 1.',
+     sol:'b ≠ 1  (und b > 0)'},
+    {diff:'mittel',type:'tf',
+     text:'Die Funktion f(x) = 5 · (−3)ˣ ist eine gültige Exponentialfunktion.',
+     answer:false,
+     hint:'Berechne: Was ergibt (−3)^0,5? Ist das eine reelle Zahl?',
+     fb_ok:'Richtig! (−3)^0,5 = √(−3) ∉ ℝ. Für b < 0 ist die Funktion für viele x-Werte nicht reell.',
+     fb_nok:'b = −3 ist unzulässig: (−3)^0,5 = √(−3) ist nicht reell. Bedingung: b > 0.',
+     sol:'b = −3 < 0  →  nicht zulässig'},
+    {diff:'schwer',type:'mc',
+     text:'Für welche Basis b ist f(x) = 3 · bˣ eine streng monoton fallende Funktion?',
+     opts:['b > 1','b = 1','0 < b < 1','b < 0'],answer:2,
+     hint:'Wann fällt eine Exponentialfunktion? Zeichne zwei Graphen mit b = 0,5 und b = 2 zum Vergleich.',
+     fb_ok:'Richtig! Für 0 < b < 1 fällt die Funktion (Zerfall), für b > 1 steigt sie.',
+     fb_nok:'Fallend: 0 < b < 1. Wachsend: b > 1. b = 1 ist konstant, b < 0 nicht erlaubt.',
+     sol:'0 < b < 1  →  streng monoton fallend'}
+  ],
+  M8:[
+    {diff:'leicht',type:'mc',
+     text:'Was ist die Definitionsmenge von f(x) = 2 · 5ˣ?',
+     opts:['D = (0; +∞)','D = ℝ','D = [0; +∞)','D = ℕ'],answer:1,
+     hint:'Kann man 5ˣ auch für negative und nicht-ganzzahlige x berechnen?',
+     fb_ok:'Richtig! D = ℝ – auch f(−3) = 2·5⁻³ = 2/125 ist definiert.',
+     fb_nok:'Exponentialfunktionen sind für alle reellen Zahlen definiert. D = ℝ.',
+     sol:'D = ℝ  (alle reellen Zahlen)'},
+    {diff:'mittel',type:'input',
+     text:'Berechne f(−3) für f(x) = 8 · 2ˣ. Gib das Ergebnis als Dezimalzahl (2 Stellen).',
+     hint:'2⁻³ = 1/2³ = 1/8. Dann 8 · (1/8) = ?',
+     answer:1,tol:0.01,unit:'',
+     fb_ok:'Richtig! f(−3) = 8 · 2⁻³ = 8 · (1/8) = 1.',
+     fb_nok:'f(−3) = 8·2⁻³ = 8·(1/8) = 1.',
+     sol:'f(−3) = 8·2⁻³ = 8·(1/8) = 1'},
+    {diff:'schwer',type:'mc',
+     text:'Welche Wertemenge hat f(x) = −4 · 2ˣ?',
+     opts:['(0; +∞)','ℝ','(−∞; 0)','[−4; 0)'],answer:2,
+     hint:'a = −4 ist negativ. Was bedeutet das für das Vorzeichen von f(x)?',
+     fb_ok:'Richtig! a = −4 < 0 und 2ˣ > 0, also f(x) < 0 immer. W = (−∞; 0).',
+     fb_nok:'−4 · (positiv) = immer negativ. Wertemenge: (−∞; 0). Asymptote y = 0 von unten.',
+     sol:'W = (−∞; 0)  (a < 0)'}
+  ],
+  M9:[
+    {diff:'leicht',type:'mc',
+     text:'f(x) = a · bˣ verläuft durch P(0 | 5). Welchen Wert hat a?',
+     opts:['a = b','a = 0','a = 5','a = 1'],answer:2,
+     hint:'Bei x = 0 gilt f(0) = a · b⁰ = a · 1 = a.',
+     fb_ok:'Richtig! f(0) = a = 5 direkt. Bei x₁ = 0 liest man a sofort ab.',
+     fb_nok:'f(0) = a · b⁰ = a · 1 = a = 5. Wenn x₁ = 0 ist, ist a = y₁.',
+     sol:'a = f(0) = 5'},
+    {diff:'mittel',type:'mc',
+     text:'f(x) = a · bˣ durch P₁(1 | 10) und P₂(3 | 90). Bestimme b.',
+     opts:['b = 9','b = 90','b = 3','b = 6'],answer:2,
+     hint:'Division: y₂/y₁ = b^(x₂−x₁). Also 90/10 = b^(3−1) = b².',
+     fb_ok:'Richtig! 90/10 = b² = 9 → b = √9 = 3.',
+     fb_nok:'y₂/y₁ = b^(x₂−x₁): 90/10 = b² = 9 → b = 3.',
+     sol:'b² = 90/10 = 9  →  b = 3'},
+    {diff:'schwer',type:'input',
+     text:'f(x) = a · 2ˣ durch P(4 | 48). Berechne a.',
+     hint:'Einsetzen: 48 = a · 2⁴ = a · 16. Dann nach a auflösen.',
+     answer:3,tol:0.01,unit:'',
+     fb_ok:'Richtig! 48 = a · 16 → a = 48/16 = 3.',
+     fb_nok:'48 = a · 2⁴ = a · 16 → a = 3.',
+     sol:'a = 48 / 2⁴ = 48/16 = 3'}
+  ],
+  M10:[
+    {diff:'leicht',type:'tf',
+     text:'f(x) = −5 · 3ˣ ist eine Exponentialfunktion mit negativem Anfangswert.',
+     answer:true,
+     hint:'Ist a = −5 ein erlaubter Anfangswert? Was gilt für die Basis b = 3?',
+     fb_ok:'Richtig! a < 0 ist erlaubt. b = 3 > 0 und b ≠ 1. Der Graph liegt unter der x-Achse.',
+     fb_nok:'a = −5 ist erlaubt! Nur b muss > 0 und ≠ 1 sein. Der Graph liegt komplett unter y = 0.',
+     sol:'a < 0 erlaubt  →  wahr'},
+    {diff:'mittel',type:'mc',
+     text:'Welche Wertemenge hat f(x) = −7 · 4ˣ?',
+     opts:['(0; +∞)','(−∞; 0)','ℝ','[−7; 0)'],answer:1,
+     hint:'−7 · (positiver Wert) = immer negativ. Kann f(x) = 0 werden?',
+     fb_ok:'Richtig! −7 · 4ˣ < 0 immer (a < 0, 4ˣ > 0). Asymptote y = 0 von unten.',
+     fb_nok:'a = −7 < 0 und 4ˣ > 0 → f(x) < 0 immer. W = (−∞; 0).',
+     sol:'W = (−∞; 0)'},
+    {diff:'schwer',type:'mc',
+     text:'f(x) = −2 · 0,5ˣ. Beschreibe das Verhalten für x → +∞.',
+     opts:['f(x) → +∞','f(x) → −∞','f(x) → 0 von unten (f < 0)','f(x) → −2'],answer:2,
+     hint:'0,5ˣ → 0 für x → +∞. Was passiert dann mit −2 · 0,5ˣ?',
+     fb_ok:'Richtig! 0,5ˣ → 0⁺, also −2 · 0,5ˣ → 0⁻. Asymptote y = 0 von unten.',
+     fb_nok:'0,5ˣ → 0 (positiv), also −2·0,5ˣ → 0 (negativ). Der Graph nähert sich y = 0 von unten.',
+     sol:'f(x) → 0 von unten  (Asymptote y = 0, f < 0 immer)'}
+  ]
+};
+
+// ══════════════════════════════════════
+// FÖRDER-LEVEL LOGIC
+// ══════════════════════════════════════
+const fState = {};
+
+function startFoerder(){
+  showScreen('foerder');
+  renderFoerder();
+}
+
+function renderFoerder(){
+  const triggered = gs.triggeredMVs;
+  const weakKlp = Object.entries(gs.klp).filter(([,d])=>d.total>0&&d.right/d.total<0.5).map(([k])=>k);
+
+  const container = document.getElementById('foerder-content');
+
+  // No weaknesses found
+  if(triggered.length===0 && weakKlp.length===0){
+    container.innerHTML=`<div class="card"><div class="foerder-empty">
+      <div class="fi">🏆</div>
+      <p style="font-size:1rem;font-weight:700;color:var(--green)">Keine Lücken erkannt!</p>
+      <p style="margin-top:6px;font-size:.85rem;color:var(--text2)">Alle geprüften Fehlvorstellungen wurden vermieden. Starke Leistung!</p>
+    </div></div>`;
+    return;
+  }
+
+  let html='';
+
+  // MV sections
+  if(triggered.length>0){
+    html+=`<div class="foerder-section">
+      <div class="foerder-section-title">⚠️ Erkannte Fehlvorstellungen – Übungsaufgaben</div>`;
+    triggered.forEach(mvKey=>{
+      const mv=MV[mvKey]; const tasks=FOERDER_DATA[mvKey];
+      if(!tasks)return;
+      html+=`<div class="foerder-card mv-card-f">
+        <div class="foerder-card-head">
+          <span class="foerder-mv-tag">${mv.code} · ${mv.title}</span>
+        </div>`;
+      tasks.forEach((t,i)=>{
+        const uid=`${mvKey}_${i}`;
+        fState[uid]={checked:false,selected:null};
+        html+=buildFoerderTask(t, uid);
+      });
+      html+=`</div>`;
+    });
+    html+=`</div>`;
+  }
+
+  // KLP weak sections
+  if(weakKlp.length>0){
+    html+=`<div class="foerder-section">
+      <div class="foerder-section-title">📉 Schwache Kompetenzbereiche – Extra-Aufgaben</div>`;
+    weakKlp.forEach(klpKey=>{
+      const info=KLP[klpKey];
+      // Pick up to 2 tasks from MVs that belong to this KLP
+      const relQs=Q.filter(q=>q.klp===klpKey&&gs.triggeredMVs.includes(q.mv_nok||''));
+      const mvCandidates=[...new Set(relQs.map(q=>q.mvTarget||q.mv_nok).filter(Boolean))];
+      // Fallback: any 2 tasks from triggered MVs
+      const sources=mvCandidates.length>0?mvCandidates:gs.triggeredMVs.slice(0,2);
+      if(sources.length===0)return;
+      html+=`<div class="foerder-card klp-card-f">
+        <div class="foerder-card-head">
+          <span class="foerder-klp-tag">${klpKey} · ${info.name}</span>
+        </div>`;
+      sources.slice(0,2).forEach((mvKey,i)=>{
+        const tasks=FOERDER_DATA[mvKey]; if(!tasks)return;
+        const t=tasks[Math.min(i+1,tasks.length-1)];
+        const uid=`klp_${klpKey}_${mvKey}_${i}`;
+        fState[uid]={checked:false,selected:null};
+        html+=buildFoerderTask(t, uid);
+      });
+      html+=`</div>`;
+    });
+    html+=`</div>`;
+  }
+
+  container.innerHTML=html;
+}
+
+function buildFoerderTask(t, uid){
+  const diffClass='diff-'+t.diff;
+  const diffLabel=t.diff==='leicht'?'🟢 LEICHT':t.diff==='mittel'?'🟡 MITTEL':'🔴 SCHWER';
+  let inputHtml='';
+  if(t.type==='tf'){
+    inputHtml=`<div style="display:flex;gap:8px;margin-bottom:10px">
+      <button class="tf-btn true-btn" id="${uid}_t" onclick="fSelTF('${uid}',true)">✅ Wahr</button>
+      <button class="tf-btn false-btn" id="${uid}_f" onclick="fSelTF('${uid}',false)">❌ Falsch</button>
+    </div>`;
+  } else if(t.type==='mc'){
+    const L=['A','B','C','D'];
+    inputHtml=`<div class="mc-grid" style="margin-bottom:10px">`;
+    t.opts.forEach((o,i)=>inputHtml+=`<button class="mc-opt" id="${uid}_${i}" onclick="fSelMC('${uid}',${i})">`+
+      `<span class="opt-letter">${L[i]}</span>${o}</button>`);
+    inputHtml+=`</div>`;
+  } else {
+    inputHtml=`<div class="input-row" style="margin-bottom:10px">
+      <input type="text" id="${uid}_inp" placeholder="Ergebnis…" ${t.unit?'':''}
+        onkeydown="if(event.key==='Enter')fCheck('${uid}')">
+      ${t.unit?`<span class="unit-lbl">${t.unit}</span>`:''}
+    </div>
+    <button class="btn btn-primary" style="max-width:180px" onclick="fCheck('${uid}')">Prüfen</button>`;
+  }
+  return `<div style="border-top:1px solid var(--border);padding-top:14px;margin-top:12px" id="task_${uid}">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <span class="diff-badge ${diffClass}">${diffLabel}</span>
+    </div>
+    <div class="foerder-q-text">${t.text}</div>
+    ${inputHtml}
+    <details class="foerder-hint" id="hint_${uid}">
+      <summary></summary>
+      <div class="foerder-hint-body">${t.hint}</div>
+    </details>
+    <div class="foerder-result" id="res_${uid}"></div>
+  </div>`;
+}
+
+function fSelMC(uid,i){
+  if(fState[uid]?.checked)return;
+  fState[uid].selected=i;
+  document.querySelectorAll(`[id^="${uid}_"]`).forEach((e,j)=>{
+    if(e.classList.contains('mc-opt'))e.classList.toggle('selected',j===i);
+  });
+  fCheck(uid);
+}
+function fSelTF(uid,v){
+  if(fState[uid]?.checked)return;
+  fState[uid].selected=v;
+  const bt=document.getElementById(uid+'_t'), bf=document.getElementById(uid+'_f');
+  bt?.classList.toggle('selected',v===true); bf?.classList.toggle('selected',v===false);
+  fCheck(uid);
+}
+
+function fCheck(uid){
+  if(!fState[uid]||fState[uid].checked)return;
+  // Find task data
+  let t=null;
+  for(const [k,arr] of Object.entries(FOERDER_DATA)){
+    arr.forEach((task,i)=>{if(`${k}_${i}`===uid||uid.includes(`_${k}_`)){if(`${k}_${i}`===uid)t=task;}});
+  }
+  if(!t){
+    // Try klp_ prefix lookup
+    for(const [k,arr] of Object.entries(FOERDER_DATA)){
+      arr.forEach((task,i)=>{
+        const parts=uid.split('_');
+        if(parts.includes(k)&&parts[parts.length-1]===String(i))t=task;
+      });
+    }
+  }
+  if(!t)return;
+
+  let ok=false;
+  if(t.type==='input'){
+    const v=parseFloat((document.getElementById(uid+'_inp')?.value||'').replace(',','.'));
+    ok=!isNaN(v)&&Math.abs(v-t.answer)<=(t.tol||0.05);
+    const inp=document.getElementById(uid+'_inp');
+    if(inp)inp.classList.add(ok?'correct':'wrong');
+  } else {
+    ok=fState[uid].selected===t.answer;
+  }
+  fState[uid].checked=true;
+
+  // Disable inputs
+  if(t.type==='mc'){
+    document.querySelectorAll(`[id^="${uid}_"].mc-opt`).forEach((e,i)=>{
+      e.disabled=true; e.classList.remove('selected');
+      if(i===t.answer)e.classList.add('correct');
+      else if(i===fState[uid].selected&&!ok)e.classList.add('wrong');
+    });
+  } else if(t.type==='tf'){
+    const bt=document.getElementById(uid+'_t'), bf=document.getElementById(uid+'_f');
+    if(bt)bt.disabled=true; if(bf)bf.disabled=true;
+    bt?.classList.remove('selected'); bf?.classList.remove('selected');
+    if(t.answer===true)bt?.classList.add('correct'); else bf?.classList.add('correct');
+    if(!ok){if(fState[uid].selected===true)bt?.classList.add('wrong');else bf?.classList.add('wrong');}
+  }
+
+  const res=document.getElementById('res_'+uid);
+  if(res){
+    res.className='foerder-result show '+(ok?'ok':'bad');
+    res.innerHTML=`${ok?'✅':'❌'} ${ok?t.fb_ok:t.fb_nok}<br><span class="foerder-sol">${t.sol}</span>`;
+  }
+}
+</script>
+</body>
+</html>

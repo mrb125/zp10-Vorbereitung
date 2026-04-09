@@ -1,0 +1,1771 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flip7Math – Stochastik am Spieltisch</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:     #0d1117;
+  --bg2:    #161b22;
+  --bg3:    #21262d;
+  --bg4:    #30363d;
+  --felt:   #1a472a;
+  --felt2:  #245a36;
+  --card:   #e8d5b7;
+  --card2:  #d4c4a0;
+  --accent: #f0883e;
+  --gold:   #ffd166;
+  --ok:     #3fb950;
+  --err:    #f85149;
+  --bust:   #da3633;
+  --blue:   #58a6ff;
+  --purple: #bc8cff;
+  --text:   #e6edf3;
+  --text2:  #8b949e;
+  --text3:  #484f58;
+  --r:      10px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;font-size:15px;line-height:1.6}
+.screen{position:absolute;inset:0;display:none}
+.screen.active{display:flex}
+@keyframes fadeUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes cardFlip{0%{transform:rotateY(0)}50%{transform:rotateY(90deg)}100%{transform:rotateY(0)}}
+@keyframes bustShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+@keyframes slideDown{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
+
+/* WELCOME */
+#s-welcome{flex-direction:column;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at 50% 30%,#1a2a1a 0%,#0d1117 70%)}
+.wlc-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(52px,10vw,96px);
+  letter-spacing:5px;line-height:1;
+  background:linear-gradient(135deg,var(--card),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.wlc-sub{color:var(--accent);font-size:1.05rem;letter-spacing:3px;
+  text-transform:uppercase;margin-top:4px;margin-bottom:28px}
+#wlc-canvas{border-radius:14px;border:1px solid rgba(26,71,42,.4);
+  background:var(--felt);margin-bottom:32px}
+.btn-start{font-family:'Bebas Neue',sans-serif;font-size:1.35rem;letter-spacing:3px;
+  padding:13px 44px;background:var(--accent);color:#fff;border:none;border-radius:8px;
+  cursor:pointer;transition:transform .15s,box-shadow .15s;
+  box-shadow:0 4px 24px rgba(240,136,62,.3)}
+.btn-start:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(240,136,62,.45)}
+.wlc-hint{color:var(--text3);font-size:.8rem;margin-top:18px}
+
+/* MAIN SCREEN */
+#s-main{flex-direction:column}
+.top-bar{display:flex;align-items:center;gap:14px;padding:8px 16px;
+  background:var(--bg2);border-bottom:1px solid var(--bg4);flex-shrink:0;z-index:10}
+.top-logo{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;
+  background:linear-gradient(135deg,var(--card),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  letter-spacing:2px;flex-shrink:0;cursor:pointer}
+.top-tabs{display:flex;gap:4px;flex:1;overflow-x:auto}
+.tab-btn{padding:6px 14px;background:transparent;border:1px solid transparent;
+  color:var(--text2);border-radius:6px;cursor:pointer;font-family:'Nunito',sans-serif;
+  font-size:.82rem;font-weight:600;transition:all .15s;white-space:nowrap}
+.tab-btn:hover{background:var(--bg3);color:var(--text)}
+.tab-btn.active{background:var(--bg3);color:var(--accent);border-color:rgba(240,136,62,.3)}
+.top-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.track-sel{padding:4px 10px;background:var(--bg3);border:1px solid var(--bg4);
+  color:var(--text);border-radius:6px;font-family:'Nunito',sans-serif;font-size:.78rem;
+  cursor:pointer}
+.xp-chip{font-family:'JetBrains Mono',monospace;font-size:.78rem;
+  color:var(--gold);font-weight:600}
+.tab-content{flex:1;overflow:hidden;position:relative}
+.tab{position:absolute;inset:0;display:none;overflow-y:auto;padding:0}
+.tab.visible{display:flex;flex-direction:column}
+
+/* SPIELTISCH (Tab 1) */
+.spiel-layout{display:flex;flex:1;overflow:hidden}
+.spiel-canvas{flex:0 0 55%;position:relative;background:var(--felt);
+  background-image:radial-gradient(ellipse at 50% 50%,var(--felt2) 0%,var(--felt) 80%);
+  border-right:1px solid var(--bg4)}
+#game-canvas{width:100%;height:100%;display:block}
+.spiel-panel{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
+.spiel-stats{padding:14px 16px;border-bottom:1px solid var(--bg4)}
+.stat-row{display:flex;gap:12px;margin-bottom:8px;flex-wrap:wrap}
+.stat-box{background:var(--bg2);border:1px solid var(--bg4);border-radius:8px;
+  padding:8px 12px;flex:1;min-width:100px}
+.stat-label{font-size:.68rem;text-transform:uppercase;letter-spacing:1px;
+  color:var(--text3);margin-bottom:2px}
+.stat-val{font-family:'JetBrains Mono',monospace;font-size:1.15rem;font-weight:600}
+.stat-val.ok{color:var(--ok)}
+.stat-val.warn{color:var(--gold)}
+.stat-val.danger{color:var(--bust)}
+.prob-bar{height:6px;background:var(--bg4);border-radius:99px;overflow:hidden;margin-top:4px}
+.prob-fill{height:100%;border-radius:99px;transition:width .3s ease,background .3s ease}
+.spiel-actions{padding:14px 16px;display:flex;gap:10px;border-bottom:1px solid var(--bg4)}
+.btn-draw{flex:1;padding:12px;font-family:'Bebas Neue',sans-serif;font-size:1.2rem;
+  letter-spacing:2px;background:var(--ok);color:#fff;border:none;border-radius:8px;
+  cursor:pointer;transition:all .15s}
+.btn-draw:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.btn-draw:disabled{opacity:.4;cursor:default;transform:none;filter:none}
+.btn-stay{flex:1;padding:12px;font-family:'Bebas Neue',sans-serif;font-size:1.2rem;
+  letter-spacing:2px;background:var(--accent);color:#fff;border:none;border-radius:8px;
+  cursor:pointer;transition:all .15s}
+.btn-stay:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.btn-stay:disabled{opacity:.4;cursor:default;transform:none;filter:none}
+.btn-new{padding:12px;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;
+  letter-spacing:2px;background:var(--bg3);color:var(--text);border:1px solid var(--bg4);
+  border-radius:8px;cursor:pointer;transition:all .15s}
+.btn-new:hover{background:var(--bg4)}
+.spiel-history{flex:1;overflow-y:auto;padding:14px 16px}
+.spiel-history h3{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:1.5px;
+  color:var(--text2);margin-bottom:10px}
+.history-row{display:flex;align-items:center;gap:10px;padding:7px 10px;
+  background:var(--bg2);border-radius:6px;margin-bottom:5px;font-size:.82rem}
+.history-round{font-family:'JetBrains Mono',monospace;color:var(--text3);width:24px}
+.history-cards{flex:1;color:var(--text2)}
+.history-score{font-family:'JetBrains Mono',monospace;font-weight:700}
+.history-score.bust{color:var(--bust)}
+.history-score.scored{color:var(--ok)}
+.ev-compare{display:flex;gap:8px;margin-top:6px}
+.ev-box{flex:1;text-align:center;padding:6px;background:var(--bg3);border-radius:6px;
+  font-size:.78rem}
+.ev-box .ev-label{color:var(--text3);font-size:.65rem;text-transform:uppercase;letter-spacing:.5px}
+.ev-box .ev-val{font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:600;display:block}
+.ev-box.better{border:1px solid var(--ok)}
+.ev-box.worse{border:1px solid var(--bg4)}
+.ampel{display:inline-block;width:16px;height:16px;border-radius:50%;vertical-align:middle;margin-right:4px}
+.ampel.green{background:var(--ok);box-shadow:0 0 8px rgba(63,185,80,.4)}
+.ampel.yellow{background:var(--gold);box-shadow:0 0 8px rgba(255,209,102,.4)}
+.ampel.red{background:var(--bust);box-shadow:0 0 8px rgba(218,54,51,.4)}
+
+/* WAHRSCHEINLICHKEITEN (Tab 2) */
+.wk-layout{display:flex;flex-direction:column;gap:16px;padding:16px;overflow-y:auto;flex:1}
+.wk-section{background:var(--bg2);border:1px solid var(--bg4);border-radius:var(--r);padding:16px}
+.wk-section h3{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1.5px;
+  color:var(--accent);margin-bottom:12px}
+.hand-picker{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.hand-chip{width:40px;height:40px;display:flex;align-items:center;justify-content:center;
+  background:var(--bg3);border:2px solid var(--bg4);border-radius:8px;cursor:pointer;
+  font-family:'JetBrains Mono',monospace;font-weight:600;font-size:.9rem;transition:all .15s}
+.hand-chip:hover{border-color:var(--accent)}
+.hand-chip.selected{background:var(--card);color:#1a1a1a;border-color:var(--card)}
+.calc-result{background:var(--bg3);border-radius:8px;padding:12px;margin-top:10px}
+.calc-step{font-size:.85rem;color:var(--text2);margin-bottom:4px;line-height:1.7}
+.calc-step .katex{font-size:.95rem}
+.calc-final{font-size:1.1rem;font-weight:700;margin-top:8px}
+.toggle-row{display:flex;gap:8px;margin-bottom:12px}
+.toggle-btn{padding:6px 14px;background:var(--bg3);border:1px solid var(--bg4);color:var(--text2);
+  border-radius:6px;cursor:pointer;font-size:.82rem;transition:all .15s}
+.toggle-btn.active{background:rgba(240,136,62,.15);border-color:var(--accent);color:var(--accent)}
+#tree-canvas{width:100%;background:var(--bg);border-radius:8px;border:1px solid var(--bg4)}
+
+/* VERTEILUNGEN (Tab 3) */
+.vert-layout{display:flex;flex-direction:column;gap:16px;padding:16px;overflow-y:auto;flex:1}
+.vert-section{background:var(--bg2);border:1px solid var(--bg4);border-radius:var(--r);padding:16px}
+.vert-section h3{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1.5px;
+  color:var(--blue);margin-bottom:12px}
+.slider-group{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.slider-group label{font-size:.82rem;color:var(--text2);min-width:60px}
+.slider-group input[type=range]{flex:1;accent-color:var(--accent)}
+.slider-group .slider-val{font-family:'JetBrains Mono',monospace;font-size:.88rem;
+  color:var(--accent);min-width:50px;text-align:right}
+.chart-wrap{position:relative;width:100%;height:300px;margin-top:10px}
+.chart-wrap canvas{width:100%!important;height:100%!important}
+.sigma-legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;font-size:.78rem}
+.sigma-legend span{display:flex;align-items:center;gap:4px}
+.sigma-dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.htest-inputs{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.htest-inputs label{display:flex;flex-direction:column;gap:4px;font-size:.78rem;color:var(--text2)}
+.htest-inputs input{width:70px;padding:6px 8px;background:var(--bg3);border:1px solid var(--bg4);
+  color:var(--text);border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:.88rem}
+.htest-result{padding:12px;border-radius:8px;margin-top:10px}
+.htest-result.reject{background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3)}
+.htest-result.accept{background:rgba(63,185,80,.1);border:1px solid rgba(63,185,80,.3)}
+
+/* STRATEGIE (Tab 4) */
+.strat-layout{display:flex;flex-direction:column;gap:16px;padding:16px;overflow-y:auto;flex:1}
+.strat-section{background:var(--bg2);border:1px solid var(--bg4);border-radius:var(--r);padding:16px}
+.strat-section h3{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1.5px;
+  color:var(--purple);margin-bottom:12px}
+.strat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.strat-card{background:var(--bg3);border:1px solid var(--bg4);border-radius:8px;
+  padding:12px;cursor:pointer;transition:all .15s}
+.strat-card:hover{border-color:var(--purple)}
+.strat-card.selected{border-color:var(--purple);background:rgba(188,140,255,.08)}
+.strat-card h4{font-size:.88rem;margin-bottom:4px}
+.strat-card p{font-size:.75rem;color:var(--text2)}
+.strat-results{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-top:12px}
+.strat-result-card{background:var(--bg3);border-radius:8px;padding:12px;text-align:center}
+.strat-result-card h4{font-size:.82rem;color:var(--text2);margin-bottom:6px}
+.strat-result-card .big-num{font-family:'JetBrains Mono',monospace;font-size:1.6rem;font-weight:700}
+.strat-result-card .sub{font-size:.72rem;color:var(--text3);margin-top:2px}
+#heatmap-canvas{width:100%;background:var(--bg);border-radius:8px;border:1px solid var(--bg4)}
+
+/* DIAGNOSE (Tab 5) */
+.diag-layout{display:flex;flex-direction:column;flex:1;overflow:hidden}
+.diag-header{padding:14px 16px;background:var(--bg2);border-bottom:1px solid var(--bg4)}
+.diag-header h3{font-family:'Bebas Neue',sans-serif;font-size:1.15rem;letter-spacing:1.5px;color:var(--gold)}
+.diag-strip{display:flex;gap:16px;margin-top:8px;font-size:.78rem}
+.diag-strip .chip{display:flex;align-items:center;gap:4px}
+.diag-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.q-card{background:var(--bg2);border:1px solid var(--bg4);border-radius:var(--r);
+  padding:16px;animation:fadeUp .22s ease}
+.q-card .q-tag{font-size:.65rem;padding:2px 8px;border-radius:99px;
+  background:rgba(88,166,255,.12);color:var(--blue);font-weight:700;
+  text-transform:uppercase;letter-spacing:.5px;display:inline-block;margin-bottom:8px}
+.q-card .q-text{font-size:.92rem;margin-bottom:12px;line-height:1.7}
+.q-card .q-text .katex{font-size:1rem}
+.q-choices{display:flex;flex-direction:column;gap:6px}
+.q-choice{padding:10px 14px;background:var(--bg3);border:1px solid var(--bg4);border-radius:8px;
+  cursor:pointer;font-size:.88rem;transition:all .15s}
+.q-choice:hover{border-color:var(--accent);background:rgba(240,136,62,.06)}
+.q-choice.correct{border-color:var(--ok);background:rgba(63,185,80,.1);color:var(--ok)}
+.q-choice.wrong{border-color:var(--bust);background:rgba(218,54,51,.08);color:var(--bust)}
+.q-choice.disabled{pointer-events:none;opacity:.7}
+.q-input-row{display:flex;gap:8px;align-items:center}
+.q-input{padding:8px 12px;background:var(--bg3);border:1px solid var(--bg4);
+  color:var(--text);border-radius:6px;font-family:'JetBrains Mono',monospace;
+  font-size:.95rem;width:120px}
+.btn-check{padding:8px 18px;background:var(--accent);color:#fff;border:none;border-radius:6px;
+  font-family:'Nunito',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;
+  transition:opacity .15s}
+.btn-check:hover{opacity:.85}
+.q-feedback{margin-top:10px;padding:10px 12px;border-radius:7px;font-size:.86rem;display:none}
+.q-feedback.show{display:block;animation:fadeUp .18s ease}
+.q-feedback.ok{background:rgba(63,185,80,.1);border:1px solid rgba(63,185,80,.28);color:var(--ok)}
+.q-feedback.bad{background:rgba(248,81,73,.09);border:1px solid rgba(248,81,73,.22);color:#f87171}
+.score-circle{width:120px;height:120px;border-radius:50%;border:4px solid var(--gold);
+  display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.score-circle .score-num{font-family:'Bebas Neue',sans-serif;font-size:2.4rem;color:var(--gold)}
+
+/* RESPONSIVE */
+@media(max-width:800px){
+  .spiel-layout{flex-direction:column}
+  .spiel-canvas{flex:0 0 45%;min-height:250px}
+  .top-tabs{gap:2px}
+  .tab-btn{padding:5px 8px;font-size:.75rem}
+  .stat-row{gap:6px}
+  .stat-box{min-width:80px;padding:6px 8px}
+}
+@media(max-width:500px){
+  .spiel-canvas{flex:0 0 40%;min-height:200px}
+  .hand-chip{width:34px;height:34px;font-size:.78rem}
+}
+
+/* Track-dependent visibility */
+.track-basis .v-only,.track-basis .e-only{display:none!important}
+.track-erweitert .v-only{display:none!important}
+.track-vertiefung .b-only{display:none!important}
+/* Scaffolding text */
+.scaffold{font-size:.82rem;color:var(--text2);font-style:italic;margin-bottom:8px;
+  padding:8px 10px;background:rgba(240,136,62,.05);border-left:2px solid var(--accent);border-radius:0 6px 6px 0}
+.track-vertiefung .scaffold{display:none!important}
+</style>
+</head>
+<body>
+
+<!-- WELCOME SCREEN -->
+<div id="s-welcome" class="screen active">
+  <canvas id="wlc-canvas" width="320" height="200"></canvas>
+  <div class="wlc-title">FLIP7MATH</div>
+  <div class="wlc-sub">Stochastik am Spieltisch</div>
+  <button class="btn-start" onclick="App.showMain()">Karten mischen</button>
+  <div class="wlc-hint">Q1 Grundkurs Mathematik NRW</div>
+</div>
+
+<!-- MAIN SCREEN -->
+<div id="s-main" class="screen">
+  <div class="top-bar">
+    <div class="top-logo" onclick="App.showWelcome()">F7M</div>
+    <div class="top-tabs">
+      <button class="tab-btn active" data-tab="spieltisch" onclick="App.switchTab('spieltisch')">Spieltisch</button>
+      <button class="tab-btn" data-tab="wahrscheinlichkeiten" onclick="App.switchTab('wahrscheinlichkeiten')">Wahrscheinlichkeiten</button>
+      <button class="tab-btn" data-tab="verteilungen" onclick="App.switchTab('verteilungen')">Verteilungen</button>
+      <button class="tab-btn" data-tab="strategie" onclick="App.switchTab('strategie')">Strategie</button>
+      <button class="tab-btn" data-tab="diagnose" onclick="App.switchTab('diagnose')">Diagnose</button>
+    </div>
+    <div class="top-right">
+      <select class="track-sel" id="track-sel" onchange="App.setTrack(this.value)">
+        <option value="basis">Basis</option>
+        <option value="erweitert" selected>Erweitert</option>
+        <option value="vertiefung">Vertiefung</option>
+      </select>
+      <div class="xp-chip" id="xp-display">0 XP</div>
+    </div>
+  </div>
+  <div class="tab-content">
+
+    <!-- TAB 1: SPIELTISCH -->
+    <div id="tab-spieltisch" class="tab visible">
+      <div class="spiel-layout">
+        <div class="spiel-canvas">
+          <canvas id="game-canvas"></canvas>
+        </div>
+        <div class="spiel-panel">
+          <div class="spiel-stats">
+            <div class="stat-row">
+              <div class="stat-box">
+                <div class="stat-label">Runde</div>
+                <div class="stat-val" id="st-round">1</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-label">Gesamt</div>
+                <div class="stat-val" id="st-total">0</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-label">Karten</div>
+                <div class="stat-val" id="st-cards">0</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-label">Summe</div>
+                <div class="stat-val ok" id="st-sum">0</div>
+              </div>
+            </div>
+            <div class="stat-row">
+              <div class="stat-box" style="flex:2">
+                <div class="stat-label">P(Bust)</div>
+                <div id="bust-display">
+                  <span class="ampel green b-only" id="st-ampel"></span>
+                  <span class="stat-val" id="st-pbust">0.0%</span>
+                </div>
+                <div class="prob-bar"><div class="prob-fill" id="pbust-bar" style="width:0%;background:var(--ok)"></div></div>
+              </div>
+              <div class="stat-box e-only v-only" style="flex:2">
+                <div class="stat-label">Deck verbleibend</div>
+                <div class="stat-val" id="st-remaining">79</div>
+              </div>
+            </div>
+            <div class="ev-compare e-only v-only" id="ev-row">
+              <div class="ev-box" id="ev-draw-box">
+                <span class="ev-label">EV(Ziehen)</span>
+                <span class="ev-val" id="ev-draw">—</span>
+              </div>
+              <div class="ev-box" id="ev-stay-box">
+                <span class="ev-label">EV(Stay)</span>
+                <span class="ev-val" id="ev-stay">—</span>
+              </div>
+            </div>
+            <div class="scaffold b-only" id="scaffold-spiel">Ziehe Karten — aber Vorsicht: wenn du eine Zahl doppelt ziehst, verlierst du alles!</div>
+          </div>
+          <div class="spiel-actions">
+            <button class="btn-draw" id="btn-draw" onclick="Game.draw()">Ziehen</button>
+            <button class="btn-stay" id="btn-stay" onclick="Game.stay()" disabled>Stay</button>
+            <button class="btn-new" id="btn-new" onclick="Game.newRound()" style="display:none">Neue Runde</button>
+          </div>
+          <div class="spiel-history">
+            <h3>Rundenhistorie</h3>
+            <div id="history-list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: WAHRSCHEINLICHKEITEN -->
+    <div id="tab-wahrscheinlichkeiten" class="tab">
+      <div class="wk-layout">
+        <div class="scaffold b-only">Wähle die Karten in deiner Hand aus und beobachte, wie sich die Bust-Wahrscheinlichkeit verändert.</div>
+        <div class="wk-section">
+          <h3>Bust-Kalkulator</h3>
+          <p style="font-size:.82rem;color:var(--text2);margin-bottom:10px">Welche Karten hast du auf der Hand?</p>
+          <div class="hand-picker" id="hand-picker"></div>
+          <div class="calc-result" id="bust-calc-result"></div>
+        </div>
+        <div class="wk-section">
+          <h3>Baumdiagramm</h3>
+          <div class="toggle-row">
+            <button class="toggle-btn active" id="tog-ohne" onclick="WK.setMode('ohne')">Ohne Zurücklegen</button>
+            <button class="toggle-btn" id="tog-mit" onclick="WK.setMode('mit')">Mit Zurücklegen</button>
+          </div>
+          <canvas id="tree-canvas" height="350"></canvas>
+          <div class="scaffold b-only" style="margin-top:8px">Die Wahrscheinlichkeiten ändern sich bei jedem Zug, weil weniger Karten im Deck sind.</div>
+        </div>
+        <div class="wk-section v-only">
+          <h3>Formale Herleitung</h3>
+          <div id="wk-formal"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: VERTEILUNGEN -->
+    <div id="tab-verteilungen" class="tab">
+      <div class="vert-layout">
+        <div class="scaffold b-only">Simuliere viele Runden und beobachte, wie sich die Punkteverteilung bildet.</div>
+        <div class="vert-section">
+          <h3>Punkte-Histogramm (Simulation)</h3>
+          <div class="slider-group">
+            <label>Strategie:</label>
+            <select id="sim-strat" style="flex:1;padding:6px;background:var(--bg3);border:1px solid var(--bg4);color:var(--text);border-radius:6px;font-size:.82rem" onchange="Vert.runSim()">
+              <option value="3">Stoppe nach 3 Karten</option>
+              <option value="4" selected>Stoppe nach 4 Karten</option>
+              <option value="5">Stoppe nach 5 Karten</option>
+              <option value="6">Stoppe nach 6 Karten</option>
+              <option value="ev">Erwartungswert-optimal</option>
+            </select>
+          </div>
+          <div class="slider-group">
+            <label>Runden:</label>
+            <input type="range" id="sim-n" min="100" max="50000" value="1000" step="100" oninput="document.getElementById('sim-n-val').textContent=this.value;Vert.runSim()">
+            <span class="slider-val" id="sim-n-val">1000</span>
+          </div>
+          <div class="chart-wrap"><canvas id="hist-chart"></canvas></div>
+          <div id="sim-stats" style="margin-top:8px;font-size:.82rem;color:var(--text2)"></div>
+        </div>
+        <div class="vert-section">
+          <h3>Binomialverteilung: Y = Busts in n Runden</h3>
+          <div class="scaffold b-only">Jede Runde ist wie ein Münzwurf: Bust oder Score. Über viele Runden ergibt sich eine Binomialverteilung.</div>
+          <div class="slider-group">
+            <label>n =</label>
+            <input type="range" id="binom-n" min="5" max="100" value="20" oninput="document.getElementById('binom-n-val').textContent=this.value;Vert.updateBinom()">
+            <span class="slider-val" id="binom-n-val">20</span>
+          </div>
+          <div class="slider-group">
+            <label>p =</label>
+            <input type="range" id="binom-p" min="5" max="80" value="25" oninput="document.getElementById('binom-p-val').textContent=(this.value/100).toFixed(2);Vert.updateBinom()">
+            <span class="slider-val" id="binom-p-val">0.25</span>
+          </div>
+          <div class="chart-wrap"><canvas id="binom-chart"></canvas></div>
+          <div id="binom-stats" style="margin-top:8px;font-size:.82rem;color:var(--text2)"></div>
+          <div class="sigma-legend" id="sigma-legend">
+            <span><span class="sigma-dot" style="background:var(--ok)"></span> 1σ (68.3%)</span>
+            <span><span class="sigma-dot" style="background:var(--gold)"></span> 2σ (95.4%)</span>
+            <span><span class="sigma-dot" style="background:var(--bust)"></span> 3σ (99.7%)</span>
+          </div>
+        </div>
+        <div class="vert-section e-only v-only">
+          <h3>Hypothesentest</h3>
+          <p style="font-size:.82rem;color:var(--text2);margin-bottom:10px">Ist das Deck manipuliert? Teste H₀: p = p₀ gegen H₁: p > p₀</p>
+          <div class="htest-inputs">
+            <label>n (Runden)<input type="number" id="ht-n" value="30" min="5" max="200" onchange="Vert.updateHTest()"></label>
+            <label>k (Busts)<input type="number" id="ht-k" value="12" min="0" onchange="Vert.updateHTest()"></label>
+            <label>p₀<input type="number" id="ht-p0" value="0.20" min="0.01" max="0.99" step="0.01" onchange="Vert.updateHTest()"></label>
+            <label>α<input type="number" id="ht-alpha" value="0.05" min="0.01" max="0.20" step="0.01" onchange="Vert.updateHTest()"></label>
+          </div>
+          <div class="chart-wrap" style="height:250px"><canvas id="htest-chart"></canvas></div>
+          <div id="htest-result"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: STRATEGIE -->
+    <div id="tab-strategie" class="tab">
+      <div class="strat-layout">
+        <div class="scaffold b-only">Vergleiche verschiedene Strategien: Welche bringt im Schnitt die meisten Punkte?</div>
+        <div class="strat-section">
+          <h3>Strategie-Vergleich (Monte Carlo)</h3>
+          <p style="font-size:.82rem;color:var(--text2);margin-bottom:10px">Wähle Strategien zum Vergleichen:</p>
+          <div class="strat-grid" id="strat-picker"></div>
+          <div style="margin-top:12px;display:flex;gap:10px;align-items:center">
+            <button class="btn-check" onclick="Strat.runComparison()">Simulieren (10.000 Runden)</button>
+            <span style="font-size:.78rem;color:var(--text3)" id="strat-status"></span>
+          </div>
+          <div class="strat-results" id="strat-results"></div>
+        </div>
+        <div class="strat-section e-only v-only">
+          <h3>Optimales Stoppen — Heatmap</h3>
+          <p style="font-size:.82rem;color:var(--text2);margin-bottom:10px">Grün = Ziehen lohnt sich, Rot = lieber Stay</p>
+          <canvas id="heatmap-canvas" height="350"></canvas>
+          <div id="heatmap-info" style="margin-top:8px;font-size:.82rem;color:var(--text2)"></div>
+        </div>
+        <div class="strat-section v-only">
+          <h3>Turnier-Modus</h3>
+          <p style="font-size:.82rem;color:var(--text2);margin-bottom:10px">4 Strategien treten in einem Rennen bis 200 Punkte an.</p>
+          <button class="btn-check" onclick="Strat.runTournament()">Turnier starten (1000x)</button>
+          <div id="tournament-results" style="margin-top:12px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: DIAGNOSE -->
+    <div id="tab-diagnose" class="tab">
+      <div class="diag-layout">
+        <div class="diag-header">
+          <h3>Diagnose — Stochastik-Check</h3>
+          <div class="diag-strip">
+            <div class="chip">Frage <span id="diag-q-num" style="font-weight:700;color:var(--accent)">1</span> / <span id="diag-q-total">10</span></div>
+            <div class="chip">Streak: <span id="diag-streak" style="font-weight:700;color:var(--gold)">0</span></div>
+            <div class="chip">XP: <span id="diag-xp" style="font-weight:700;color:var(--gold)">0</span></div>
+          </div>
+        </div>
+        <div class="diag-body" id="diag-body"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════
+   FLIP7MATH — Mathe-Engine & App
+   ═══════════════════════════════════════════════════ */
+
+// ─── DECK CONSTANTS ───
+const CARD_COUNTS = [1,1,2,3,4,5,6,7,8,9,10,11,12]; // index=value, element=count
+const DECK_SIZE = 79;
+const VALUES = [0,1,2,3,4,5,6,7,8,9,10,11,12];
+
+// ─── MATH ENGINE ───
+const MathEngine = {
+  bustProb(hand) {
+    if (hand.length === 0) return 0;
+    const rem = DECK_SIZE - hand.length;
+    if (rem <= 0) return 0;
+    const bustCards = hand.reduce((s, v) => s + (CARD_COUNTS[v] - 1), 0);
+    return bustCards / rem;
+  },
+  safeCards(hand) {
+    const safe = {};
+    for (let v = 0; v <= 12; v++) {
+      if (!hand.includes(v)) safe[v] = CARD_COUNTS[v];
+      else safe[v] = 0; // duplicates would bust
+    }
+    return safe;
+  },
+  expectedSafeValue(hand) {
+    const safe = this.safeCards(hand);
+    let total = 0, count = 0;
+    for (const [v, c] of Object.entries(safe)) {
+      if (c > 0) { total += Number(v) * c; count += c; }
+    }
+    return count > 0 ? total / count : 0;
+  },
+  evDraw(hand) {
+    const pBust = this.bustProb(hand);
+    const sum = hand.reduce((a, b) => a + b, 0);
+    const eSafe = this.expectedSafeValue(hand);
+    const bonus = hand.length === 6 ? 15 : 0;
+    return (1 - pBust) * (sum + eSafe + bonus);
+  },
+  evStay(hand) {
+    return hand.reduce((a, b) => a + b, 0);
+  },
+  comb(n, k) {
+    if (k > n || k < 0) return 0;
+    if (k === 0 || k === n) return 1;
+    let r = 1;
+    for (let i = 0; i < Math.min(k, n - k); i++) r = r * (n - i) / (i + 1);
+    return Math.round(r);
+  },
+  binomPMF(n, p, k) {
+    return this.comb(n, k) * Math.pow(p, k) * Math.pow(1 - p, n - k);
+  },
+  binomCDF(n, p, k) {
+    let s = 0;
+    for (let i = 0; i <= k; i++) s += this.binomPMF(n, p, i);
+    return Math.min(1, s);
+  },
+  sigma(n, p) {
+    return Math.sqrt(n * p * (1 - p));
+  },
+  mu(n, p) {
+    return n * p;
+  }
+};
+
+// ─── DECK UTILS ───
+function createDeck() {
+  const deck = [];
+  for (let v = 0; v <= 12; v++) {
+    for (let i = 0; i < CARD_COUNTS[v]; i++) deck.push(v);
+  }
+  return deck;
+}
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// ─── STATE ───
+const STORE_KEY = 'flip7math_v1';
+const State = {
+  d: { xp: 0, track: 'erweitert', gameHistory: [], diagProgress: {}, diagQIdx: 0, diagStreak: 0, diagXP: 0 },
+  load() {
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      if (raw) Object.assign(this.d, JSON.parse(raw));
+    } catch (e) {}
+  },
+  save() {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(this.d)); } catch (e) {}
+  }
+};
+
+// ─── GAME STATE ───
+const Game = {
+  deck: [],
+  hand: [],
+  round: 1,
+  totalScore: 0,
+  roundOver: false,
+  busted: false,
+  history: [],
+
+  init() {
+    this.deck = shuffle(createDeck());
+    this.hand = [];
+    this.round = 1;
+    this.totalScore = 0;
+    this.roundOver = false;
+    this.busted = false;
+    this.history = [];
+    this.updateUI();
+    this.renderCanvas();
+  },
+
+  newRound() {
+    this.deck = shuffle(createDeck());
+    this.hand = [];
+    this.roundOver = false;
+    this.busted = false;
+    this.round++;
+    document.getElementById('btn-draw').disabled = false;
+    document.getElementById('btn-stay').disabled = true;
+    document.getElementById('btn-new').style.display = 'none';
+    document.getElementById('btn-draw').style.display = '';
+    document.getElementById('btn-stay').style.display = '';
+    this.updateUI();
+    this.renderCanvas();
+  },
+
+  draw() {
+    if (this.roundOver || this.deck.length === 0) return;
+    const card = this.deck.pop();
+    if (this.hand.includes(card)) {
+      // BUST
+      this.busted = true;
+      this.roundOver = true;
+      this.hand.push(card);
+      this.history.push({ round: this.round, cards: [...this.hand], score: 0, busted: true });
+      State.d.gameHistory.push({ cards: [...this.hand], score: 0, busted: true });
+      State.save();
+      document.getElementById('btn-draw').disabled = true;
+      document.getElementById('btn-stay').disabled = true;
+      document.getElementById('btn-new').style.display = '';
+      document.getElementById('btn-draw').style.display = 'none';
+      document.getElementById('btn-stay').style.display = 'none';
+      this.updateUI();
+      this.renderCanvas();
+      addXP(5, 'Runde gespielt');
+    } else {
+      this.hand.push(card);
+      document.getElementById('btn-stay').disabled = false;
+      // Check Flip 7
+      if (this.hand.length === 7) {
+        const score = this.hand.reduce((a, b) => a + b, 0) + 15;
+        this.totalScore += score;
+        this.roundOver = true;
+        this.history.push({ round: this.round, cards: [...this.hand], score, busted: false, flip7: true });
+        State.d.gameHistory.push({ cards: [...this.hand], score, busted: false, flip7: true });
+        State.save();
+        document.getElementById('btn-draw').disabled = true;
+        document.getElementById('btn-stay').disabled = true;
+        document.getElementById('btn-new').style.display = '';
+        document.getElementById('btn-draw').style.display = 'none';
+        document.getElementById('btn-stay').style.display = 'none';
+        addXP(20, 'Flip 7!');
+      }
+      this.updateUI();
+      this.renderCanvas();
+    }
+  },
+
+  stay() {
+    if (this.roundOver || this.hand.length === 0) return;
+    const score = this.hand.reduce((a, b) => a + b, 0);
+    this.totalScore += score;
+    this.roundOver = true;
+    this.history.push({ round: this.round, cards: [...this.hand], score, busted: false });
+    State.d.gameHistory.push({ cards: [...this.hand], score, busted: false });
+    State.save();
+    document.getElementById('btn-draw').disabled = true;
+    document.getElementById('btn-stay').disabled = true;
+    document.getElementById('btn-new').style.display = '';
+    document.getElementById('btn-draw').style.display = 'none';
+    document.getElementById('btn-stay').style.display = 'none';
+    this.updateUI();
+    this.renderCanvas();
+    addXP(10, 'Runde gesichert');
+  },
+
+  updateUI() {
+    const uniqueHand = this.busted ? this.hand.slice(0, -1) : this.hand;
+    const sum = uniqueHand.reduce((a, b) => a + b, 0);
+    const pBust = this.roundOver ? 0 : MathEngine.bustProb(this.hand);
+    const evD = this.roundOver ? 0 : MathEngine.evDraw(this.hand);
+    const evS = this.roundOver ? sum : MathEngine.evStay(this.hand);
+
+    document.getElementById('st-round').textContent = this.round;
+    document.getElementById('st-total').textContent = this.totalScore;
+    document.getElementById('st-cards').textContent = this.hand.length;
+    document.getElementById('st-sum').textContent = this.busted ? '0 (BUST!)' : sum;
+    document.getElementById('st-sum').className = 'stat-val ' + (this.busted ? 'danger' : 'ok');
+    document.getElementById('st-pbust').textContent = (pBust * 100).toFixed(1) + '%';
+    document.getElementById('st-remaining').textContent = DECK_SIZE - this.hand.length;
+
+    // Probability bar
+    const bar = document.getElementById('pbust-bar');
+    bar.style.width = (pBust * 100) + '%';
+    bar.style.background = pBust < 0.2 ? 'var(--ok)' : pBust < 0.4 ? 'var(--gold)' : 'var(--bust)';
+
+    // Ampel
+    const ampel = document.getElementById('st-ampel');
+    ampel.className = 'ampel b-only ' + (pBust < 0.2 ? 'green' : pBust < 0.4 ? 'yellow' : 'red');
+
+    // EV display
+    if (!this.roundOver && this.hand.length > 0) {
+      document.getElementById('ev-draw').textContent = evD.toFixed(1);
+      document.getElementById('ev-stay').textContent = evS.toFixed(1);
+      const drawBox = document.getElementById('ev-draw-box');
+      const stayBox = document.getElementById('ev-stay-box');
+      drawBox.className = 'ev-box ' + (evD > evS ? 'better' : 'worse');
+      stayBox.className = 'ev-box ' + (evS >= evD ? 'better' : 'worse');
+    } else {
+      document.getElementById('ev-draw').textContent = '—';
+      document.getElementById('ev-stay').textContent = '—';
+      document.getElementById('ev-draw-box').className = 'ev-box';
+      document.getElementById('ev-stay-box').className = 'ev-box';
+    }
+
+    // History
+    const hl = document.getElementById('history-list');
+    hl.innerHTML = this.history.map(h =>
+      `<div class="history-row">
+        <span class="history-round">#${h.round}</span>
+        <span class="history-cards">[${h.cards.join(', ')}]</span>
+        <span class="history-score ${h.busted ? 'bust' : 'scored'}">${h.busted ? 'BUST' : (h.flip7 ? h.score + ' (F7!)' : h.score)}</span>
+      </div>`
+    ).reverse().join('');
+  },
+
+  renderCanvas() {
+    const canvas = document.getElementById('game-canvas');
+    const rect = canvas.parentElement.getBoundingClientRect();
+    canvas.width = rect.width * (window.devicePixelRatio || 1);
+    canvas.height = rect.height * (window.devicePixelRatio || 1);
+    canvas.style.width = rect.width + 'px';
+    canvas.style.height = rect.height + 'px';
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    ctx.scale(dpr, dpr);
+    const W = rect.width, H = rect.height;
+
+    // Clear
+    ctx.clearRect(0, 0, W, H);
+
+    // Card dimensions
+    const cw = Math.min(60, W / 10), ch = cw * 1.5, cr = 6;
+
+    // Draw deck (face down pile)
+    const deckX = 30, deckY = H / 2 - ch / 2;
+    for (let i = 0; i < Math.min(5, DECK_SIZE - this.hand.length); i++) {
+      drawCardShape(ctx, deckX + i * 2, deckY - i * 1, cw, ch, cr, false, null, false);
+    }
+    ctx.fillStyle = '#c8b898';
+    ctx.font = `bold ${Math.round(cw * 0.22)}px JetBrains Mono`;
+    ctx.textAlign = 'center';
+    ctx.fillText(`${DECK_SIZE - this.hand.length}`, deckX + cw / 2 + 4, deckY + ch / 2 + 5);
+
+    // Draw hand cards
+    const handStartX = deckX + cw + 40;
+    const maxHandW = W - handStartX - 20;
+    const gap = Math.min(cw + 8, this.hand.length > 1 ? maxHandW / this.hand.length : cw + 8);
+
+    this.hand.forEach((val, i) => {
+      const x = handStartX + i * gap;
+      const y = H / 2 - ch / 2;
+      const isBustCard = this.busted && i === this.hand.length - 1;
+      drawCardShape(ctx, x, y, cw, ch, cr, true, val, isBustCard);
+    });
+
+    // Status text
+    if (this.busted) {
+      ctx.fillStyle = '#f85149';
+      ctx.font = `bold ${Math.round(cw * 0.5)}px Bebas Neue`;
+      ctx.textAlign = 'center';
+      ctx.fillText('BUST!', W / 2, H - 30);
+    } else if (this.roundOver && this.hand.length === 7) {
+      ctx.fillStyle = '#ffd166';
+      ctx.font = `bold ${Math.round(cw * 0.5)}px Bebas Neue`;
+      ctx.textAlign = 'center';
+      ctx.fillText('FLIP 7!', W / 2, H - 30);
+    } else if (this.roundOver && this.hand.length > 0) {
+      ctx.fillStyle = '#3fb950';
+      ctx.font = `bold ${Math.round(cw * 0.4)}px Bebas Neue`;
+      ctx.textAlign = 'center';
+      const score = this.hand.reduce((a, b) => a + b, 0);
+      ctx.fillText(`+${score} Punkte`, W / 2, H - 30);
+    }
+  }
+};
+
+function drawCardShape(ctx, x, y, w, h, r, faceUp, value, highlighted) {
+  ctx.save();
+  // Card shadow
+  ctx.shadowColor = 'rgba(0,0,0,0.3)';
+  ctx.shadowBlur = 6;
+  ctx.shadowOffsetY = 2;
+
+  // Rounded rect
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+
+  ctx.fillStyle = faceUp ? (highlighted ? '#ffcccb' : '#e8d5b7') : '#1a472a';
+  ctx.fill();
+  ctx.shadowColor = 'transparent';
+  ctx.strokeStyle = highlighted ? '#da3633' : 'rgba(0,0,0,0.2)';
+  ctx.lineWidth = highlighted ? 2.5 : 1;
+  ctx.stroke();
+
+  if (faceUp && value !== null) {
+    ctx.fillStyle = highlighted ? '#da3633' : '#1a1a1a';
+    ctx.font = `bold ${Math.round(w * 0.45)}px JetBrains Mono`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(String(value), x + w / 2, y + h / 2);
+    // Corner number
+    ctx.font = `${Math.round(w * 0.2)}px JetBrains Mono`;
+    ctx.textBaseline = 'top';
+    ctx.fillText(String(value), x + 8, y + 5);
+  } else if (!faceUp) {
+    // Card back pattern
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.lineWidth = 1;
+    const m = 6;
+    ctx.strokeRect(x + m, y + m, w - 2 * m, h - 2 * m);
+  }
+  ctx.restore();
+}
+
+// ─── WK TAB (Wahrscheinlichkeiten) ───
+const WK = {
+  selectedHand: [],
+  mode: 'ohne',
+
+  init() {
+    const picker = document.getElementById('hand-picker');
+    picker.innerHTML = VALUES.map(v =>
+      `<div class="hand-chip" data-val="${v}" onclick="WK.toggleCard(${v})">${v}</div>`
+    ).join('');
+    this.updateCalc();
+  },
+
+  toggleCard(v) {
+    const idx = this.selectedHand.indexOf(v);
+    if (idx >= 0) this.selectedHand.splice(idx, 1);
+    else if (this.selectedHand.length < 7) this.selectedHand.push(v);
+    // Update chips
+    document.querySelectorAll('.hand-chip').forEach(c => {
+      c.classList.toggle('selected', this.selectedHand.includes(Number(c.dataset.val)));
+    });
+    this.updateCalc();
+    this.drawTree();
+  },
+
+  updateCalc() {
+    const res = document.getElementById('bust-calc-result');
+    const hand = this.selectedHand;
+    if (hand.length === 0) {
+      res.innerHTML = '<span style="color:var(--text3)">Wähle Karten aus, um die Bust-Wahrscheinlichkeit zu berechnen.</span>';
+      return;
+    }
+    const remaining = DECK_SIZE - hand.length;
+    const bustCards = hand.reduce((s, v) => s + (CARD_COUNTS[v] - 1), 0);
+    const pBust = bustCards / remaining;
+    const evD = MathEngine.evDraw(hand);
+    const evS = MathEngine.evStay(hand);
+    const sum = hand.reduce((a, b) => a + b, 0);
+
+    // Detail breakdown
+    let details = hand.map(v => `${v} (${CARD_COUNTS[v]-1} Duplikate)`).join(', ');
+
+    let html = `<div class="calc-step">Hand: [${hand.join(', ')}] — Summe: ${sum}</div>`;
+    html += `<div class="calc-step">Verbleibende Karten: ${remaining}</div>`;
+    html += `<div class="calc-step">Bust-Karten im Deck: ${bustCards} (${details})</div>`;
+
+    // KaTeX formula
+    const track = State.d.track;
+    if (track !== 'basis') {
+      html += `<div class="calc-step" id="pbust-formula"></div>`;
+    }
+
+    html += `<div class="calc-final" style="color:${pBust < 0.2 ? 'var(--ok)' : pBust < 0.4 ? 'var(--gold)' : 'var(--bust)'}">P(Bust) = ${(pBust * 100).toFixed(1)}%</div>`;
+
+    if (track !== 'basis') {
+      html += `<div style="margin-top:8px;font-size:.85rem">`;
+      html += `<span style="color:var(--text2)">EV(Ziehen) = ${evD.toFixed(1)}</span>`;
+      html += `<span style="color:var(--text3);margin:0 8px">|</span>`;
+      html += `<span style="color:var(--text2)">EV(Stay) = ${evS.toFixed(1)}</span>`;
+      html += `<span style="color:var(--text3);margin:0 8px">→</span>`;
+      html += `<span style="font-weight:700;color:${evD > evS ? 'var(--ok)' : 'var(--accent)'}">${evD > evS ? 'Ziehen!' : 'Stay!'}</span>`;
+      html += `</div>`;
+    }
+
+    res.innerHTML = html;
+
+    // Render KaTeX
+    if (track !== 'basis') {
+      const el = document.getElementById('pbust-formula');
+      if (el) {
+        try {
+          katex.render(`P(\\text{Bust}) = \\frac{${bustCards}}{${remaining}} = ${pBust.toFixed(4)}`, el, { displayMode: false });
+        } catch (e) {}
+      }
+    }
+  },
+
+  setMode(m) {
+    this.mode = m;
+    document.getElementById('tog-ohne').classList.toggle('active', m === 'ohne');
+    document.getElementById('tog-mit').classList.toggle('active', m === 'mit');
+    this.drawTree();
+  },
+
+  drawTree() {
+    const canvas = document.getElementById('tree-canvas');
+    const W = canvas.parentElement.clientWidth;
+    canvas.width = W * (window.devicePixelRatio || 1);
+    canvas.height = 350 * (window.devicePixelRatio || 1);
+    canvas.style.width = W + 'px';
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, W, 350);
+
+    const hand = this.selectedHand;
+    if (hand.length === 0) {
+      ctx.fillStyle = '#484f58';
+      ctx.font = '14px Nunito';
+      ctx.textAlign = 'center';
+      ctx.fillText('Wähle oben Karten aus, um das Baumdiagramm zu sehen.', W / 2, 175);
+      return;
+    }
+
+    // Simple tree: current state → draw next card → bust or safe
+    const remaining = DECK_SIZE - hand.length;
+    const bustCards = hand.reduce((s, v) => s + (CARD_COUNTS[v] - 1), 0);
+    const safeCards = remaining - bustCards;
+    const pBust = bustCards / remaining;
+    const pSafe = safeCards / remaining;
+
+    const startX = 80, startY = 175;
+    const branchLen = (W - 200) / 3;
+
+    // Draw start node
+    ctx.fillStyle = '#e6edf3';
+    ctx.font = 'bold 13px Nunito';
+    ctx.textAlign = 'center';
+    ctx.fillText(`[${hand.join(',')}]`, startX, startY - 8);
+    ctx.fillText(`Σ=${hand.reduce((a,b)=>a+b,0)}`, startX, startY + 12);
+
+    // Safe branch (up)
+    const safeEndX = startX + branchLen, safeEndY = startY - 80;
+    ctx.beginPath();
+    ctx.moveTo(startX + 30, startY - 15);
+    ctx.lineTo(safeEndX, safeEndY);
+    ctx.strokeStyle = '#3fb950';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Safe probability label
+    ctx.fillStyle = '#3fb950';
+    ctx.font = '12px JetBrains Mono';
+    ctx.textAlign = 'center';
+    const safeMidX = (startX + 30 + safeEndX) / 2, safeMidY = (startY - 15 + safeEndY) / 2;
+    ctx.fillText(`${(pSafe * 100).toFixed(1)}%`, safeMidX - 15, safeMidY - 8);
+
+    // Safe node
+    ctx.fillStyle = '#3fb950';
+    ctx.font = 'bold 12px Nunito';
+    ctx.fillText('Sichere Karte', safeEndX + 10, safeEndY);
+    ctx.fillStyle = '#8b949e';
+    ctx.font = '11px JetBrains Mono';
+    ctx.fillText(`${safeCards} von ${remaining}`, safeEndX + 10, safeEndY + 16);
+
+    // Bust branch (down)
+    const bustEndX = startX + branchLen, bustEndY = startY + 80;
+    ctx.beginPath();
+    ctx.moveTo(startX + 30, startY + 15);
+    ctx.lineTo(bustEndX, bustEndY);
+    ctx.strokeStyle = '#da3633';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.fillStyle = '#da3633';
+    ctx.font = '12px JetBrains Mono';
+    const bustMidX = (startX + 30 + bustEndX) / 2, bustMidY = (startY + 15 + bustEndY) / 2;
+    ctx.fillText(`${(pBust * 100).toFixed(1)}%`, bustMidX - 15, bustMidY + 16);
+
+    ctx.fillStyle = '#da3633';
+    ctx.font = 'bold 12px Nunito';
+    ctx.fillText('BUST (Duplikat)', bustEndX + 10, bustEndY);
+    ctx.fillStyle = '#8b949e';
+    ctx.font = '11px JetBrains Mono';
+    ctx.fillText(`${bustCards} von ${remaining}`, bustEndX + 10, bustEndY + 16);
+
+    // Second level for safe branch (if space)
+    if (hand.length < 6) {
+      const newHand = [...hand]; // simplified: assume average safe card
+      const avgSafe = MathEngine.expectedSafeValue(hand);
+      const hypothetical = [...hand, Math.round(avgSafe)];
+      const rem2 = DECK_SIZE - hypothetical.length;
+      const bust2 = hypothetical.reduce((s, v) => s + (CARD_COUNTS[v] - 1), 0);
+      const safe2 = rem2 - bust2;
+      const pBust2 = bust2 / rem2;
+      const pSafe2 = safe2 / rem2;
+
+      const lvl2X = safeEndX + branchLen;
+
+      // Safe→Safe
+      ctx.beginPath();
+      ctx.moveTo(safeEndX + 60, safeEndY);
+      ctx.lineTo(lvl2X, safeEndY - 50);
+      ctx.strokeStyle = 'rgba(63,185,80,0.5)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.fillStyle = '#3fb950';
+      ctx.font = '11px JetBrains Mono';
+      ctx.fillText(`${(pSafe2 * 100).toFixed(1)}%`, (safeEndX + 60 + lvl2X) / 2, safeEndY - 35);
+
+      // Safe→Bust
+      ctx.beginPath();
+      ctx.moveTo(safeEndX + 60, safeEndY);
+      ctx.lineTo(lvl2X, safeEndY + 50);
+      ctx.strokeStyle = 'rgba(218,54,51,0.5)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.fillStyle = '#da3633';
+      ctx.font = '11px JetBrains Mono';
+      ctx.fillText(`${(pBust2 * 100).toFixed(1)}%`, (safeEndX + 60 + lvl2X) / 2, safeEndY + 45);
+
+      ctx.fillStyle = '#8b949e';
+      ctx.font = '11px Nunito';
+      ctx.fillText('weiter...', lvl2X + 10, safeEndY - 50);
+      ctx.fillText('BUST', lvl2X + 10, safeEndY + 50);
+    }
+
+    // Mode label
+    ctx.fillStyle = '#484f58';
+    ctx.font = '11px Nunito';
+    ctx.textAlign = 'left';
+    ctx.fillText(this.mode === 'ohne' ? 'Ohne Zurücklegen (real)' : 'Mit Zurücklegen (hypothetisch)', 10, 20);
+  }
+};
+
+// ─── VERTEILUNGEN TAB ───
+let histChart = null, binomChart = null, htestChart = null;
+
+const Vert = {
+  simData: [],
+
+  runSim() {
+    const stratVal = document.getElementById('sim-strat').value;
+    const nRounds = parseInt(document.getElementById('sim-n').value);
+    const scores = [];
+
+    for (let r = 0; r < nRounds; r++) {
+      const deck = shuffle(createDeck());
+      const hand = [];
+      let busted = false;
+
+      while (deck.length > 0) {
+        const card = deck.pop();
+        if (hand.includes(card)) { busted = true; break; }
+        hand.push(card);
+
+        if (stratVal === 'ev') {
+          const evD = MathEngine.evDraw(hand);
+          const evS = MathEngine.evStay(hand);
+          if (evS >= evD) break;
+        } else {
+          if (hand.length >= parseInt(stratVal)) break;
+        }
+      }
+      scores.push(busted ? 0 : hand.reduce((a, b) => a + b, 0));
+    }
+
+    this.simData = scores;
+    this.renderHist(scores);
+  },
+
+  renderHist(scores) {
+    const bins = {};
+    const maxScore = Math.max(...scores, 1);
+    const binSize = maxScore > 50 ? 5 : maxScore > 20 ? 2 : 1;
+    scores.forEach(s => {
+      const bin = Math.floor(s / binSize) * binSize;
+      bins[bin] = (bins[bin] || 0) + 1;
+    });
+
+    const labels = Object.keys(bins).map(Number).sort((a, b) => a - b);
+    const data = labels.map(l => bins[l] / scores.length);
+
+    const ctx = document.getElementById('hist-chart');
+    if (histChart) histChart.destroy();
+    histChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels.map(l => l === 0 ? 'Bust' : String(l)),
+        datasets: [{
+          label: 'Relative Häufigkeit',
+          data,
+          backgroundColor: labels.map(l => l === 0 ? 'rgba(218,54,51,0.6)' : 'rgba(63,185,80,0.5)'),
+          borderColor: labels.map(l => l === 0 ? '#da3633' : '#3fb950'),
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: '#8b949e', font: { size: 10 } }, grid: { color: 'rgba(48,54,61,0.5)' } },
+          y: { ticks: { color: '#8b949e', font: { size: 10 }, callback: v => (v * 100).toFixed(0) + '%' },
+               grid: { color: 'rgba(48,54,61,0.5)' } }
+        }
+      }
+    });
+
+    // Stats
+    const nonZero = scores.filter(s => s > 0);
+    const mean = scores.reduce((a, b) => a + b, 0) / scores.length;
+    const variance = scores.reduce((s, v) => s + (v - mean) ** 2, 0) / scores.length;
+    const std = Math.sqrt(variance);
+    const bustRate = scores.filter(s => s === 0).length / scores.length;
+
+    document.getElementById('sim-stats').innerHTML =
+      `<b>µ = ${mean.toFixed(2)}</b> | σ = ${std.toFixed(2)} | Bust-Rate: ${(bustRate * 100).toFixed(1)}% | n = ${scores.length}`;
+  },
+
+  updateBinom() {
+    const n = parseInt(document.getElementById('binom-n').value);
+    const p = parseInt(document.getElementById('binom-p').value) / 100;
+    const mu = n * p;
+    const sigma = Math.sqrt(n * p * (1 - p));
+
+    const labels = [];
+    const data = [];
+    for (let k = 0; k <= n; k++) {
+      labels.push(String(k));
+      data.push(MathEngine.binomPMF(n, p, k));
+    }
+
+    // Sigma bands
+    const colors = data.map((_, k) => {
+      const dist = Math.abs(k - mu);
+      if (dist <= sigma) return 'rgba(63,185,80,0.7)';
+      if (dist <= 2 * sigma) return 'rgba(255,209,102,0.6)';
+      if (dist <= 3 * sigma) return 'rgba(248,81,73,0.5)';
+      return 'rgba(72,79,88,0.4)';
+    });
+
+    const ctx = document.getElementById('binom-chart');
+    if (binomChart) binomChart.destroy();
+    binomChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{ data, backgroundColor: colors, borderWidth: 0 }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: '#8b949e', font: { size: 9 },
+            callback: function(val, idx) { return idx % Math.ceil(n / 20) === 0 ? labels[idx] : ''; } },
+            grid: { display: false } },
+          y: { ticks: { color: '#8b949e', font: { size: 10 },
+            callback: v => (v * 100).toFixed(1) + '%' },
+            grid: { color: 'rgba(48,54,61,0.5)' } }
+        }
+      }
+    });
+
+    document.getElementById('binom-stats').innerHTML =
+      `<b>E(Y) = µ = ${mu.toFixed(2)}</b> | σ = ${sigma.toFixed(2)} | ` +
+      `[µ−σ, µ+σ] = [${(mu - sigma).toFixed(1)}, ${(mu + sigma).toFixed(1)}] | ` +
+      `[µ−2σ, µ+2σ] = [${(mu - 2 * sigma).toFixed(1)}, ${(mu + 2 * sigma).toFixed(1)}]`;
+  },
+
+  updateHTest() {
+    const n = parseInt(document.getElementById('ht-n').value);
+    const k = parseInt(document.getElementById('ht-k').value);
+    const p0 = parseFloat(document.getElementById('ht-p0').value);
+    const alpha = parseFloat(document.getElementById('ht-alpha').value);
+
+    const mu = n * p0;
+    const sigma = Math.sqrt(n * p0 * (1 - p0));
+
+    // Find critical value
+    let critK = n;
+    for (let c = 0; c <= n; c++) {
+      if (1 - MathEngine.binomCDF(n, p0, c) <= alpha) { critK = c + 1; break; }
+    }
+
+    const pValue = 1 - MathEngine.binomCDF(n, p0, k - 1);
+    const reject = pValue <= alpha;
+
+    // Chart
+    const labels = [];
+    const data = [];
+    const colors = [];
+    for (let i = 0; i <= n; i++) {
+      labels.push(String(i));
+      const pmf = MathEngine.binomPMF(n, p0, i);
+      data.push(pmf);
+      colors.push(i >= critK ? 'rgba(248,81,73,0.7)' : 'rgba(88,166,255,0.5)');
+    }
+
+    const ctx = document.getElementById('htest-chart');
+    if (htestChart) htestChart.destroy();
+    htestChart = new Chart(ctx, {
+      type: 'bar',
+      data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 0 }] },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: '#8b949e', font: { size: 9 },
+            callback: function(v, i) { return i % Math.ceil(n / 20) === 0 ? labels[i] : ''; } },
+            grid: { display: false } },
+          y: { ticks: { color: '#8b949e', font: { size: 10 } }, grid: { color: 'rgba(48,54,61,0.5)' } }
+        }
+      }
+    });
+
+    const resEl = document.getElementById('htest-result');
+    resEl.className = 'htest-result ' + (reject ? 'reject' : 'accept');
+    resEl.innerHTML =
+      `<div style="font-weight:700;margin-bottom:4px">${reject ? 'H₀ verwerfen!' : 'H₀ beibehalten'}</div>` +
+      `<div style="font-size:.85rem;color:var(--text2)">` +
+      `k = ${k}, Kritischer Wert: ${critK}, p-Wert = ${pValue.toFixed(4)}` +
+      `${pValue <= alpha ? ' ≤ ' : ' > '}α = ${alpha}</div>` +
+      `<div style="font-size:.82rem;color:var(--text3);margin-top:4px">µ = ${mu.toFixed(1)}, σ = ${sigma.toFixed(2)}, ` +
+      `k liegt ${Math.abs(k - mu) > 2 * sigma ? 'außerhalb' : 'innerhalb'} des 2σ-Bereichs</div>`;
+  }
+};
+
+// ─── STRATEGIE TAB ───
+const STRATEGIES = [
+  { id: 'stop3', name: 'Stoppe nach 3', desc: 'Konservativ: immer nach 3 Karten aufhören', color: '#3fb950' },
+  { id: 'stop4', name: 'Stoppe nach 4', desc: 'Moderat: nach 4 Karten aufhören', color: '#58a6ff' },
+  { id: 'stop5', name: 'Stoppe nach 5', desc: 'Riskant: nach 5 Karten aufhören', color: '#f0883e' },
+  { id: 'stop6', name: 'Stoppe nach 6', desc: 'Sehr riskant: nach 6 Karten aufhören', color: '#f85149' },
+  { id: 'sum20', name: 'Summe ≥ 20', desc: 'Aufhören wenn Summe ≥ 20', color: '#bc8cff' },
+  { id: 'sum25', name: 'Summe ≥ 25', desc: 'Aufhören wenn Summe ≥ 25', color: '#ffd166' },
+  { id: 'ev', name: 'EV-optimal', desc: 'Ziehen solange EV(Ziehen) > EV(Stay)', color: '#79c0ff' },
+  { id: 'pbust30', name: 'P(Bust) < 30%', desc: 'Ziehen solange P(Bust) < 30%', color: '#d2a8ff' }
+];
+
+const Strat = {
+  selected: ['stop4', 'ev', 'pbust30'],
+
+  init() {
+    const grid = document.getElementById('strat-picker');
+    grid.innerHTML = STRATEGIES.map(s =>
+      `<div class="strat-card ${this.selected.includes(s.id) ? 'selected' : ''}" data-id="${s.id}" onclick="Strat.toggleStrat('${s.id}')">
+        <h4 style="color:${s.color}">${s.name}</h4>
+        <p>${s.desc}</p>
+      </div>`
+    ).join('');
+  },
+
+  toggleStrat(id) {
+    const idx = this.selected.indexOf(id);
+    if (idx >= 0) this.selected.splice(idx, 1);
+    else this.selected.push(id);
+    document.querySelectorAll('.strat-card').forEach(c => {
+      c.classList.toggle('selected', this.selected.includes(c.dataset.id));
+    });
+  },
+
+  simulateRound(stratId) {
+    const deck = shuffle(createDeck());
+    const hand = [];
+    let busted = false;
+
+    while (deck.length > 0) {
+      const card = deck.pop();
+      if (hand.includes(card)) { busted = true; break; }
+      hand.push(card);
+
+      const sum = hand.reduce((a, b) => a + b, 0);
+      const pBust = MathEngine.bustProb(hand);
+      const evD = MathEngine.evDraw(hand);
+      const evS = MathEngine.evStay(hand);
+
+      let stop = false;
+      switch (stratId) {
+        case 'stop3': stop = hand.length >= 3; break;
+        case 'stop4': stop = hand.length >= 4; break;
+        case 'stop5': stop = hand.length >= 5; break;
+        case 'stop6': stop = hand.length >= 6; break;
+        case 'sum20': stop = sum >= 20; break;
+        case 'sum25': stop = sum >= 25; break;
+        case 'ev': stop = evS >= evD; break;
+        case 'pbust30': stop = pBust >= 0.3; break;
+      }
+      if (stop) break;
+    }
+    return busted ? 0 : hand.reduce((a, b) => a + b, 0);
+  },
+
+  runComparison() {
+    const N = 10000;
+    document.getElementById('strat-status').textContent = 'Simuliere...';
+    const results = {};
+
+    setTimeout(() => {
+      this.selected.forEach(id => {
+        const scores = [];
+        for (let i = 0; i < N; i++) scores.push(this.simulateRound(id));
+        const mean = scores.reduce((a, b) => a + b, 0) / N;
+        const bustRate = scores.filter(s => s === 0).length / N;
+        const nonZero = scores.filter(s => s > 0);
+        const avgIfScored = nonZero.length > 0 ? nonZero.reduce((a, b) => a + b, 0) / nonZero.length : 0;
+        results[id] = { mean, bustRate, avgIfScored, scores };
+      });
+
+      const strats = STRATEGIES.filter(s => this.selected.includes(s.id));
+      document.getElementById('strat-results').innerHTML = strats.map(s => {
+        const r = results[s.id];
+        return `<div class="strat-result-card">
+          <h4 style="color:${s.color}">${s.name}</h4>
+          <div class="big-num" style="color:${s.color}">${r.mean.toFixed(1)}</div>
+          <div class="sub">Punkte/Runde</div>
+          <div style="font-size:.75rem;color:var(--text3);margin-top:6px">
+            Bust: ${(r.bustRate * 100).toFixed(1)}% | Ø wenn Score: ${r.avgIfScored.toFixed(1)}
+          </div>
+        </div>`;
+      }).join('');
+
+      document.getElementById('strat-status').textContent = `${N.toLocaleString()} Runden simuliert`;
+    }, 50);
+  },
+
+  renderHeatmap() {
+    const canvas = document.getElementById('heatmap-canvas');
+    if (!canvas) return;
+    const W = canvas.parentElement.clientWidth;
+    canvas.width = W * (window.devicePixelRatio || 1);
+    canvas.height = 350 * (window.devicePixelRatio || 1);
+    canvas.style.width = W + 'px';
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, W, 350);
+
+    // Axes: x = number of cards (1-7), y = current sum (0-60)
+    const margin = { l: 50, r: 20, t: 20, b: 40 };
+    const plotW = W - margin.l - margin.r;
+    const plotH = 350 - margin.t - margin.b;
+    const cols = 7, rows = 13;
+    const cellW = plotW / cols, cellH = plotH / rows;
+
+    // For each cell, simulate average EV advantage of drawing
+    for (let cards = 1; cards <= 7; cards++) {
+      for (let sumBin = 0; sumBin < 13; sumBin++) {
+        const targetSum = sumBin * 5;
+        // Approximate: generate random hands of given size near target sum
+        let evAdvantage = 0;
+        const trials = 200;
+        for (let t = 0; t < trials; t++) {
+          const hand = generateRandomHand(cards, targetSum);
+          if (!hand) continue;
+          const evD = MathEngine.evDraw(hand);
+          const evS = MathEngine.evStay(hand);
+          evAdvantage += (evD - evS);
+        }
+        evAdvantage /= trials;
+
+        const x = margin.l + (cards - 1) * cellW;
+        const y = margin.t + (12 - sumBin) * cellH;
+
+        // Color: green = draw, red = stay
+        const intensity = Math.min(1, Math.abs(evAdvantage) / 15);
+        if (evAdvantage > 0) {
+          ctx.fillStyle = `rgba(63,185,80,${0.2 + intensity * 0.6})`;
+        } else {
+          ctx.fillStyle = `rgba(248,81,73,${0.2 + intensity * 0.6})`;
+        }
+        ctx.fillRect(x, y, cellW - 1, cellH - 1);
+
+        // Value
+        ctx.fillStyle = '#e6edf3';
+        ctx.font = '10px JetBrains Mono';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(evAdvantage.toFixed(0), x + cellW / 2, y + cellH / 2);
+      }
+    }
+
+    // Labels
+    ctx.fillStyle = '#8b949e';
+    ctx.font = '11px Nunito';
+    ctx.textAlign = 'center';
+    for (let c = 1; c <= 7; c++) {
+      ctx.fillText(String(c), margin.l + (c - 0.5) * cellW, 350 - 10);
+    }
+    ctx.fillText('Karten auf der Hand', margin.l + plotW / 2, 350 - 0);
+
+    ctx.textAlign = 'right';
+    for (let s = 0; s < 13; s++) {
+      ctx.fillText(String(s * 5), margin.l - 8, margin.t + (12 - s) * cellH + cellH / 2);
+    }
+
+    ctx.save();
+    ctx.translate(12, margin.t + plotH / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.textAlign = 'center';
+    ctx.fillText('Aktuelle Summe', 0, 0);
+    ctx.restore();
+  },
+
+  runTournament() {
+    const N = 1000;
+    const strats = ['stop3', 'stop5', 'ev', 'pbust30'];
+    const wins = {};
+    strats.forEach(s => wins[s] = 0);
+
+    for (let t = 0; t < N; t++) {
+      const totals = {};
+      strats.forEach(s => totals[s] = 0);
+      let roundsPlayed = 0;
+      while (roundsPlayed < 50) {
+        strats.forEach(s => {
+          totals[s] += this.simulateRound(s);
+        });
+        roundsPlayed++;
+        if (Object.values(totals).some(v => v >= 200)) break;
+      }
+      const winner = strats.reduce((a, b) => totals[a] > totals[b] ? a : b);
+      wins[winner]++;
+    }
+
+    const el = document.getElementById('tournament-results');
+    el.innerHTML = '<h4 style="font-size:.88rem;margin-bottom:8px">Ergebnis (1000 Turniere, Race to 200):</h4>' +
+      strats.map(id => {
+        const s = STRATEGIES.find(x => x.id === id);
+        const pct = (wins[id] / N * 100).toFixed(1);
+        return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <div style="width:${pct * 2}px;height:20px;background:${s.color};border-radius:4px;min-width:4px"></div>
+          <span style="font-size:.82rem;color:${s.color};font-weight:700">${s.name}</span>
+          <span style="font-size:.82rem;color:var(--text2)">${pct}%</span>
+        </div>`;
+      }).join('');
+  }
+};
+
+function generateRandomHand(size, targetSum) {
+  // Try to pick 'size' unique values from 0-12 that sum near targetSum
+  const available = [...VALUES];
+  const hand = [];
+  for (let i = 0; i < size && available.length > 0; i++) {
+    const idx = Math.floor(Math.random() * available.length);
+    hand.push(available.splice(idx, 1)[0]);
+  }
+  return hand.length === size ? hand : null;
+}
+
+// ─── DIAGNOSE TAB ───
+const QUESTIONS = [
+  // GSK01: Lage-/Streumaße
+  { id: 1, tag: 'GSK01', text: 'In 10 Runden Flip 7 erzielst du: 0, 15, 23, 0, 8, 31, 12, 0, 19, 7. Berechne den Mittelwert.', type: 'number', answer: 11.5, tol: 0.1, xp: 15,
+    tracks: { basis: 'Addiere alle Werte und teile durch 10.', erweitert: null, vertiefung: null } },
+  { id: 2, tag: 'GSK01', text: 'Bestimme die Standardabweichung der Daten: 0, 15, 23, 0, 8, 31, 12, 0, 19, 7. (Runde auf eine Dezimalstelle)', type: 'number', answer: 10.2, tol: 0.3, xp: 20,
+    tracks: { basis: 'σ = √(Σ(xᵢ−µ)²/n). Berechne zuerst µ, dann die Abweichungen.', erweitert: null, vertiefung: null } },
+  // GSK02: Zufallsgrößen
+  { id: 3, tag: 'GSK02', text: 'Welche der folgenden Größen ist eine Zufallsgröße im Kontext von Flip 7?', type: 'mc',
+    options: ['Die Anzahl der Karten im Deck (79)', 'Die Punktzahl, die du in einer Runde erzielst', 'Die Regel, dass 7 Karten einen Bonus geben', 'Die Anzahl der Spieler am Tisch'],
+    answer: 1, xp: 10, tracks: { basis: 'Eine Zufallsgröße nimmt verschiedene Werte mit bestimmten Wahrscheinlichkeiten an.', erweitert: null, vertiefung: null } },
+  // GSK03: Erwartungswert
+  { id: 4, tag: 'GSK03', text: 'Du hast die Karten [2, 5, 9] auf der Hand. Berechne P(Bust) für die nächste Karte. (In Prozent, eine Dezimalstelle)', type: 'number',
+    answer: (() => { const h=[2,5,9]; return (h.reduce((s,v)=>s+(CARD_COUNTS[v]-1),0))/(79-3)*100; })(), tol: 0.2, xp: 20,
+    tracks: { basis: 'Zähle die verbleibenden Duplikate: Wie viele 2er, 5er, 9er sind noch im Deck?', erweitert: null, vertiefung: null } },
+  // GSK04: Bernoulliketten
+  { id: 5, tag: 'GSK04', text: 'Warum kann man die Runden eines Flip-7-Turniers (mit fester Strategie) näherungsweise als Bernoullikette modellieren?', type: 'mc',
+    options: ['Weil jede Runde genau zwei Ausgänge hat (Bust/Score) und p ≈ konstant',
+              'Weil die Karten immer gleich verteilt sind',
+              'Weil man genau 7 Karten ziehen muss',
+              'Weil der Erwartungswert immer gleich ist'],
+    answer: 0, xp: 15, tracks: { basis: 'Bernoullikette: n unabhängige Versuche, jeweils 2 Ausgänge, gleiche Wahrscheinlichkeit p.', erweitert: null, vertiefung: null } },
+  // GSK05: Binomialverteilung
+  { id: 6, tag: 'GSK05', text: 'Y ~ B(20, 0.25). Berechne P(Y = 5). (4 Dezimalstellen)', type: 'number',
+    answer: MathEngine.binomPMF(20, 0.25, 5), tol: 0.001, xp: 20,
+    tracks: { basis: 'P(Y=k) = C(n,k) · p^k · (1−p)^(n−k). Setze n=20, p=0.25, k=5 ein.', erweitert: null, vertiefung: null } },
+  // GSK06: Parameter
+  { id: 7, tag: 'GSK06', text: 'Wie verändert sich die Binomialverteilung B(n, p), wenn p von 0.2 auf 0.5 erhöht wird (bei gleichem n)?', type: 'mc',
+    options: ['Sie wird symmetrischer und breiter', 'Sie wird schmaler und nach links verschoben',
+              'Sie bleibt gleich, nur µ ändert sich', 'Sie wird zu einer Normalverteilung'],
+    answer: 0, xp: 15, tracks: { basis: 'Teste es im Verteilungen-Tab mit dem Parameter-Slider!', erweitert: null, vertiefung: null } },
+  // GSK07: Problemlösung
+  { id: 8, tag: 'GSK07', text: 'Ein Spieler bustet in 25% der Runden. Wie wahrscheinlich ist es, dass er in 20 Runden höchstens 3 Mal bustet? (In Prozent, auf 1 Dezimalstelle)', type: 'number',
+    answer: MathEngine.binomCDF(20, 0.25, 3) * 100, tol: 0.5, xp: 25,
+    tracks: { basis: 'Berechne P(Y≤3) = P(Y=0) + P(Y=1) + P(Y=2) + P(Y=3).', erweitert: null, vertiefung: null } },
+  // GSK08: Entscheidungsregel
+  { id: 9, tag: 'GSK08', text: 'H₀: p = 0.2, H₁: p > 0.2, n = 30, α = 0.05. Ein Spieler bustet 10 Mal. Finde den kritischen Wert k und entscheide: H₀ verwerfen?', type: 'mc',
+    options: ['k = 10, H₀ verwerfen', 'k = 11, H₀ beibehalten', 'k = 9, H₀ verwerfen', 'k = 8, H₀ verwerfen'],
+    answer: (() => {
+      let critK = 30;
+      for (let c = 0; c <= 30; c++) { if (1 - MathEngine.binomCDF(30, 0.2, c) <= 0.05) { critK = c + 1; break; } }
+      return critK <= 10 ? 0 : 1;
+    })(), xp: 25,
+    tracks: { basis: 'Berechne P(Y ≥ k) für verschiedene k, bis P(Y ≥ k) ≤ 0.05.', erweitert: null, vertiefung: null } },
+  // Extra
+  { id: 10, tag: 'GSK03', text: 'Du hast [1, 4, 8, 11] auf der Hand (Summe 24). EV(Ziehen) = (1−P_bust)·(24 + Ø_sichere_Karte). Ist Ziehen sinnvoll?', type: 'mc',
+    options: ['Ja, EV(Ziehen) > 24', 'Nein, EV(Ziehen) < 24', 'Genau gleich', 'Kann man nicht berechnen'],
+    answer: (() => { const h=[1,4,8,11]; return MathEngine.evDraw(h) > MathEngine.evStay(h) ? 0 : 1; })(), xp: 20,
+    tracks: { basis: 'Berechne erst P(Bust), dann den Erwartungswert der sicheren Karten.', erweitert: null, vertiefung: null } }
+];
+
+const Diag = {
+  currentQ: 0,
+  streak: 0,
+  xp: 0,
+  answered: new Set(),
+
+  init() {
+    this.currentQ = 0;
+    this.streak = State.d.diagStreak || 0;
+    this.xp = State.d.diagXP || 0;
+    this.answered = new Set();
+    this.renderQuestion();
+    this.updateStrip();
+  },
+
+  renderQuestion() {
+    const body = document.getElementById('diag-body');
+    const q = QUESTIONS[this.currentQ];
+    if (!q) { this.showResults(); return; }
+
+    document.getElementById('diag-q-num').textContent = this.currentQ + 1;
+    document.getElementById('diag-q-total').textContent = QUESTIONS.length;
+
+    const track = State.d.track;
+    const scaffold = q.tracks[track];
+
+    let html = `<div class="q-card">`;
+    html += `<span class="q-tag">${q.tag}</span>`;
+    if (scaffold) html += `<div class="scaffold">${scaffold}</div>`;
+    html += `<div class="q-text">${q.text}</div>`;
+
+    if (q.type === 'mc') {
+      html += `<div class="q-choices">`;
+      q.options.forEach((opt, i) => {
+        html += `<div class="q-choice" data-idx="${i}" onclick="Diag.checkMC(${i})">${opt}</div>`;
+      });
+      html += `</div>`;
+    } else if (q.type === 'number') {
+      html += `<div class="q-input-row">
+        <input class="q-input" type="number" step="any" id="q-input" placeholder="Antwort">
+        <button class="btn-check" onclick="Diag.checkNumber()">Prüfen</button>
+      </div>`;
+    }
+
+    html += `<div class="q-feedback" id="q-feedback"></div>`;
+    html += `</div>`;
+    body.innerHTML = html;
+  },
+
+  checkMC(idx) {
+    if (this.answered.has(this.currentQ)) return;
+    this.answered.add(this.currentQ);
+    const q = QUESTIONS[this.currentQ];
+    const correct = idx === q.answer;
+
+    document.querySelectorAll('.q-choice').forEach((c, i) => {
+      c.classList.add('disabled');
+      if (i === q.answer) c.classList.add('correct');
+      else if (i === idx && !correct) c.classList.add('wrong');
+    });
+
+    this.showFeedback(correct, q.xp);
+  },
+
+  checkNumber() {
+    if (this.answered.has(this.currentQ)) return;
+    const q = QUESTIONS[this.currentQ];
+    const input = document.getElementById('q-input');
+    const val = parseFloat(input.value);
+    if (isNaN(val)) return;
+
+    this.answered.add(this.currentQ);
+    const correct = Math.abs(val - q.answer) <= (q.tol || 0.1);
+    input.style.borderColor = correct ? 'var(--ok)' : 'var(--bust)';
+    input.disabled = true;
+
+    this.showFeedback(correct, q.xp);
+  },
+
+  showFeedback(correct, xpAmount) {
+    const fb = document.getElementById('q-feedback');
+    if (correct) {
+      this.streak++;
+      const bonus = this.streak >= 3 ? Math.floor(xpAmount * 0.5) : 0;
+      const totalXP = xpAmount + bonus;
+      this.xp += totalXP;
+      fb.className = 'q-feedback show ok';
+      fb.innerHTML = `Richtig! +${totalXP} XP` + (bonus > 0 ? ` (${bonus} Streak-Bonus!)` : '');
+      addXP(totalXP, 'Diagnose');
+    } else {
+      this.streak = 0;
+      fb.className = 'q-feedback show bad';
+      const q = QUESTIONS[this.currentQ];
+      let hint = '';
+      if (q.type === 'number') hint = ` Die richtige Antwort: ${typeof q.answer === 'number' ? q.answer.toFixed(2) : q.answer}`;
+      fb.innerHTML = `Leider falsch.${hint}`;
+    }
+
+    State.d.diagStreak = this.streak;
+    State.d.diagXP = this.xp;
+    State.save();
+    this.updateStrip();
+
+    // Next button
+    setTimeout(() => {
+      const btn = document.createElement('button');
+      btn.className = 'btn-check';
+      btn.style.marginTop = '10px';
+      btn.textContent = this.currentQ < QUESTIONS.length - 1 ? 'Nächste Frage' : 'Ergebnis';
+      btn.onclick = () => { this.currentQ++; this.renderQuestion(); };
+      fb.appendChild(btn);
+    }, 500);
+  },
+
+  updateStrip() {
+    document.getElementById('diag-streak').textContent = this.streak;
+    document.getElementById('diag-xp').textContent = this.xp;
+  },
+
+  showResults() {
+    const body = document.getElementById('diag-body');
+    const total = QUESTIONS.reduce((s, q) => s + q.xp, 0);
+    const pct = Math.round(this.xp / total * 100);
+
+    // Competency breakdown
+    const comp = {};
+    QUESTIONS.forEach((q, i) => {
+      if (!comp[q.tag]) comp[q.tag] = { total: 0, earned: 0 };
+      comp[q.tag].total += q.xp;
+      if (this.answered.has(i)) {
+        // Check if answered correctly (simplified)
+        comp[q.tag].earned += q.xp * (pct / 100); // approximate
+      }
+    });
+
+    body.innerHTML = `
+      <div style="text-align:center;padding:20px">
+        <div class="score-circle"><div class="score-num">${pct}%</div></div>
+        <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:2px;margin-bottom:16px">${this.xp} XP gesammelt</h3>
+        <p style="color:var(--text2);margin-bottom:20px">${pct >= 80 ? 'Ausgezeichnet!' : pct >= 50 ? 'Gute Arbeit! Einige Themen kannst du noch vertiefen.' : 'Übe weiter — du schaffst das!'}</p>
+        <button class="btn-check" onclick="Diag.init()">Nochmal starten</button>
+      </div>`;
+  }
+};
+
+// ─── XP SYSTEM ───
+function addXP(amount, reason) {
+  State.d.xp += amount;
+  State.save();
+  document.getElementById('xp-display').textContent = State.d.xp + ' XP';
+  // Toast
+  const toast = document.createElement('div');
+  toast.style.cssText = 'position:fixed;top:60px;right:20px;background:var(--bg2);border:1px solid var(--gold);color:var(--gold);padding:8px 16px;border-radius:8px;font-size:.82rem;font-weight:700;z-index:999;animation:fadeUp .3s ease;pointer-events:none';
+  toast.textContent = `+${amount} XP — ${reason}`;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 2000);
+}
+
+// ─── APP ───
+const App = {
+  currentTab: 'spieltisch',
+
+  init() {
+    State.load();
+    document.getElementById('track-sel').value = State.d.track;
+    this.setTrack(State.d.track, true);
+    document.getElementById('xp-display').textContent = State.d.xp + ' XP';
+    Game.init();
+    WK.init();
+    Strat.init();
+    Vert.runSim();
+    Vert.updateBinom();
+    Diag.init();
+    this.drawWelcomeCanvas();
+    window.addEventListener('resize', () => {
+      if (this.currentTab === 'spieltisch') Game.renderCanvas();
+    });
+  },
+
+  showWelcome() {
+    document.getElementById('s-welcome').classList.add('active');
+    document.getElementById('s-main').classList.remove('active');
+  },
+
+  showMain() {
+    document.getElementById('s-welcome').classList.remove('active');
+    document.getElementById('s-main').classList.add('active');
+    Game.renderCanvas();
+  },
+
+  switchTab(id) {
+    this.currentTab = id;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('visible'));
+    document.getElementById('tab-' + id).classList.add('visible');
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === id));
+
+    if (id === 'spieltisch') setTimeout(() => Game.renderCanvas(), 50);
+    if (id === 'wahrscheinlichkeiten') setTimeout(() => WK.drawTree(), 50);
+    if (id === 'strategie') setTimeout(() => Strat.renderHeatmap(), 50);
+  },
+
+  setTrack(track, silent) {
+    State.d.track = track;
+    if (!silent) State.save();
+    document.body.className = 'track-' + track;
+    // Re-render active tab content
+    if (this.currentTab === 'wahrscheinlichkeiten') WK.updateCalc();
+    if (this.currentTab === 'diagnose') Diag.renderQuestion();
+  },
+
+  drawWelcomeCanvas() {
+    const canvas = document.getElementById('wlc-canvas');
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, 320, 200);
+
+    // Draw some cards in a fan
+    const cards = [3, 7, 10, 1, 12];
+    const centerX = 160, centerY = 140;
+    cards.forEach((val, i) => {
+      ctx.save();
+      const angle = (i - 2) * 0.2;
+      ctx.translate(centerX, centerY);
+      ctx.rotate(angle);
+      drawCardShape(ctx, -25, -70, 50, 75, 5, true, val, false);
+      ctx.restore();
+    });
+
+    // Deck
+    for (let i = 0; i < 4; i++) {
+      drawCardShape(ctx, 20 + i * 1.5, 20 - i, 40, 60, 4, false, null, false);
+    }
+  }
+};
+
+// ─── BOOT ───
+document.addEventListener('DOMContentLoaded', () => App.init());
+</script>
+</body>
+</html>

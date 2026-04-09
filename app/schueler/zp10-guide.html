@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZP10 Diagnose-App - Schüler-Anleitung</title>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="schueler-shared.css">
+
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">📊</div>
+            <div class="header-text">
+                <h1>ZP10 Diagnose-App</h1>
+                <p>Dein Weg zum Erfolg in der Prüfung</p>
+            </div>
+        </div>
+        <button class="theme-toggle" onclick="toggleTheme()">🌙 Dunkel</button>
+    </header>
+
+    <div class="container">
+        <!-- Welcome Section -->
+        <section class="welcome">
+            <h2>So nutzt du die ZP10-Diagnose-App</h2>
+            <p>
+                Mit dieser App analysierst du deine Stärken und Schwächen in Mathematik und trainierst genau dort,
+                wo du Hilfe brauchst. Personalisierte Aufgaben, regelmäßiges Üben und echte Prüfungssimulationen –
+                alles was du für die ZP10 brauchst, an einem Ort.
+            </p>
+        </section>
+
+        <!-- Steps Section -->
+        <section class="steps-section">
+            <h2 class="section-title">📍 So funktioniert's</h2>
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-number">1️⃣</div>
+                    <h3>Starte im Hub</h3>
+                    <p>Überblick über alle Module – wähle ein Thema, das dich interessiert</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">2️⃣</div>
+                    <h3>Diagnose starten</h3>
+                    <p>Intelligent angepasste Aufgaben zeigen deine Stärken und Schwächen</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">3️⃣</div>
+                    <h3>Förderaufgaben üben</h3>
+                    <p>Gezielte Aufgaben bei Fehlvorstellungen – verstehen statt auswendig lernen</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">4️⃣</div>
+                    <h3>Mit Lernplaner üben</h3>
+                    <p>Spaced Repetition: Wiederhole genau zur richtigen Zeit zum optimalen Lernen</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">5️⃣</div>
+                    <h3>Prüfung simulieren</h3>
+                    <p>Echtes ZP10-Format unter realistischen Bedingungen – zeige, was du kannst</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">6️⃣</div>
+                    <h3>Daily Challenge</h3>
+                    <p>5 Minuten pro Tag reichen aus – halte dich fit mit kurzen Aufgaben</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="features-section">
+            <h2 class="section-title">⚙️ Das musst du über die Features wissen</h2>
+            <div class="feature-list">
+                <div class="feature-item">
+                    <h4>🚦 Die Ampel (Rot – Gelb – Grün)</h4>
+                    <p>
+                        <strong>Rot:</strong> Du brauchst hier noch Hilfe – diese Module sollten deine Priorität sein.
+                        <strong>Gelb:</strong> Du verstehst bereits einiges, aber noch nicht sicher genug.
+                        <strong>Grün:</strong> Super! Du beherrschst dieses Modul – halte es mit der Daily Challenge fit.
+                    </p>
+                </div>
+                <div class="feature-item">
+                    <h4>💭 Fehlvorstellungen (MV) – Das ist wichtig!</h4>
+                    <p>
+                        Eine Fehlvorstellung ist eine typische falsche Denkweise. Viele Schüler denken z.B., dass die Parabel
+                        y = x² immer durch den Punkt (1|2) geht. Die App erkennt diese und hilft dir, sie zu korrigieren –
+                        mit gezielten Übungen, nicht einfach nur Aufgaben.
+                    </p>
+                </div>
+                <div class="feature-item">
+                    <h4>⭐ XP und Ränge</h4>
+                    <p>
+                        Verdiene Punkte (XP) für jede gelöste Aufgabe und sammle Abzeichen. Das ist nicht nur motivierend –
+                        es hilft dir auch, regelmäßig zu üben und deinen Fortschritt zu verfolgen.
+                    </p>
+                </div>
+                <div class="feature-item">
+                    <h4>🎯 Kompetenzen (K1-K6) nach Kernlehrplan</h4>
+                    <p>
+                        Diese Kompetenzen sind im Kernlehrplan NRW definiert. Die App zeigt dir, welche Kompetenzen du
+                        am besten beherrschst und wo du noch trainieren solltest. Das ist direkt auf die ZP10 abgestimmt.
+                    </p>
+                </div>
+                <div class="feature-item">
+                    <h4>🔄 Diagnose-Modus vs. Prüfungs-Modus</h4>
+                    <p>
+                        <strong>Diagnose:</strong> Angepasste Aufgaben, Erklärungen und Tipps – zum Lernen.
+                        <strong>Prüfung:</strong> Echte Bedingungen ohne Hilfen – zum Testen deiner Fähigkeiten.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tips Section -->
+        <section class="tips-section">
+            <h2 class="section-title">💡 Tipps für die ZP10-Vorbereitung</h2>
+            <div class="tips-grid">
+                <div class="tip-card">
+                    <h4>⏰ Früh anfangen</h4>
+                    <p>Starte mindestens 6 Wochen vor der Prüfung. Je mehr Zeit du hast, desto entspannter kannst du lernen.</p>
+                </div>
+                <div class="tip-card">
+                    <h4>📅 Täglich üben</h4>
+                    <p>5-10 Minuten täglich sind besser als 2 Stunden einmal pro Woche. Mach die Daily Challenge zur Routine!</p>
+                </div>
+                <div class="tip-card">
+                    <h4>🎯 Rote Module zuerst</h4>
+                    <p>Fokussiere dich auf die Module mit der roten Ampel. Dort bekommst du die meisten Verbesserungen.</p>
+                </div>
+                <div class="tip-card">
+                    <h4>🔁 Wiederholung ist wichtig</h4>
+                    <p>Der Lernplaner zeigt dir automatisch, wann du Inhalte wiederholen solltest. Folge seinen Vorschlägen!</p>
+                </div>
+                <div class="tip-card">
+                    <h4>✅ Prüfungen simulieren</h4>
+                    <p>Übe die Prüfungssimulation mindestens 3-mal komplett durch. Das macht dich sicherer und weniger nervös.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ Section -->
+        <section class="faq-section">
+            <h2 class="section-title">❓ Häufig gestellte Fragen</h2>
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <button class="faq-question">
+                    Werden meine Daten gespeichert?
+                    <span class="faq-toggle">▼</span>
+                </button>
+                <div class="faq-answer">
+                    <p>
+                        Ja, deine Fortschritte werden <strong>lokal in deinem Browser</strong> gespeichert. Das heißt: Deine Daten
+                        bleiben privat auf deinem Gerät. Das hat einen Vorteil: Du brauchst dich nicht anzumelden.
+                        Aber Achtung: Wenn du den Browser-Cache löschst, sind die Daten weg!
+                    </p>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <button class="faq-question">
+                    Kann ich auf mehreren Geräten arbeiten?
+                    <span class="faq-toggle">▼</span>
+                </button>
+                <div class="faq-answer">
+                    <p>
+                        Aktuell funktioniert die App pro Gerät separat. Das heißt: Dein Fortschritt auf dem Handy ist unterschiedlich
+                        von deinem Fortschritt am Laptop. In einer zukünftigen Version wird die Cloud-Synchronisierung möglich sein.
+                    </p>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <button class="faq-question">
+                    Was passiert, wenn ich den Browser-Cache lösche?
+                    <span class="faq-toggle">▼</span>
+                </button>
+                <div class="faq-answer">
+                    <p>
+                        Dein gesamter Fortschritt geht verloren – alle Punkte, Abzeichen und Ergebnisse.
+                        Deshalb: Sei vorsichtig mit dem Löschen von Browser-Daten und mach regelmäßig Screenshots deines Fortschritts,
+                        wenn dir deine Daten wichtig sind.
+                    </p>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <button class="faq-question">
+                    Wie komme ich zum Hub zurück?
+                    <span class="faq-toggle">▼</span>
+                </button>
+                <div class="faq-answer">
+                    <p>
+                        In jedem Modul findest du einen <strong>Hub-Button</strong> (meist oben links). Ein Klick bringt dich
+                        zurück zur Übersicht aller Module. Du kannst jederzeit zwischen Modulen hin- und herwechseln.
+                    </p>
+                </div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <button class="faq-question">
+                    Was bedeutet die Notenprognose?
+                    <span class="faq-toggle">▼</span>
+                </button>
+                <div class="faq-answer">
+                    <p>
+                        Die Notenprognose ist eine <strong>Schätzung basierend auf deinen bisherigen Ergebnissen</strong>.
+                        Je besser du in den Diagnose- und Simulationen abschneidest, desto höher ist die vorhergesagte Note.
+                        Das ist kein genaues Orakel, sondern eine Orientierungshilfe – nutze sie, um zu sehen, wo du noch trainieren solltest!
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="cta-section">
+            <a href="#hub" class="btn btn-primary">🚀 Zum Hub starten</a>
+            <a href="#planner" class="btn btn-secondary">📅 Zum Lernplaner</a>
+            <a href="#challenge" class="btn btn-secondary">⚡ Daily Challenge</a>
+        </section>
+    </div>
+
+    <script>
+        // Theme Toggle
+        function toggleTheme() {
+            const body = document.body;
+            const toggle = document.querySelector('.theme-toggle');
+
+            body.classList.toggle('light-mode');
+
+            if (body.classList.contains('light-mode')) {
+                toggle.textContent = '☀️ Hell';
+                localStorage.setItem('theme', 'light');
+            } else {
+                toggle.textContent = '🌙 Dunkel';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Load saved theme on page load
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-mode');
+                document.querySelector('.theme-toggle').textContent = '☀️ Hell';
+            }
+        }
+
+        // FAQ Toggle
+        function toggleFAQ(element) {
+            element.classList.toggle('active');
+        }
+
+        // Initialize
+        loadTheme();
+    </script>
+
+<button id="theme-toggle" aria-label="Toggle theme" style="
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 9999;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  cursor: pointer;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: all 150ms ease;
+" onclick="toggleTheme()">
+  ☀️
+</button>
+
+<script>
+function toggleTheme(){
+  const body = document.body;
+  const isDark = body.classList.toggle('dark');
+  localStorage.setItem('zp10_theme', isDark ? 'dark' : 'light');
+}
+// Apply saved theme on load
+(function(){
+  const saved = localStorage.getItem('zp10_theme') || 'light';
+  if(saved === 'dark'){
+    document.body.classList.add('dark');
+  }
+})();
+</script>
+
+</body>
+</html>

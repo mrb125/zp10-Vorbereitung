@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZP10 Highscore – Mathe Diagnose</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <link rel="stylesheet" href="zp10-highscore.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏆 Highscore</h1>
+            <div class="header-actions">
+                <a href="../index.html">← Zurück</a>
+                <div class="view-toggle">
+                    <button class="toggle-btn active" onclick="switchView('student')">Schüler</button>
+                    <button class="toggle-btn" onclick="promptTeacherPassword()">Lehrer</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Personal Stats Card -->
+        <div class="personal-stats">
+            <div class="stat-card">
+                <div class="stat-label">Dein Rang</div>
+                <div class="stat-value" id="personalRank">-</div>
+                <div class="stat-subtitle">in deiner Klasse</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Gesamtpunkte</div>
+                <div class="stat-value" id="personalXP">0</div>
+                <div class="stat-subtitle">XP gesammelt</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Erfolgsquote</div>
+                <div class="stat-value" id="personalAccuracy">0%</div>
+                <div class="stat-subtitle">durchschnittliche Genauigkeit</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Aktuelle Serie</div>
+                <div class="stat-value" id="personalStreak">0</div>
+                <div class="stat-subtitle">Tage am Stück</div>
+            </div>
+        </div>
+
+        <!-- Student View -->
+        <div class="leaderboard-section active" id="studentView">
+            <div class="filter-controls">
+                <button class="filter-btn active" onclick="applyFilter('Gesamt')">Gesamt</button>
+                <button class="filter-btn" onclick="applyFilter('Woche')">Diese Woche</button>
+                <button class="filter-btn" onclick="applyFilter('Klasse')">Klasse</button>
+            </div>
+
+            <div class="leaderboard-list" id="leaderboardList">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📊</div>
+                    <div class="empty-state-text">Noch keine Ergebnisse</div>
+                    <div>Starten Sie ein Quiz, um auf der Bestenliste zu erscheinen!</div>
+                </div>
+            </div>
+
+            <div style="margin-top: 25px; display: flex; gap: 10px;">
+                <button class="btn-secondary btn-small" onclick="openExportModal()">📤 Ergebnis teilen</button>
+                <button class="btn-secondary btn-small" onclick="openImportModal()">📥 Code einlesen</button>
+            </div>
+        </div>
+
+        <!-- Teacher View -->
+        <div class="leaderboard-section" id="teacherView">
+            <div class="teacher-controls">
+                <input type="text" class="search-box" id="searchBox" placeholder="Nach Name suchen..." onkeyup="filterTable()">
+                <label class="toggle-label">
+                    <span>Anonymisiert</span>
+                    <div class="switch" id="anonToggle" onclick="toggleAnonymous()"></div>
+                </label>
+                <button class="btn-success btn-small" onclick="generateDemoData()">Demo-Daten</button>
+                <button class="btn-small" onclick="exportTableCSV()">📊 CSV exportieren</button>
+                <button class="btn-secondary btn-small" onclick="openImportModal()">📥 Datei importieren</button>
+            </div>
+
+            <div class="table-wrapper">
+                <table id="studentTable">
+                    <thead>
+                        <tr>
+                            <th onclick="sortTable(0)">Name ↕</th>
+                            <th onclick="sortTable(1)">XP ↕</th>
+                            <th onclick="sortTable(2)">Sessions ↕</th>
+                            <th onclick="sortTable(3)">Quote % ↕</th>
+                            <th onclick="sortTable(4)">Serie ↕</th>
+                            <th onclick="sortTable(5)">Schwache Themen</th>
+                            <th onclick="sortTable(6)">Zuletzt aktiv ↕</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Class Distribution Chart -->
+            <div class="chart-section">
+                <div class="chart-title">📈 Klassenverteilung – Erfolgsquoten</div>
+                <div class="chart-container">
+                    <canvas id="classDistChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Topic Heatmap -->
+            <div class="chart-section">
+                <div class="chart-title">🔥 Schwache Themen in der Klasse</div>
+                <div class="heatmap" id="heatmap"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Modal -->
+    <div class="modal" id="exportModal">
+        <div class="modal-content">
+            <div class="modal-title">📤 Ergebnis teilen</div>
+            <p style="color: var(--text-secondary); margin-bottom: 15px;">Teile diesen Code mit deinem Lehrer:</p>
+            <div class="modal-code" id="exportCode">Laden...</div>
+            <button class="btn-success" style="width: 100%; margin-top: 15px;" onclick="copyCode()">Code kopieren</button>
+            <div class="modal-buttons">
+                <button class="close-modal" onclick="closeExportModal()">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Modal -->
+    <div class="modal" id="importModal">
+        <div class="modal-content">
+            <div class="modal-title">📥 Code oder Datei einlesen</div>
+            <textarea class="modal-input" id="importCode" placeholder="Paste den Code hier ein..." style="resize: vertical; min-height: 80px;"></textarea>
+            <input type="file" id="importFile" accept=".json" style="display: none;">
+            <button class="btn-secondary" style="width: 100%; margin-top: 10px;" onclick="document.getElementById('importFile').click()">📁 JSON-Datei wählen</button>
+            <button class="btn-success" style="width: 100%; margin-top: 10px;" onclick="importData()">Daten importieren</button>
+            <div class="modal-buttons">
+                <button class="close-modal" onclick="closeImportModal()">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Name Prompt Modal -->
+    <div class="modal" id="nameModal">
+        <div class="modal-content">
+            <div class="modal-title">👤 Dein Name</div>
+            <p style="color: var(--text-secondary); margin-bottom: 15px;">Wie heißt du?</p>
+            <input type="text" class="modal-input" id="nameInput" placeholder="Max Mustermann" onkeypress="if(event.key==='Enter') setName()">
+            <div class="modal-buttons">
+                <button class="btn-success" style="flex: 1;" onclick="setName()">Speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== DATA MANAGEMENT ====================
+        const STORAGE_KEY = 'zp10_highscore_entry';
+        const TEACHER_KEY = 'zp10_highscore_teacher';
+        const HUB_KEY = 'zp10_hub_data';
+        const UEBEN_KEY = 'zp10_ueben_data';
+
+        let studentData = null;
+        let allStudentData = [];
+        let currentFilter = 'Gesamt';
+        let isTeacher = false;
+        let isAnonymous = false;
+        let sortColumn = 1;
+        let sortAscending = false;
+        let classDistChart = null;
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeApp();
+            document.getElementById('importFile').addEventListener('change', handleFileImport);
+        });
+
+        function initializeApp() {
+            // Check if student name is saved
+            const saved = loadStudentData();
+            if (!saved || !saved.name) {
+                showNameModal();
+            } else {
+                loadApp();
+            }
+        }
+
+        function setName() {
+            const name = document.getElementById('nameInput').value.trim();
+            if (!name) {
+                alert('Bitte gib deinen Namen ein!');
+                return;
+            }
+
+            let data = loadStudentData() || createEmptyEntry(name);
+            data.name = name;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            closeNameModal();
+            loadApp();
+        }
+
+        function loadApp() {
+            studentData = loadStudentData();
+            syncFromLocalData();
+            loadTeacherData();
+            renderPersonalStats();
+            renderLeaderboard();
+            renderTeacherView();
+        }
+
+        function createEmptyEntry(name) {
+            return {
+                name: name,
+                xp: 0,
+                accuracy: 0,
+                streak: 0,
+                sessions: 0,
+                weakTopics: [],
+                lastActive: new Date().toISOString(),
+                topicScores: {}
+            };
+        }
+
+        function loadStudentData() {
+            const data = localStorage.getItem(STORAGE_KEY);
+            return data ? JSON.parse(data) : null;
+        }
+
+        function syncFromLocalData() {
+            if (!studentData) return;
+
+            // Read from hub data
+            const hubData = localStorage.getItem(HUB_KEY);
+            const uebenData = localStorage.getItem(UEBEN_KEY);
+
+            let totalXP = 0;
+            let totalSessions = 0;
+            let allScores = [];
+            let topicMap = {};
+
+            if (hubData) {
+                try {
+                    const hub = JSON.parse(hubData);
+                    if (hub.results) {
+                        hub.results.forEach(result => {
+                            totalXP += result.xp || 0;
+                            totalSessions += 1;
+                            allScores.push(result.accuracy || 0);
+                            const topic = result.topic || 'Unbekannt';
+                            if (!topicMap[topic]) topicMap[topic] = [];
+                            topicMap[topic].push(result.accuracy || 0);
+                        });
+                    }
+                } catch (e) {}
+            }
+
+            if (uebenData) {
+                try {
+                    const ueben = JSON.parse(uebenData);
+                    if (ueben.results) {
+                        ueben.results.forEach(result => {
+                            totalXP += result.xp || 0;
+                            totalSessions += 1;
+                            allScores.push(result.accuracy || 0);
+                            const topic = result.topic || 'Unbekannt';
+                            if (!topicMap[topic]) topicMap[topic] = [];
+                            topicMap[topic].push(result.accuracy || 0);
+                        });
+                    }
+                } catch (e) {}
+            }
+
+            // Calculate metrics
+            const avgAccuracy = allScores.length > 0
+                ? Math.round(allScores.reduce((a, b) => a + b, 0) / allScores.length)
+                : 0;
+
+            // Find weak topics (avg accuracy < 60%)
+            const weakTopics = Object.entries(topicMap)
+                .filter(([_, scores]) => {
+                    const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+                    return avg < 60;
+                })
+                .map(([topic, _]) => topic)
+                .slice(0, 3);
+
+            studentData.xp = totalXP;
+            studentData.sessions = totalSessions;
+            studentData.accuracy = avgAccuracy;
+            studentData.weakTopics = weakTopics;
+            studentData.topicScores = topicMap;
+            studentData.lastActive = new Date().toISOString();
+
+            // Calculate streak (simple: consecutive days)
+            studentData.streak = calculateStreak();
+
+            // Save updated data
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(studentData));
+        }
+
+        function calculateStreak() {
+            // Simple implementation: check last active
+            const lastActive = new Date(studentData.lastActive);
+            const today = new Date();
+            const diffTime = Math.abs(today - lastActive);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return Math.max(0, 7 - diffDays); // Max 7 days
+        }
+
+        function loadTeacherData() {
+            const data = localStorage.getItem(TEACHER_KEY);
+            allStudentData = data ? JSON.parse(data) : [];
+            // Always include current student if they have data
+            if (studentData && !allStudentData.some(s => s.name === studentData.name)) {
+                allStudentData.push(studentData);
+            } else if (studentData) {
+                const idx = allStudentData.findIndex(s => s.name === studentData.name);
+                allStudentData[idx] = studentData;
+            }
+            saveTeacherData();
+        }
+
+        function saveTeacherData() {
+            localStorage.setItem(TEACHER_KEY, JSON.stringify(allStudentData));
+        }
+
+        // ==================== VIEW MANAGEMENT ====================
+        function switchView(view) {
+            isTeacher = view === 'teacher';
+            document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            document.getElementById('studentView').classList.toggle('active', !isTeacher);
+            document.getElementById('teacherView').classList.toggle('active', isTeacher);
+
+            if (isTeacher) {
+                renderTeacherView();
+            }
+        }
+
+        function promptTeacherPassword() {
+            const password = prompt('Lehrer-Passwort:');
+            if (password === 'lehrer2026') {
+                switchView('teacher');
+            } else if (password !== null) {
+                alert('Falsches Passwort!');
+            }
+        }
+
+        // ==================== STUDENT VIEW ====================
+        function renderPersonalStats() {
+            if (!studentData) return;
+
+            const rank = calculateRank(studentData.name);
+            document.getElementById('personalRank').textContent = rank;
+            document.getElementById('personalXP').textContent = studentData.xp.toLocaleString();
+            document.getElementById('personalAccuracy').textContent = studentData.accuracy + '%';
+            document.getElementById('personalStreak').textContent = studentData.streak;
+        }
+
+        function calculateRank(name) {
+            const sorted = [...allStudentData].sort((a, b) => b.xp - a.xp);
+            return sorted.findIndex(s => s.name === name) + 1 || '-';
+        }
+
+        function applyFilter(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            renderLeaderboard();
+        }
+
+        function renderLeaderboard() {
+            const listContainer = document.getElementById('leaderboardList');
+            let data = [...allStudentData];
+
+            // Apply filter
+            if (currentFilter === 'Woche') {
+                const weekAgo = new Date();
+                weekAgo.setDate(weekAgo.getDate() - 7);
+                data = data.filter(s => new Date(s.lastActive) >= weekAgo);
+            }
+
+            // Sort by XP
+            data.sort((a, b) => b.xp - a.xp);
+
+            if (data.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📊</div>
+                        <div class="empty-state-text">Noch keine Ergebnisse</div>
+                        <div>Starten Sie ein Quiz, um auf der Bestenliste zu erscheinen!</div>
+                    </div>
+                `;
+                return;
+            }
+
+            listContainer.innerHTML = data.map((entry, idx) => {
+                const medals = ['🥇', '🥈', '🥉'];
+                const medal = idx < 3 ? medals[idx] : (idx + 1);
+                const animClass = idx < 3 ? `medal-${idx + 1}` : '';
+
+                return `
+                    <div class="rank-entry">
+                        <div class="rank-badge ${animClass}">${medal}</div>
+                        <div class="rank-info">
+                            <div class="rank-name">${entry.name}</div>
+                            <div class="rank-secondary">⏰ ${formatLastActive(entry.lastActive)}</div>
+                        </div>
+                        <div class="stat-inline">
+                            <div class="stat-inline-value">${entry.xp}</div>
+                            <div class="stat-inline-label">XP</div>
+                        </div>
+                        <div class="stat-inline">
+                            <div class="stat-inline-value">${entry.accuracy}%</div>
+                            <div class="stat-inline-label">Quote</div>
+                        </div>
+                        <div class="stat-inline">
+                            <div class="stat-inline-value">${entry.streak}</div>
+                            <div class="stat-inline-label">Serie</div>
+                        </div>
+                        <div class="rank-secondary" style="text-align: right;">
+                            ${entry.weakTopics.slice(0, 2).map(t => `<span style="display: block; font-size: 0.8em;">📍 ${t}</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function formatLastActive(dateStr) {
+            const date = new Date(dateStr);
+            const now = new Date();
+            const diff = now - date;
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const days = Math.floor(hours / 24);
+
+            if (hours < 1) return 'gerade eben';
+            if (hours < 24) return `vor ${hours}h`;
+            if (days < 7) return `vor ${days}d`;
+            return date.toLocaleDateString('de-DE');
+        }
+
+        // ==================== TEACHER VIEW ====================
+        function renderTeacherView() {
+            renderTable();
+            renderCharts();
+            renderHeatmap();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            let data = [...allStudentData];
+
+            // Apply search filter
+            const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+            if (searchTerm) {
+                data = data.filter(s => s.name.toLowerCase().includes(searchTerm));
+            }
+
+            // Apply sort
+            data.sort((a, b) => {
+                let aVal = getTableValue(a, sortColumn);
+                let bVal = getTableValue(b, sortColumn);
+                const result = aVal > bVal ? 1 : -1;
+                return sortAscending ? result : -result;
+            });
+
+            tbody.innerHTML = data.map(entry => {
+                const accColor = entry.accuracy >= 75 ? 'accuracy-high' :
+                                entry.accuracy >= 50 ? 'accuracy-medium' : 'accuracy-low';
+                const displayName = isAnonymous ? getInitials(entry.name) : entry.name;
+
+                return `
+                    <tr>
+                        <td>${displayName}</td>
+                        <td>${entry.xp}</td>
+                        <td>${entry.sessions}</td>
+                        <td><span class="accuracy-cell ${accColor}">${entry.accuracy}%</span></td>
+                        <td>${entry.streak} 🔥</td>
+                        <td>${entry.weakTopics.slice(0, 2).join(', ') || '—'}</td>
+                        <td>${formatLastActive(entry.lastActive)}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function getTableValue(entry, col) {
+            const cols = [
+                entry.name.toLowerCase(),
+                entry.xp,
+                entry.sessions,
+                entry.accuracy,
+                entry.streak,
+                entry.weakTopics.join(','),
+                new Date(entry.lastActive).getTime()
+            ];
+            return cols[col];
+        }
+
+        function sortTable(col) {
+            if (sortColumn === col) {
+                sortAscending = !sortAscending;
+            } else {
+                sortColumn = col;
+                sortAscending = false;
+            }
+            renderTable();
+        }
+
+        function filterTable() {
+            renderTable();
+        }
+
+        function toggleAnonymous() {
+            isAnonymous = !isAnonymous;
+            document.getElementById('anonToggle').classList.toggle('active', isAnonymous);
+            renderTable();
+        }
+
+        function getInitials(name) {
+            return name.split(' ').map(n => n[0]).join('').toUpperCase();
+        }
+
+        function renderCharts() {
+            const canvas = document.getElementById('classDistChart');
+            if (!canvas) return;
+
+            const accuracies = allStudentData.map(s => s.accuracy);
+
+            if (classDistChart) {
+                classDistChart.destroy();
+            }
+
+            const ctx = canvas.getContext('2d');
+            classDistChart = new Chart(ctx, {
+                type: 'histogram',
+                data: {
+                    labels: ['0-25%', '25-50%', '50-75%', '75-100%'],
+                    datasets: [{
+                        label: 'Anzahl Schüler',
+                        data: [
+                            accuracies.filter(a => a < 25).length,
+                            accuracies.filter(a => a >= 25 && a < 50).length,
+                            accuracies.filter(a => a >= 50 && a < 75).length,
+                            accuracies.filter(a => a >= 75).length
+                        ],
+                        backgroundColor: [
+                            'rgba(239, 68, 68, 0.7)',
+                            'rgba(245, 158, 11, 0.7)',
+                            'rgba(59, 130, 246, 0.7)',
+                            'rgba(16, 185, 129, 0.7)'
+                        ],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderHeatmap() {
+            const heatmapContainer = document.getElementById('heatmap');
+            const topicScores = {};
+
+            allStudentData.forEach(student => {
+                student.weakTopics.forEach(topic => {
+                    topicScores[topic] = (topicScores[topic] || 0) + 1;
+                });
+            });
+
+            const sorted = Object.entries(topicScores)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 8);
+
+            heatmapContainer.innerHTML = sorted.map(([topic, count]) => {
+                const intensity = Math.min(count / Math.max(...Object.values(topicScores)) * 100, 100);
+                const color = intensity > 70 ? 'rgba(239, 68, 68, 0.8)' :
+                             intensity > 40 ? 'rgba(245, 158, 11, 0.8)' :
+                             'rgba(59, 130, 246, 0.8)';
+                return `
+                    <div class="heatmap-cell" style="background-color: ${color};">
+                        <div style="font-size: 0.9em;">${topic}</div>
+                        <div style="font-size: 0.8em; opacity: 0.8;">${count} Schüler</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ==================== EXPORT / IMPORT ====================
+        function openExportModal() {
+            syncFromLocalData();
+            const code = btoa(JSON.stringify(studentData));
+            document.getElementById('exportCode').textContent = code;
+            document.getElementById('exportModal').classList.add('active');
+        }
+
+        function closeExportModal() {
+            document.getElementById('exportModal').classList.remove('active');
+        }
+
+        function copyCode() {
+            const code = document.getElementById('exportCode').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                alert('Code kopiert! 📋');
+            });
+        }
+
+        function openImportModal() {
+            document.getElementById('importModal').classList.add('active');
+        }
+
+        function closeImportModal() {
+            document.getElementById('importModal').classList.remove('active');
+        }
+
+        function importData() {
+            const code = document.getElementById('importCode').value.trim();
+            if (!code) {
+                alert('Bitte Code einfügen!');
+                return;
+            }
+
+            try {
+                const imported = JSON.parse(atob(code));
+                if (!imported.name) {
+                    alert('Ungültiger Code!');
+                    return;
+                }
+
+                // Add or update student
+                const idx = allStudentData.findIndex(s => s.name === imported.name);
+                if (idx >= 0) {
+                    allStudentData[idx] = imported;
+                } else {
+                    allStudentData.push(imported);
+                }
+
+                saveTeacherData();
+                renderTeacherView();
+                closeImportModal();
+                alert('Daten importiert! ✅');
+            } catch (e) {
+                alert('Code ungültig oder beschädigt!');
+            }
+        }
+
+        function handleFileImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (Array.isArray(imported)) {
+                        allStudentData = imported;
+                    } else {
+                        allStudentData.push(imported);
+                    }
+                    saveTeacherData();
+                    renderTeacherView();
+                    alert('Datei importiert! ✅');
+                } catch (err) {
+                    alert('Datei ist kein gültiges JSON!');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function exportTableCSV() {
+            let csv = 'Name,XP,Sessions,Accuracy %,Streak,Weak Topics,Last Active\n';
+            allStudentData.forEach(s => {
+                csv += `"${s.name}",${s.xp},${s.sessions},${s.accuracy},${s.streak},"${s.weakTopics.join(',')}","${s.lastActive}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'zp10_highscore.csv';
+            a.click();
+        }
+
+        // ==================== DEMO DATA ====================
+        function generateDemoData() {
+            const demoTopics = ['Lineare Funktionen', 'Quadratische Gleichungen', 'Geometrie', 'Trigonometrie', 'Potenzen', 'Logarithmen'];
+            const demoNames = ['Anna Schmidt', 'Björn Müller', 'Carla Weber', 'David König', 'Emma Hoffmann', 'Fabio Rossi', 'Greta Bauer', 'Henrik Larsson'];
+
+            demoNames.forEach((name, i) => {
+                const existing = allStudentData.find(s => s.name === name);
+                if (existing) return;
+
+                allStudentData.push({
+                    name: name,
+                    xp: Math.floor(Math.random() * 5000) + 1000,
+                    accuracy: Math.floor(Math.random() * 60) + 40,
+                    streak: Math.floor(Math.random() * 20),
+                    sessions: Math.floor(Math.random() * 50) + 5,
+                    weakTopics: demoTopics.sort(() => 0.5 - Math.random()).slice(0, 2),
+                    lastActive: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+                    topicScores: {}
+                });
+            });
+
+            saveTeacherData();
+            renderTeacherView();
+            alert('Demo-Daten generiert! ✅');
+        }
+
+        // ==================== MODALS ====================
+        function showNameModal() {
+            document.getElementById('nameModal').classList.add('active');
+        }
+
+        function closeNameModal() {
+            document.getElementById('nameModal').classList.remove('active');
+        }
+
+        // Close modals on background click
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'exportModal') closeExportModal();
+            if (e.target.id === 'importModal') closeImportModal();
+            if (e.target.id === 'nameModal') return; // Prevent closing name modal
+        });
+    </script>
+</body>
+</html>

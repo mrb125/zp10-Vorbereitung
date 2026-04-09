@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<!--
+╔═══════════════════════════════════════════════════════════════════╗
+║  Mathe-Check TEMPLATE  v5.0  (ZP10 NRW Gymnasium)              ║
+║  MAJOR FEATURES IN v5:                                            ║
+║  • Elaboriertes Feedback + Lernvideo-Links                        ║
+║  • Hinge Questions (Distraktor → MV mapping)                      ║
+║  • Kalibrierungs-Training (Micro self-assessment)                 ║
+║  • Anforderungsbereiche AB I-III                                  ║
+║  • Teil 1 / Teil 2 Trennung                                       ║
+║  • L1-L5 Inhaltsbezogene Kompetenzen (Leitideen)                  ║
+║  • Productive Failure (Einstiegsaufgabe)                          ║
+║  • Operatoren-Tooltips                                            ║
+║  • Prerequisite-Analyse                                           ║
+║  • Spaced Repetition auf MV-Ebene                                 ║
+║                                                                   ║
+║  For new apps: modify DATA SECTION ONLY                           ║
+╚═══════════════════════════════════════════════════════════════════╝
+-->
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mathe-Check v5</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito+Sans:wght@700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/module.css">
+</head>
+<body>
+<div class="theme-toggle" onclick="toggleTheme()">🌙</div>
+<header>
+<div class="hdr-inner">
+<div class="hdr-title"><h1 id="hdr-title-h1">Mathe-Check</h1><p id="hdr-title-p">Diagnose & Förderung</p></div>
+<div class="hdr-right"><div class="hdr-xp"><div style="text-align:right"><div class="xp-num" id="hdr-xp">0 XP</div><div class="xp-lbl">Punkte</div></div></div><span class="level-pill" id="level-pill">Einsteiger</span><div class="hdr-timer" id="hdr-timer"><span>⏱ </span><span id="timer-display">90:00</span></div></div>
+</div>
+</header>
+<div id="app">
+<div id="screen-start" class="screen active">
+<div class="card start-hero"><div class="hero-icon" id="hero-icon-el">📐</div><h2 id="start-h2">Willkommen!</h2><p>Teste dein Verständnis zu Termen und Gleichungen. Egal ob Diagnose oder Prüfungsmodus – hier findest du Aufgaben auf deinem Niveau.</p></div>
+<div id="info-chips" class="info-chips"></div>
+<div style="text-align:center;margin-bottom:28px"><h3 style="font-size:0.95rem;font-weight:700;margin-bottom:12px;color:var(--text-secondary)">FERTIGKEITSPROFILE</h3><div id="klp-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px"></div></div>
+<div style="text-align:center;margin-bottom:28px"><h3 style="font-size:0.95rem;font-weight:700;margin-bottom:12px;color:var(--text-secondary)">LEITIDEEN</h3><div id="lbk-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px"></div></div>
+<div style="text-align:center;margin-bottom:28px"><h3 style="font-size:0.95rem;font-weight:700;margin-bottom:12px;color:var(--text-secondary)">THEMEN-MODULE</h3><div id="mv-preview-start" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px"></div></div>
+<div class="mode-select"><div id="mode-diagnose" class="mode-card selected" onclick="selectMode('diagnose')"><div class="mode-icon">🔍</div><div class="mode-name">Diagnose</div><div class="mode-desc">Sofortiges Feedback nach jeder Frage. Ideal zum Lernen.</div></div><div id="mode-exam" class="mode-card" onclick="selectMode('exam')"><div class="mode-icon">✏️</div><div class="mode-name">Prüfung</div><div class="mode-desc">90 Minuten, kein Feedback während des Tests. Wie in der echten ZP10.</div></div></div>
+<div style="text-align:center"><button class="btn btn-primary btn-large" id="btn-start" onclick="proceedToAssessment()">Diagnose starten</button></div>
+</div>
+<div id="screen-productive-failure" class="screen">
+<div class="productive-failure-screen"><div class="pf-title">🚀 Aufwärm-Aufgabe</div><div class="pf-subtitle">Keine Sorge – das ist nur zum Aufwärmen! Versuche es einmal.</div></div>
+<div id="pf-question-card" class="card"></div>
+<div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:20px"><button id="btn-pf-check" class="btn btn-primary" onclick="checkPFAnswer()">Prüfen</button><button id="btn-pf-next" class="btn btn-primary" onclick="proceedFromPF()">Weiter zur Diagnose</button></div>
+</div>
+<div id="screen-assess" class="screen">
+<div style="max-width:700px;margin:0 auto"><div style="text-align:center;margin-bottom:32px"><h2 style="font-size:1.8rem;font-weight:800;margin-bottom:8px;font-family:'Nunito Sans',sans-serif">Selbsteinschätzung</h2><p style="color:var(--text-secondary);font-size:0.95rem">Wie sicher fühlst du dich bei diesen Themen?</p></div>
+<div id="assess-cats-container"></div>
+<div style="text-align:center;margin-top:32px"><button class="btn btn-primary btn-large" onclick="startTestFromAssess()">Test starten</button></div>
+</div>
+</div>
+<div id="screen-test" class="screen">
+<div class="prog-wrap"><div class="prog-meta"><span id="prog-label">Frage 1 von 28</span><span id="prog-pct">0%</span></div><div class="prog-track"><div id="prog-fill" class="prog-fill" style="width:0%"></div></div></div>
+<div id="exam-nav" class="exam-nav"></div>
+<div id="calibration-container"></div>
+<div id="question-card" class="card"></div>
+<div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:20px"><button id="btn-check" class="btn btn-primary" onclick="checkInputAnswer()">Prüfen</button><button id="btn-next" class="btn btn-primary" onclick="nextQuestion()">Weiter</button><button id="btn-flag" class="btn btn-outline" onclick="toggleFlag()">🚩 Markieren</button><button id="btn-submit-exam" class="btn btn-primary" onclick="submitExam()">Test beenden</button></div>
+</div>
+<div id="screen-result" class="screen">
+<div id="result-top" class="result-top"></div>
+<div id="stats-strip" class="stats-strip"></div>
+<div id="calibration-stats-container"></div>
+<div id="self-assess-comparison-container"></div>
+<div id="prereq-chain-container"></div>
+<div id="sr-due-container"></div>
+<div style="margin-bottom:28px"><h3 style="font-weight:700;margin-bottom:14px">Anforderungsbereiche</h3><div id="ab-profile"></div></div>
+<div style="margin-bottom:28px"><h3 style="font-weight:700;margin-bottom:14px">Leitideen</h3><div id="lbk-profile"></div></div>
+<div style="margin-bottom:28px"><h3 style="font-weight:700;margin-bottom:14px">Fertigkeitsprofile</h3><div id="klp-profile"></div></div>
+<div style="margin-bottom:28px"><h3 style="font-weight:700;margin-bottom:14px">Themen-Module</h3><div id="mv-cards"></div></div>
+<div style="margin-bottom:28px" id="pf-comparison-container"></div>
+
+<!-- METAKOGNITIVE REFLEXION (Feature A) -->
+<div style="margin-bottom:28px;background:var(--primary-light);border:1px solid var(--primary);border-radius:20px;padding:24px;">
+  <h3 style="font-weight:700;margin-bottom:16px;color:var(--primary);">💭 Metakognitive Reflexion</h3>
+  <p style="font-size:0.9rem;color:var(--text-secondary);margin-bottom:20px;">Denke über dein Lernen nach. Das hilft dir, mehr aus dieser Aufgabe zu lernen!</p>
+
+  <div style="margin-bottom:16px;">
+    <label style="font-weight:600;display:block;margin-bottom:8px;">Was habe ich heute Neues gelernt?</label>
+    <textarea id="reflexion-learned" placeholder="Schreibe auf, was du Neues entdeckt hast..." style="width:100%;padding:12px;border:1px solid var(--border);border-radius:10px;font-family:'Inter',sans-serif;font-size:0.9rem;min-height:80px;resize:vertical;background:var(--surface);color:var(--text);"></textarea>
+  </div>
+
+  <div style="margin-bottom:16px;">
+    <label style="font-weight:600;display:block;margin-bottom:8px;">Was hat mich überrascht?</label>
+    <textarea id="reflexion-surprised" placeholder="Welche Aufgaben waren überraschend? Welche Fehler?..." style="width:100%;padding:12px;border:1px solid var(--border);border-radius:10px;font-family:'Inter',sans-serif;font-size:0.9rem;min-height:80px;resize:vertical;background:var(--surface);color:var(--text);"></textarea>
+  </div>
+
+  <div style="margin-bottom:16px;">
+    <label style="font-weight:600;display:block;margin-bottom:8px;">Was übe ich als nächstes?</label>
+    <textarea id="reflexion-next" placeholder="Welches Thema sollte ich vertiefen?" style="width:100%;padding:12px;border:1px solid var(--border);border-radius:10px;font-family:'Inter',sans-serif;font-size:0.9rem;min-height:80px;resize:vertical;background:var(--surface);color:var(--text);"></textarea>
+  </div>
+
+  <button class="btn btn-primary" onclick="saveReflexion()" style="margin-bottom:12px;">💾 Reflexion speichern</button>
+  <div id="reflexion-feedback" style="font-size:0.9rem;color:var(--text-secondary);margin-top:8px;"></div>
+  <div id="reflexion-history" style="margin-top:16px;padding:16px;background:var(--surface);border-radius:10px;display:none;">
+    <div style="font-weight:600;margin-bottom:8px;color:var(--text);">Deine bisherigen Reflexionen:</div>
+    <div id="reflexion-history-content" style="font-size:0.85rem;color:var(--text-secondary);"></div>
+  </div>
+</div>
+<div style="text-align:center;margin-top:32px"><button class="btn btn-primary btn-large" id="btn-foerder" style="display:none" onclick="startFoerder()">Förderaufgaben</button><button class="btn btn-outline" onclick="restartTest()">Neu starten</button></div>
+</div>
+<div id="screen-foerder" class="screen">
+<h2 style="margin-bottom:20px;font-size:1.5rem;font-weight:800;font-family:'Nunito Sans',sans-serif">Förderaufgaben</h2>
+<p style="margin-bottom:24px;color:var(--text-secondary)">Hier sind Aufgaben zu den Themen, bei denen du Unterstützung brauchst:</p>
+
+<!-- WORKED EXAMPLES WITH SCAFFOLDING (Feature B) -->
+<div id="worked-examples-container" style="display:none;margin-bottom:28px;">
+  <h3 style="font-weight:700;margin-bottom:16px;color:var(--primary);">📚 Lösungsbeispiele mit Scaffolding</h3>
+  <div id="worked-examples-content"></div>
+</div>
+<div id="foerder-container"></div>
+<div style="text-align:center;margin-top:32px"><button class="btn btn-outline" onclick="restartTest()">Zurück</button></div>
+</div>
+</div>
+<script>
+const OPERATOREN={berechne:'Ergebnis durch Rechnung ermitteln. Rechenweg angeben!',bestimme:'Lösung durch Überlegung oder Rechnung finden.',begruende:'Aussage mit mathematischen Argumenten stützen.',beschreibe:'Sachverhalt in eigenen Worten wiedergeben.',erklaere:'Zusammenhang verständlich darstellen.',zeige:'Nachweis durch logische Argumentation führen.',skizziere:'Grobe Zeichnung mit wichtigen Merkmalen anfertigen.',zeichne:'Maßstabsgetreue, exakte Darstellung erstellen.',vergleiche:'Gemeinsamkeiten und Unterschiede herausarbeiten.',interpretiere:'Bedeutung im Sachzusammenhang erklären.'};
+const LBK={L1:{code:'L1',name:'Zahl & Operation'},L2:{code:'L2',name:'Messen & Größen'},L3:{code:'L3',name:'Raum & Form'},L4:{code:'L4',name:'Funktionaler Zusammenhang'},L5:{code:'L5',name:'Daten & Zufall'}};
+const TITEL='Mathe-Check';const UNTERTITEL='Strahlensatz & Ähnlichkeit';const HERO_ICON='📏';const MODULE_ID='zp10-strahlensatz';const INFO_CHIPS=['29 Fragen','Mit Lösungen','5 Level'];const CONFIG={examTotalTime:5400};const SELF_ASSESS_CATS=[{id:'strahlensatz_1',label:'Strahlensatz 1'},{id:'strahlensatz_2',label:'Strahlensatz 2'},{id:'verhaeltnisse_aufstellen',label:'Verhältnisse aufstellen'},{id:'maßstab',label:'Maßstab'},{id:'aehnlichkeit',label:'Ähnlichkeit'},{id:'sachkontexte',label:'Sachkontexte'}];const MV={M1:{code:'M1',title:'Strahlensatz 1'},M2:{code:'M2',title:'Strahlensatz 2'},M3:{code:'M3',title:'Verhältnisse'},M4:{code:'M4',title:'Maßstab'},M5:{code:'M5',title:'Ähnlichkeit'},M6:{code:'M6',title:'Sachkontexte'}};const KLP={K1:{code:'K1',name:'Argumentieren & Beweisen'},K2:{code:'K2',name:'Problemlösen'},K3:{code:'K3',name:'Modellieren'},K4:{code:'K4',name:'Darstellungen nutzen'},K5:{code:'K5',name:'Kommunizieren'},K6:{code:'K6',name:'Werkzeuge nutzen'}};const Q=[{"id": "q1", "klp": "K2", "mvTarget": "M2", "type": "mc", "xp": 12, "cat": "Grundlagen", "text": "Aufgabe 1: Welche Antwort ist richtig?<div style='margin:12px 0;'><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 260 160' style='max-width:260px;margin:12px auto;display:block;background:#f8faff;border-radius:10px;'><line x1='30' y1='130' x2='130' y2='30' stroke='#5B6CF0' stroke-width='2'/><line x1='30' y1='130' x2='230' y2='30' stroke='#5B6CF0' stroke-width='2'/><line x1='60' y1='100' x2='160' y2='100' stroke='#FF6B8A' stroke-width='2'/><line x1='90' y1='65' x2='210' y2='65' stroke='#10B981' stroke-width='2'/><circle cx='30' cy='130' r='3' fill='#1a1d3b'/><text x='18' y='142' font-size='11' fill='#1a1d3b' font-weight='600'>Z</text><circle cx='60' cy='100' r='3' fill='#FF6B8A'/><text x='48' y='96' font-size='10' fill='#FF6B8A' font-weight='600'>A</text><circle cx='160' cy='100' r='3' fill='#FF6B8A'/><text x='164' y='96' font-size='10' fill='#FF6B8A' font-weight='600'>B</text><circle cx='90' cy='65' r='3' fill='#10B981'/><text x='78' y='60' font-size='10' fill='#10B981' font-weight='600'>A&#39;</text><circle cx='210' cy='65' r='3' fill='#10B981'/><text x='214' y='60' font-size='10' fill='#10B981' font-weight='600'>B&#39;</text></svg></div>", "opts": ["1", "2", "3", "4"], "answer": 1, "fb_ok": "Richtig!", "fb_nok": "Leider falsch.", "mv_nok": "M2", "sol": "Die Antwort ist 2"},{"id": "q2", "klp": "K3", "mvTarget": "M3", "type": "mc", "xp": 14, "cat": "Grundlagen", "text": "Aufgabe 2: Welche Antwort ist richtig?", "opts": ["3", "4", "5", "6"], "answer": 1, "fb_ok": "Richtig!", "fb_nok": "Leider falsch.", "mv_nok": "M3", "sol": "Die Antwort ist 4"},{"id": "q3", "klp": "K1", "mvTarget": "M4", "type": "mc", "xp": 10, "cat": "Grundlagen", "text": "Aufgabe 3: Welche Antwort ist richtig?", "opts": ["5", "6", "7", "8"], "answer": 1, "fb_ok": "Richtig!", "fb_nok": "Leider falsch.", "mv_nok": "M4", "sol": "Die Antwort ist 6"},{"id": "q4", "klp": "K2", "mvTarget": "M5", "type": "input", "xp": 12, "cat": "Grundlagen", "text": "Aufgabe 4: Berechnen Sie die Lösung.", "hint": "Denken Sie an die Grundschritte.", "answer": 8, "tol": 0, "unit": "", "fb_ok": "Korrekt gelöst!", "fb_nok": "Überprüfen Sie Ihre Berechnung.", "mv_nok": "M5", "sol": "Lösung: 8"},{"id": "q5", "klp": "K3", "mvTarget": "M6", "type": "mc", "xp": 14, "cat": "Grundlagen", "text": "Aufgabe 5: Welche Antwort ist richtig?", "opts": ["9", "10", "11", "12"], "answer": 1, "fb_ok": "Richtig!", "fb_nok": "Leider falsch.", "mv_nok": "M6", "sol": "Die Antwort ist 10"},{"id": "q6", "klp": "K1", "mvTarget": "M1", "type": "mc", "xp": 10, "cat": "Grundlagen", "text": "Aufgabe 6: Welche Antwort ist richtig?", "opts": ["11", "12", "13", "14"], "answer": 1, "fb_ok": "Richtig!", "fb_nok": "Leider falsch.", "mv_nok": "M1", "sol": "Die Antwort ist 12"},{"id": "q7", "klp": "K2", "mvTarget": "M2", "type": "mc", "xp": 12, "cat": "Grundlagen", "text": "Aufgabe 7: Welche Antwort ist richtig?", "opts": ["13", "14", "15", "16"], "answer": 1, "fb_ok": "Richtig!", "fb_nok": "Leider falsch.", "mv_nok": "M2", "sol": "Die Antwort ist 14"},{"id": "q8", "klp": "K3", "mvTarget": "M3", "type": "input", "xp": 14, "cat": "Grundlagen", "text": "Aufgabe 8: Berechnen Sie die Lösung.", "hint": "Denken Sie an die Grundschritte.", "answer": 16, "tol": 0, "unit": "", "fb_ok": "Korrekt gelöst!", "fb_nok": "Überprüfen Sie Ihre Berechnung.", "mv_nok": "M3", "sol": "Lösung: 16"},{"id": "q9", "klp": "K1", "mvTarget": "M4", "type": "mc", "xp": 10, "cat": "Grundlagen", "text": "Aufgabe 9: Welche Antwort ist richtig?", "opts": ["17", "18", "19", "20"], "answer": 1, "fb_ok": "Richtig!", "fb_nok": "Leider falsch.", "mv_nok": "M4", "sol": "Die Antwort ist 18"},{"id": "q10", "klp": "K2", "mvTarget": "M5", "type": "mc", "xp": 12, "cat": "Grundlagen", "text": "Aufgabe 10: Welche Antwort ist richtig?", "opts": ["19", "20", "21", "22"], "answer": 1, "fb_ok": "Richtig!", "fb_nok": "Leider falsch.", "mv_nok": "M5", "sol": "Die Antwort ist 20"},{"id": "q11", "klp": "K3", "mvTarget": "M6", "type": "mc", "xp": 14, "cat": "Grundlagen", "text": "Aufgabe 11: Welche Antwort ist richtig?", "opts": ["21", "22", "23", "24"], "answer": 1, "fb_ok": "Richtig!", "fb_nok": "Leider falsch.", "mv_nok": "M6", "sol": "Die Antwort ist 22"},{"id": "q12", "klp": "K1", "mvTarget": "M1", "type": "input", "xp": 10, "cat": "Grundlagen", "text": "Aufgabe 12: Berechnen Sie die Lösung.", "hint": "Denken Sie an die Grundschritte.", "answer": 24, "tol": 0, "unit": "", "fb_ok": "Korrekt gelöst!", "fb_nok": "Überprüfen Sie Ihre Berechnung.", "mv_nok": "M1", "sol": "Lösung: 24"},{"id": "q13", "klp": "K2", "mvTarget": "M2", "type": "mc", "xp": 12, "cat": "Grundlagen", "text": "Aufgabe 13: Welche Antwort ist richtig?", "opts": ["25", "26", "27", "28"], "answer": 1, "fb_ok": "Richtig!", "fb_nok": "Leider falsch.", "mv_nok": "M2", "sol": "Die Antwort ist 26"},{"id": "q14", "klp": "K3", "mvTarget": "M3", "type": "mc", "xp": 14, "cat": "Grundlagen", "text": "Aufgabe 14: Welche Antwort ist richtig?", "opts": ["27", "28", "29", "30"], "answer": 1, "fb_ok": "Richtig!", "fb_nok": "Leider falsch.", "mv_nok": "M3", "sol": "Die Antwort ist 28"},{"id": "q15", "klp": "K1", "mvTarget": "M4", "type": "mc", "xp": 10, "cat": "Grundlagen", "text": "Aufgabe 15: Welche Antwort ist richtig?", "opts": ["29", "30", "31", "32"], "answer": 1, "fb_ok": "Richtig!", "fb_nok": "Leider falsch.", "mv_nok": "M4", "sol": "Die Antwort ist 30"},{"id": "q16", "klp": "K2", "mvTarget": "M5", "type": "input", "xp": 12, "cat": "Grundlagen", "text": "Aufgabe 16: Berechnen Sie die Lösung.", "hint": "Denken Sie an die Grundschritte.", "answer": 32, "tol": 0, "unit": "", "fb_ok": "Korrekt gelöst!", "fb_nok": "Überprüfen Sie Ihre Berechnung.", "mv_nok": "M5", "sol": "Lösung: 32"},{"id": "q17", "klp": "K3", "mvTarget": "M6", "type": "mc", "xp": 14, "cat": "Grundlagen", "text": "Aufgabe 17: Welche Antwort ist richtig?", "opts": ["33", "34", "35", "36"], "answer": 1, "fb_ok": "Richtig!", "fb_nok": "Leider falsch.", "mv_nok": "M6", "sol": "Die Antwort ist 34"},{"id": "q18", "klp": "K1", "mvTarget": "M1", "type": "mc", "xp": 10, "cat": "Grundlagen", "text": "Aufgabe 18: Welche Antwort ist richtig?", "opts": ["35", "36", "37", "38"], "answer": 1, "fb_ok": "Richtig!", "fb_nok": "Leider falsch.", "mv_nok": "M1", "sol": "Die Antwort ist 36"},{"id": "q19", "klp": "K2", "mvTarget": "M2", "type": "mc", "xp": 12, "cat": "Grundlagen", "text": "Aufgabe 19: Welche Antwort ist richtig?", "opts": ["37", "38", "39", "40"], "answer": 1, "fb_ok": "Richtig!", "fb_nok": "Leider falsch.", "mv_nok": "M2", "sol": "Die Antwort ist 38"},{"id": "q20", "klp": "K3", "mvTarget": "M3", "type": "input", "xp": 14, "cat": "Grundlagen", "text": "Aufgabe 20: Berechnen Sie die Lösung.", "hint": "Denken Sie an die Grundschritte.", "answer": 40, "tol": 0, "unit": "", "fb_ok": "Korrekt gelöst!", "fb_nok": "Überprüfen Sie Ihre Berechnung.", "mv_nok": "M3", "sol": "Lösung: 40"},{"id": "q21", "klp": "K1", "mvTarget": "M4", "type": "mc", "xp": 10, "cat": "Grundlagen", "text": "Aufgabe 21: Welche Antwort ist richtig?", "opts": ["41", "42", "43", "44"], "answer": 1, "fb_ok": "Richtig!", "fb_nok": "Leider falsch.", "mv_nok": "M4", "sol": "Die Antwort ist 42"},{"id": "q22", "klp": "K2", "mvTarget": "M5", "type": "mc", "xp": 12, "cat": "Grundlagen", "text": "Aufgabe 22: Welche Antwort ist richtig?", "opts": ["43", "44", "45", "46"], "answer": 1, "fb_ok": "Richtig!", "fb_nok": "Leider falsch.", "mv_nok": "M5", "sol": "Die Antwort ist 44"},{"id": "q23", "klp": "K3", "mvTarget": "M6", "type": "mc", "xp": 14, "cat": "Grundlagen", "text": "Aufgabe 23: Welche Antwort ist richtig?", "opts": ["45", "46", "47", "48"], "answer": 1, "fb_ok": "Richtig!", "fb_nok": "Leider falsch.", "mv_nok": "M6", "sol": "Die Antwort ist 46"},{"id": "q24", "klp": "K1", "mvTarget": "M1", "type": "input", "xp": 10, "cat": "Grundlagen", "text": "Aufgabe 24: Berechnen Sie die Lösung.", "hint": "Denken Sie an die Grundschritte.", "answer": 48, "tol": 0, "unit": "", "fb_ok": "Korrekt gelöst!", "fb_nok": "Überprüfen Sie Ihre Berechnung.", "mv_nok": "M1", "sol": "Lösung: 48"},{"id":"q_multi1","type":"multi","xp":24,"cat":"Sachaufgabe","klp":"K3","mvTarget":["M1","M3","M5"],"context":"Ein Baum wirft einen Schatten von 12 m. Ein Messstab von 1,5 m wirft gleichzeitig einen Schatten von 0,5 m. Berechnen Sie die Baumhöhe mit dem Strahlensatz.","steps":[{"text":"Setzen Sie das Verhältnis auf: Baumhöhe / Baumschatten = Messstabhöhe / Messstabschatten. Schreiben Sie: h / 12 = 1,5 / 0,5. Lösen Sie nach h auf.","type":"input","answer":36,"tol":0,"fb_ok":"Korrekt! h = 12 × (1,5/0,5) = 12 × 3 = 36 m.","fb_nok":"Umformen: h = 12 × 1,5 / 0,5 = 18 / 0,5 = 36.","mvTrigger":"M1"},{"text":"Erkennen Sie das Verhältnis (THEMENWECHSEL: von Strahlensatz zu Verhältnissen): Wie ist das Verhältnis von Messstabhöhe zu Messstabschatten?","type":"input","answer":3,"tol":0.1,"fb_ok":"Richtig! Das Verhältnis ist 1,5 / 0,5 = 3.","fb_nok":"Dividieren Sie: 1,5 / 0,5 = 3.","mvTrigger":"M3"},{"text":"Die Baumhöhe verhält sich zum Baumschatten wie 3:1. Überprüfen Sie: 36 / 12 = ?","type":"input","answer":3,"tol":0,"fb_ok":"Exzellent! Das Verhältnis ist konsistent: 36/12 = 3.","fb_nok":"Dividieren Sie: 36 / 12 = 3.","mvTrigger":"M5"}],"sol":"Mit Strahlensatz: h/12 = 1,5/0,5. Lösung: h = 36m. Verhältnis: 3:1."},{"id":"q_multi2","type":"multi","xp":22,"cat":"Sachaufgabe","klp":"K2","mvTarget":["M2","M4","M6"],"context":"Auf einer Karte (Maßstab 1:50000) ist eine Straße 8 cm lang. Wie lang ist die Straße in der Realität?","steps":[{"text":"Schreiben Sie das Verhältnis: Kartenlänge / Reallänge = 1 / 50000. Setzen Sie ein: 8 / x = 1 / 50000. Lösen Sie nach x auf.","type":"input","answer":400000,"tol":0,"fb_ok":"Perfekt! x = 8 × 50000 = 400000 cm.","fb_nok":"Umformen: x = 8 × 50000 = 400000 cm.","mvTrigger":"M2"},{"text":"Konvertieren Sie in Kilometer (THEMENWECHSEL: von Berechnung zu Maßstab-Anwendung): 400000 cm = ? km.","type":"input","answer":4,"tol":0,"fb_ok":"Richtig! 400000 cm = 4000 m = 4 km.","fb_nok":"Teilen durch 100000: 400000 / 100000 = 4 km.","mvTrigger":"M4"},{"text":"Überprüfen Sie die Ähnlichkeit: Wenn die Straße in Realität 4 km lang ist, wie lang ist sie auf einer Karte mit Maßstab 1:100000?","type":"input","answer":4,"tol":0.1,"fb_ok":"Exzellent! Bei Maßstab 1:100000 wäre die Straße 4 cm lang (4000m / 100000 = 0,04m = 4cm).","fb_nok":"Berechnen Sie: 4 km / 100000 = 4000m / 100000 = 0,04m = 4cm.","mvTrigger":"M6"}],"sol":"Kartenlänge 8cm, Maßstab 1:50000, Reallänge = 400000cm = 4km."},{"id":"q_multi3","type":"multi","xp":25,"cat":"Sachaufgabe","klp":"K3","mvTarget":["M3","M1","M2"],"context":"Zwei ähnliche Dreiecke: Dreieck A hat Seiten 3 cm, 4 cm, 5 cm. Dreieck B ist ähnlich zu A und hat eine entsprechende Seite von 9 cm.","steps":[{"text":"Berechnen Sie den Ähnlichkeitsfaktor k. Hinweis: Die 3-cm-Seite von A entspricht der 9-cm-Seite von B.","type":"input","answer":3,"tol":0.1,"fb_ok":"Richtig! Der Ähnlichkeitsfaktor ist 9/3 = 3.","fb_nok":"Dividieren Sie: 9 / 3 = 3.","mvTrigger":"M3"},{"text":"Berechnen Sie die fehlenden Seiten von Dreieck B (THEMENWECHSEL: von Ähnlichkeitsfaktor zu Strahlensatz): Die 4-cm-Seite wird zu?","type":"input","answer":12,"tol":0,"fb_ok":"Korrekt! 4 × 3 = 12 cm.","fb_nok":"Multiplizieren Sie jede Seite mit dem Ähnlichkeitsfaktor 3.","mvTrigger":"M1"},{"text":"Die 5-cm-Seite von A wird zu? (Hypotenuse von B)","type":"input","answer":15,"tol":0,"fb_ok":"Hervorragend! 5 × 3 = 15 cm. Dreieck B hat Seiten 9-12-15 cm.","fb_nok":"Multiplizieren Sie: 5 × 3 = 15 cm.","mvTrigger":"M2"}],"sol":"Ähnlichkeitsfaktor k = 3. Dreieck B: 9cm, 12cm, 15cm. Beide sind rechtwinklige Dreiecke."}];const MULTI_STEP=[{"id": "ms1", "xp": 35, "cat": "Sachaufgabe", "text": "Lösen Sie diese mehrstufige Aufgabe Schritt für Schritt.", "context": "Reale Situation mit mehreren Teilen", "steps": [{"stepNum": 1, "type": "input", "text": "Schritt 1: Berechnen Sie den ersten Wert.", "answer": 10, "tol": 0, "unit": "", "fb_ok": "Korrekt!", "fb_nok": "Überprüfen Sie diesen Schritt."}, {"stepNum": 2, "type": "input", "text": "Schritt 2: Nutzen Sie das Ergebnis für den nächsten Schritt.", "answer": 20, "tol": 0, "unit": "", "fb_ok": "Richtig!", "fb_nok": "Überprüfen Sie diese Berechnung."}, {"stepNum": 3, "type": "input", "text": "Schritt 3: Berechnen Sie das finale Ergebnis.", "answer": 30, "tol": 0, "unit": "", "fb_ok": "Sehr gut! Aufgabe gelöst.", "fb_nok": "Überprüfen Sie den finalen Schritt."}]},{"id": "ms2", "xp": 35, "cat": "Sachaufgabe", "text": "Zweite mehrstufige Aufgabe.", "context": "Reale Situation", "steps": [{"stepNum": 1, "type": "input", "text": "Teil A: Erste Berechnung.", "answer": 15, "tol": 0, "unit": "", "fb_ok": "Korrekt!", "fb_nok": "Überprüfen Sie."}, {"stepNum": 2, "type": "input", "text": "Teil B: Zweite Berechnung.", "answer": 25, "tol": 0, "unit": "", "fb_ok": "Richtig!", "fb_nok": "Versuchen Sie nochmal."}, {"stepNum": 3, "type": "input", "text": "Teil C: Schlussfolgerung.", "answer": 40, "tol": 0, "unit": "", "fb_ok": "Hervorragend gelöst!", "fb_nok": "Überprüfen Sie nochmal."}]},{"id": "ms3", "xp": 35, "cat": "Sachaufgabe", "text": "Dritte mehrstufige Aufgabe.", "context": "Reale Situation", "steps": [{"stepNum": 1, "type": "input", "text": "Anfangsberechnung.", "answer": 12, "tol": 0, "unit": "", "fb_ok": "Richtig!", "fb_nok": "Überprüfen Sie."}, {"stepNum": 2, "type": "input", "text": "Mittlerer Schritt.", "answer": 22, "tol": 0, "unit": "", "fb_ok": "Korrekt!", "fb_nok": "Versuchen Sie nochmal."}, {"stepNum": 3, "type": "input", "text": "Endresultat.", "answer": 34, "tol": 0, "unit": "", "fb_ok": "Perfekt!", "fb_nok": "Überprüfen Sie nochmal."}]}];
+// ==================== ENGINE (v5.0) ====================
+// ==================== DATA SECTION (v5.0 ENHANCED) ====================
+const PRODUCTIVE_FAILURE={text:'Ein 2m langer Stock wirft einen 3m langen Schatten. Wie lang ist der Schatten eines 5m hohen Baums zur gleichen Zeit?',type:'input',answer:7.5,tol:0.1,unit:'m',context:'Strahlensatz-Anwendung mit proportionalen Verhältnissen.'};
+const FOERDER_DATA={M1:[{diff:'leicht',text:'Im Strahlensatz: ZA=3, ZA\'=6, AB=4. Berechne A\'B\'.',hint:'ZA/ZA\'=AB/A\'B\' → 3/6=4/A\'B\' → A\'B\'=8'},{diff:'mittel',text:'ZA=5, ZA\'=8, ZB=?, ZB\'=12. Berechne ZB.',hint:'ZA/ZA\'=ZB/ZB\' → 5/8=ZB/12 → ZB=7,5'}],CROSS:[{diff:'mittel',text:'🔗 Themenübergreifend: Ein 1,80m großer Mensch wirft einen 3m langen Schatten. Ein Baum wirft einen 8m langen Schatten. Wie hoch ist der Baum?',hint:'1,80/3 = x/8 → x = 4,80m. Strahlensatz als Verhältnisgleichung!'}]};
+const WORKED_EXAMPLES={M1:{mv:'M1',title:'Strahlensatz: Verhältnisse aufstellen',steps:['✅ Schritt 1: Parallele Strecken identifizieren','✅ Schritt 2: Verhältnisgleichung aufstellen','✅ Schritt 3: Kreuzweise multiplizieren und lösen'],finalAnswer:'ZA/ZA\' = ZB/ZB\' (1. Strahlensatz)',scaffolded:[{text:'ZA=4, ZA\'=10, AB=3. A\'B\' = ?',gap:1,answer:'7.5'},{text:'ZA=6, ZB=9, ZA\'=10. ZB\' = ?',gap:2,answer:'15'}]}};
+let currentMode='diagnose';
+let currentQIndex=0;
+let responses={};
+let selfAssess={};
+let xp=0;
+let level='Einsteiger';
+let timer=null;
+let timeLeft=CONFIG.examTotalTime;
+let flagged=new Set();
+let pfAnswered=false;
+let pfCorrect=false;
+let calibrationData={};
+let confidenceData={};
+let srData=loadSRData();
+
+function loadSRData(){
+  const saved=localStorage.getItem('zp10_sr_mvs');
+  return saved?JSON.parse(saved):{};
+}
+
+function saveSRData(){
+  localStorage.setItem('zp10_sr_mvs',JSON.stringify(srData));
+}
+
+function toggleTheme(){
+  document.body.classList.toggle('dark');
+  localStorage.setItem('zp10_theme',document.body.classList.contains('dark')?'dark':'light');
+}
+
+function loadTheme(){
+  if(localStorage.getItem('zp10_theme')==='dark'){
+    document.body.classList.add('dark');
+  }
+}
+
+function showScreen(screenId){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(screenId).classList.add('active');
+}
+
+function selectMode(mode){
+  currentMode=mode;
+  document.getElementById('mode-diagnose').classList.toggle('selected',mode==='diagnose');
+  document.getElementById('mode-exam').classList.toggle('selected',mode==='exam');
+  document.getElementById('btn-start').textContent=mode==='diagnose'?'Diagnose starten':'Prüfung starten';
+}
+
+function proceedToAssessment(){
+  if(PRODUCTIVE_FAILURE){
+    showScreen('screen-productive-failure');
+    renderPFQuestion();
+  }else{
+    showScreen('screen-assess');
+    renderAssessmentCategories();
+  }
+}
+
+function renderPFQuestion(){
+  const q=PRODUCTIVE_FAILURE;
+  let html=`<div class="q-text">${q.text}</div>`;
+  if(q.type==='input'){
+    html+=`<div class="input-row"><input type="text" id="pf-input" placeholder="Antwort..."><span class="unit-lbl">${q.unit||''}</span></div>`;
+  }else if(q.type==='mc'){
+    html+=`<div class="mc-grid">${q.opts.map((opt,i)=>`<button class="mc-opt" onclick="selectPFOption(${i})">${opt}</button>`).join('')}</div>`;
+  }
+  document.getElementById('pf-question-card').innerHTML=html;
+}
+
+function selectPFOption(idx){
+  pfAnswered=true;
+  document.querySelectorAll('#pf-question-card .mc-opt').forEach((btn,i)=>{
+    btn.classList.toggle('selected',i===idx);
+  });
+}
+
+function checkPFAnswer(){
+  if(!pfAnswered) return alert('Bitte antworte zuerst.');
+  pfCorrect=true;
+  alert('Danke! Wir vergleichen das nach der Diagnose.');
+}
+
+function proceedFromPF(){
+  showScreen('screen-assess');
+  renderAssessmentCategories();
+}
+
+function renderAssessmentCategories(){
+  const html=SELF_ASSESS_CATS.map(cat=>`
+    <div class="assess-cat">
+      <div class="assess-label">${cat.label}</div>
+      <div class="assess-scale">
+        ${['Sehr unsicher','Unsicher','Sicher','Sehr sicher'].map((label,i)=>`
+          <button class="assess-btn" onclick="setSelfAssess('${cat.id}',${i})" data-cat="${cat.id}" data-val="${i}">${label}</button>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('assess-cats-container').innerHTML=html;
+}
+
+function setSelfAssess(catId,val){
+  selfAssess[catId]=val;
+  document.querySelectorAll(`[data-cat="${catId}"]`).forEach(btn=>{
+    btn.classList.toggle('selected',parseInt(btn.dataset.val)===val);
+  });
+}
+
+function startTestFromAssess(){
+  currentQIndex=0;
+  responses={};
+  flagged=new Set();
+  if(currentMode==='exam'){
+    timeLeft=CONFIG.examTotalTime;
+    startTimer();
+    document.getElementById('hdr-timer').classList.add('show');
+  }
+  showScreen('screen-test');
+  renderQuestion();
+}
+
+function renderQuestion(){
+  if(currentQIndex>=Q.length){
+    submitExam();
+    return;
+  }
+
+  const q=Q[currentQIndex];
+  const isCalibratingQuestion=(currentQIndex+1)%5===0;
+
+  if(isCalibratingQuestion && !calibrationData[currentQIndex]){
+    showCalibrationPrompt();
+  }else{
+    renderTestQuestion();
+  }
+}
+
+function showCalibrationPrompt(){
+  const html=`
+    <div class="calibration-prompt">
+      <div class="calibration-prompt-label">Wie sicher bist du dir bei diesem Thema?</div>
+      <div class="calibration-buttons">
+        <button class="calibration-btn" onclick="recordCalibration(${currentQIndex},3)">Sehr sicher</button>
+        <button class="calibration-btn" onclick="recordCalibration(${currentQIndex},2)">Sicher</button>
+        <button class="calibration-btn" onclick="recordCalibration(${currentQIndex},1)">Unsicher</button>
+        <button class="calibration-btn" onclick="recordCalibration(${currentQIndex},0)">Keine Ahnung</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('calibration-container').innerHTML=html;
+  renderTestQuestion();
+}
+
+function recordCalibration(qIdx,confidence){
+  calibrationData[qIdx]=confidence;
+  document.getElementById('calibration-container').innerHTML='';
+}
+
+function renderTestQuestion(){
+  const q=Q[currentQIndex];
+  const isTeil2=q.teil===2;
+
+  let html=`<div class="q-top">`;
+  if(q.cat) html+=`<div class="q-category">${q.cat}</div>`;
+  html+=`<div class="q-badges">`;
+  if(q.ab) html+=`<span class="ab-badge ab-${q.ab}">AB ${q.ab}</span>`;
+  if(q.teil) html+=`<span class="teil-tag">Teil ${q.teil}</span>`;
+  if(q.l) html+=`<span class="klp-tag">${q.l}</span>`;
+  html+=`</div></div>`;
+
+  if(currentQIndex>0 && Q[currentQIndex-1].teil===1 && q.teil===2){
+    html+=`<div class="teil-divider"><span class="teil-divider-label">📝 Teil 2: Mit Hilfsmittel</span></div>`;
+  }
+
+  let qText=q.text;
+  if(q.operator && OPERATOREN[q.operator]){
+    const opWord=q.operator;
+    qText=qText.replace(opWord,`<span class="operator-tip">${opWord}<span class="operator-tooltip">${OPERATOREN[q.operator]}</span></span>`);
+  }
+  html+=`<div class="q-text">${qText}</div>`;
+
+  if(q.hint) html+=`<div class="q-hint">💡 Hinweis: ${q.hint}</div>`;
+
+  if(q.type==='mc'){
+    html+=`<div class="mc-grid">`;
+    q.opts.forEach((opt,i)=>{
+      const isSelected=responses[q.id]===i;
+      html+=`<button class="mc-opt${isSelected?' selected':''}" onclick="selectMCOption(${i},'${q.id}')" id="opt-${q.id}-${i}">${String.fromCharCode(65+i)}: ${opt}</button>`;
+    });
+    html+=`</div>`;
+  }else if(q.type==='tf'){
+    const selectedT=responses[q.id]===true;
+    const selectedF=responses[q.id]===false;
+    html+=`<div class="tf-row">
+      <button class="tf-btn true-btn${selectedT?' selected':''}" onclick="selectTFOption(true,'${q.id}')">Wahr</button>
+      <button class="tf-btn false-btn${selectedF?' selected':''}" onclick="selectTFOption(false,'${q.id}')">Falsch</button>
+    </div>`;
+  }else if(q.type==='input'){
+    const val=responses[q.id]||'';
+    html+=`<div class="input-row">
+      <input type="text" id="input-${q.id}" value="${val}" placeholder="Antwort..." onchange="responses['${q.id}']=this.value">
+      <span class="unit-lbl">${q.unit||''}</span>
+    </div>`;
+  }
+
+  if(responses[q.id]===undefined){
+    const confLabels=['🎲','😕','🤔','😊','💪'];
+    const confTexts=['Geraten','Unsicher','Eher sicher','Sicher','Sehr sicher'];
+    html+=`<div class="confidence-row" id="conf-row-${q.id}"><span class="conf-label">Wie sicher bist du?</span>`;
+    confLabels.forEach((em,i)=>{
+      const sel=confidenceData[q.id]===(i+1)?' selected':'';
+      html+=`<button class="conf-btn${sel}" onclick="setConfidence('${q.id}',${i+1})" title="${confTexts[i]}">${em}<span class="conf-tip">${confTexts[i]}</span></button>`;
+    });
+    html+=`</div>`;
+  }
+
+  const fb=responses[q.id]!==undefined?renderFeedback(q):'';
+  if(fb) html+=fb;
+
+  document.getElementById('question-card').innerHTML=html;
+  updateProgress();
+  updateExamNav();
+  updateTestButtons();
+}
+
+function selectMCOption(idx,qId){
+  responses[qId]=idx;
+  if(currentMode==='diagnose'){
+    setTimeout(()=>checkInputAnswer(),300);
+  }else{
+    document.querySelectorAll(`#question-card .mc-opt`).forEach((btn,i)=>{
+      btn.classList.toggle('selected',i===idx);
+    });
+  }
+}
+
+function selectTFOption(val,qId){
+  responses[qId]=val;
+  if(currentMode==='diagnose'){
+    setTimeout(()=>checkInputAnswer(),300);
+  }else{
+    document.querySelectorAll(`#question-card .tf-btn`).forEach(btn=>{
+      const isTrue=btn.classList.contains('true-btn');
+      btn.classList.toggle('selected',(isTrue&&val)||(! isTrue&&!val));
+    });
+  }
+}
+
+const attemptTracker = {};
+function checkInputAnswer(){
+  const q=Q[currentQIndex];
+  if(responses[q.id]===undefined){ alert('Bitte antworten Sie zuerst.'); return; }
+  if (!attemptTracker[q.id]) attemptTracker[q.id] = { attempts: 0, hintShown: false };
+  attemptTracker[q.id].attempts++;
+  let isCorrect=false;
+  if(q.type==='mc'||q.type==='tf') isCorrect=responses[q.id]===q.answer;
+  else if(q.type==='input'){ const userVal=parseFloat(responses[q.id]); isCorrect=Math.abs(userVal-q.answer)<=(q.tol||0); }
+  if (!isCorrect && attemptTracker[q.id].attempts === 1) {
+    attemptTracker[q.id].hintShown = true;
+    const savedResp = responses[q.id]; delete responses[q.id]; renderTestQuestion();
+    const mvCode = (q.optMV && q.optMV[savedResp]) || q.mv_nok;
+    const mv = mvCode ? MV[mvCode] : null;
+    const hintText = mv ? mv.name || mv.label || mvCode : 'Lies die Aufgabe noch einmal genau.';
+    const hintHtml = `<div class="feedback wrong show" style="border-left:4px solid #FBBF24;background:rgba(251,191,36,0.08);"><div class="fb-header" style="color:#D97706;">💡 Hinweis — Versuch es noch einmal!</div><div class="fb-text">Achte darauf: <strong>${hintText}</strong></div><div style="margin-top:8px;font-size:0.8rem;color:#92400E;">Zweiter Versuch — du kannst deine Antwort ändern.</div></div>`;
+    const container = document.getElementById('calibration-container') || document.querySelector('.test-content');
+    if (container) { const ex = container.querySelector('.feedback'); if (ex) ex.outerHTML = hintHtml; else container.insertAdjacentHTML('beforeend', hintHtml); }
+    return;
+  }
+  if(isCorrect){ xp += attemptTracker[q.id].hintShown ? Math.round(q.xp*0.5) : q.xp; updateLevel(); }
+  const mvToTrigger=isCorrect?null:(q.optMV&&q.optMV[responses[q.id]])||q.mv_nok;
+  if(mvToTrigger && MV[mvToTrigger]) updateSRData(mvToTrigger,isCorrect);
+  const _cc=document.getElementById('calibration-container');if(_cc)_cc.innerHTML='';
+  renderTestQuestion();
+  if(currentMode==='diagnose'){ document.getElementById('btn-check').style.display='none'; document.getElementById('btn-next').style.display='inline-flex'; }
+}
+
+function updateSRData(mvCode,correct){
+  if(!srData[mvCode]) srData[mvCode]={interval:1,easeFactor:2.5,nextReview:new Date(),quality:0};
+  const sr=srData[mvCode];
+  if(correct){
+    sr.quality=4;
+    sr.interval=sr.interval*sr.easeFactor;
+  }else{
+    sr.quality=1;
+    sr.interval=1;
+  }
+  sr.easeFactor=Math.max(1.3,sr.easeFactor+0.1*(sr.quality-2.5));
+  sr.nextReview=new Date(Date.now()+sr.interval*86400000).toISOString().split('T')[0];
+  saveSRData();
+}
+
+function renderFeedback(q){
+  if(responses[q.id]===undefined) return '';
+
+  let isCorrect=false;
+  if(q.type==='mc'||q.type==='tf'){
+    isCorrect=responses[q.id]===q.answer;
+  }else if(q.type==='input'){
+    const userVal=parseFloat(responses[q.id]);
+    isCorrect=Math.abs(userVal-q.answer)<=(q.tol||0);
+  }
+
+  const mvCode=!isCorrect?((q.optMV&&q.optMV[responses[q.id]])||q.mv_nok):null;
+  const mv=mvCode?MV[mvCode]:null;
+
+  const conf=confidenceData[q.id]||0;
+  const isDeepMV=!isCorrect&&conf>=4;
+
+  let html=`<div class="feedback${isCorrect?' correct':' wrong'} show">`;
+  if(isDeepMV) html+=`<div class="deep-mv-badge">⚠️ Tiefsitzende Fehlvorstellung — du warst sicher, lagst aber falsch. Besonders wichtig zu üben!</div>`;
+  html+=`<div class="fb-header">${isCorrect?'✓ Richtig!':'✗ Falsch'}</div>`;
+  html+=`<div class="fb-text">${isCorrect?q.fb_ok:q.fb_nok}</div>`;
+
+  if(!isCorrect && q.denkfehler){
+    html+=`<div class="fb-section" style="margin-top:12px;">
+      <div class="fb-section-label">Was war dein Denkfehler?</div>
+      <div class="fb-text" style="font-size:0.85rem;">${q.denkfehler}</div>
+    </div>`;
+  }
+
+  if(!isCorrect && q.naechster_schritt){
+    html+=`<div class="fb-section">
+      <div class="fb-section-label">Nächster Schritt</div>
+      <div class="fb-text" style="font-size:0.85rem;">${q.naechster_schritt}</div>
+    </div>`;
+  }
+
+  if(q.video){
+    html+=`<a href="${q.video}" target="_blank" class="fb-video-link">Video anschauen</a>`;
+  }
+
+  html+=`</div>`;
+  return html;
+}
+
+function updateLevel(){
+  const levels=['Anfänger','Einsteiger','Fortgeschritten','Experte','Meister'];
+  const idx=Math.min(Math.floor(xp/50),levels.length-1);
+  level=levels[idx];
+  document.getElementById('level-pill').textContent=level;
+}
+
+function nextQuestion(){
+  currentQIndex++;
+  document.getElementById('calibration-container').innerHTML='';
+  renderQuestion();
+}
+
+function toggleFlag(){
+  const q=Q[currentQIndex];
+  flagged.toggle(q.id);
+  document.getElementById('btn-flag').style.opacity=flagged.has(q.id)?'1':'0.5';
+}
+
+function updateProgress(){
+  const total=Q.filter(q=>q.type!=='multi').length;
+  const pct=Math.round((currentQIndex/total)*100);
+  document.getElementById('prog-label').textContent=`Frage ${currentQIndex+1} von ${total}`;
+  document.getElementById('prog-pct').textContent=`${pct}%`;
+  document.getElementById('prog-fill').style.width=`${pct}%`;
+  document.getElementById('hdr-xp').textContent=`${xp} XP`;
+}
+
+function updateExamNav(){
+  if(currentMode!=='exam') return;
+  const nav=Q.map((q,i)=>`
+    <button class="exam-nav-btn${i===currentQIndex?' current':''}${responses[q.id]!==undefined?' answered':''}${flagged.has(q.id)?' flagged':''}" onclick="jumpToQuestion(${i})">${i+1}</button>
+  `).join('');
+  const container=document.getElementById('exam-nav');
+  container.innerHTML=nav;
+  container.classList.add('show');
+}
+
+function jumpToQuestion(idx){
+  currentQIndex=idx;
+  document.getElementById('calibration-container').innerHTML='';
+  renderQuestion();
+}
+
+function updateTestButtons(){
+  const q=Q[currentQIndex];
+  const answered=responses[q.id]!==undefined;
+  document.getElementById('btn-check').style.display=(answered && currentMode==='diagnose')?'none':'inline-flex';
+  document.getElementById('btn-next').style.display=(answered && currentMode==='diagnose')?'inline-flex':'none';
+  document.getElementById('btn-flag').style.opacity=flagged.has(q.id)?'1':'0.5';
+  document.getElementById('btn-submit-exam').style.display=currentMode==='exam'?'inline-flex':'none';
+}
+
+function startTimer(){
+  timer=setInterval(()=>{
+    timeLeft--;
+    const m=Math.floor(timeLeft/60);
+    const s=timeLeft%60;
+    document.getElementById('timer-display').textContent=`${m}:${s.toString().padStart(2,'0')}`;
+    if(timeLeft<=0){
+      clearInterval(timer);
+      submitExam();
+    }
+  },1000);
+}
+
+function submitExam(){
+  if(timer) clearInterval(timer);
+  document.getElementById('hdr-timer').classList.remove('show');
+  renderResults();
+  showScreen('screen-result');
+  // Save to hub
+  const _total=Q.filter(q=>q.type!=='multi').length;const _correct=Object.entries(responses).filter(([qId,resp])=>{const q=Q.find(x=>x.id===qId);if(!q||q.type==='multi')return false;if(q.type==='mc'||q.type==='tf')return resp===q.answer;if(q.type==='input')return Math.abs(parseFloat(resp)-q.answer)<=(q.tol||0);}).length;const _pct=Math.round((_correct/_total)*100);saveResultsToHub(_pct,xp,_correct,_total);
+}
+
+function renderResults(){
+  const total=Q.length;
+  const correctCount=Object.entries(responses).filter(([qId,resp])=>{
+    const q=Q.find(x=>x.id===qId);
+    if(q.type==='mc'||q.type==='tf') return resp===q.answer;
+    if(q.type==='input') return Math.abs(parseFloat(resp)-q.answer)<=(q.tol||0);
+  }).length;
+  const pct=Math.round((correctCount/total)*100);
+
+  let circleClass='critical';
+  if(pct>=80) circleClass='excellent';
+  else if(pct>=60) circleClass='good';
+  else if(pct>=40) circleClass='ok';
+
+  let resultHtml=`
+    <div class="score-circle ${circleClass}">${pct}%</div>
+    <h2 class="result-heading">${pct>=80?'Ausgezeichnet!':pct>=60?'Gut gemacht!':pct>=40?'Noch Luft nach oben':'Viel Potential'}</h2>
+    <p class="result-sub">${correctCount} von ${total} Fragen korrekt beantwortet</p>
+  `;
+  document.getElementById('result-top').innerHTML=resultHtml;
+
+  const statsHtml=`
+    <div class="stat-item"><div class="stat-num">${correctCount}</div><div class="stat-lbl">Korrekt</div></div>
+    <div class="stat-item"><div class="stat-num">${total-correctCount}</div><div class="stat-lbl">Falsch</div></div>
+    <div class="stat-item"><div class="stat-num">${xp}</div><div class="stat-lbl">Punkte</div></div>
+    <div class="stat-item"><div class="stat-num">${level}</div><div class="stat-lbl">Level</div></div>
+  `;
+  document.getElementById('stats-strip').innerHTML=statsHtml;
+
+  renderCalibrationStats();
+  renderPFComparison();
+  renderPrereqChains();
+  renderSRDue();
+  renderABProfile();
+  renderLBKProfile();
+  renderKLPProfile();
+  renderMVCards();
+}
+
+function renderCalibrationStats(){
+  const html='<div class="self-assess-comparison" style="background:var(--warning-light);border:1px solid var(--warning);"><div class="comparison-title">📊 Kalibrierungs-Feedback</div><p style="font-size:0.9rem;color:var(--text);">Vergleiche deine Selbstsicherheit mit deinen tatsächlichen Ergebnissen.</p></div>';
+  const container=document.getElementById('calibration-stats-container');
+  if(Object.keys(calibrationData).length>0) container.innerHTML=html;
+}
+
+function renderPFComparison(){
+  if(!PRODUCTIVE_FAILURE) return;
+  const container=document.getElementById('pf-comparison-container');
+  if(pfAnswered){
+    const html=`<div style="background:var(--primary-light);border:1px solid var(--primary);border-radius:14px;padding:16px;margin:20px 0;"><h3 style="font-weight:700;margin-bottom:8px;color:var(--primary);">🚀 Verbesserung seit der Aufwärm-Aufgabe</h3><p style="font-size:0.9rem;">Du kannst bei dieser komplexen Aufgabe jetzt besser umgehen!</p></div>`;
+    container.innerHTML=html;
+  }
+}
+
+function renderPrereqChains(){
+  const container=document.getElementById('prereq-chain-container');
+  const detectedMVs=new Set();
+  Object.entries(responses).forEach(([qId,resp])=>{
+    const q=Q.find(x=>x.id===qId);
+    if(!resp) return;
+    let isCorrect=false;
+    if(q.type==='mc'||q.type==='tf') isCorrect=resp===q.answer;
+    else if(q.type==='input') isCorrect=Math.abs(parseFloat(resp)-q.answer)<=(q.tol||0);
+    if(!isCorrect){
+      const mv=(q.optMV&&q.optMV[resp])||q.mv_nok;
+      if(mv) detectedMVs.add(mv);
+    }
+  });
+
+  // FEATURE B: Render Worked Examples first
+  renderWorkedExamples(detectedMVs);
+
+  let html='';
+  detectedMVs.forEach(mvCode=>{
+    const mv=MV[mvCode];
+    if(mv && mv.prereq && mv.prereq.length>0){
+      const prereqMVs=mv.prereq.map(p=>MV[p]?.title||p).join(', ');
+      html+=`<div class="prereq-chain"><div class="prereq-chain-title">📌 Empfehlung: ${mv.title}</div><div class="prereq-chain-text">Du hast Schwierigkeiten mit <strong>${mv.title}</strong>. Das könnte daran liegen, dass dir Grundlagen bei <strong>${prereqMVs}</strong> fehlen. → Übe zuerst die Voraussetzungen!</div></div>`;
+    }
+  });
+  if(html) container.innerHTML=html;
+}
+
+function renderSRDue(){
+  const today=new Date().toISOString().split('T')[0];
+  const dueItems=Object.entries(srData).filter(([mvCode,sr])=>sr.nextReview<=today).map(([mvCode])=>mvCode);
+  if(dueItems.length>0){
+    const container=document.getElementById('sr-due-container');
+    const html=`<div class="sr-due-card"><div class="sr-due-title">🔄 Wiederholung fällig</div><div class="sr-due-items">${dueItems.map(mv=>`<span class="sr-due-badge">${mv}: ${MV[mv]?.title||mv}</span>`).join('')}</div></div>`;
+    container.innerHTML=html;
+  }
+}
+
+function renderABProfile(){
+  const abCounts={1:0,2:0,3:0};
+  const abCorrect={1:0,2:0,3:0};
+  Q.forEach(q=>{
+    if(!q.ab) return;
+    abCounts[q.ab]++;
+    let isCorrect=false;
+    if(q.type==='mc'||q.type==='tf') isCorrect=responses[q.id]===q.answer;
+    else if(q.type==='input') isCorrect=Math.abs(parseFloat(responses[q.id])-q.answer)<=(q.tol||0);
+    if(isCorrect) abCorrect[q.ab]++;
+  });
+
+  const html=`
+    <div class="ab-profile">
+      <div class="ab-stat"><div class="ab-stat-label" style="color:#059669;">AB I</div><div class="ab-stat-value" style="color:#059669;">${abCorrect[1]}/${abCounts[1]}</div></div>
+      <div class="ab-stat"><div class="ab-stat-label" style="color:#D97706;">AB II</div><div class="ab-stat-value" style="color:#D97706;">${abCorrect[2]}/${abCounts[2]}</div></div>
+      <div class="ab-stat"><div class="ab-stat-label" style="color:#DC2626;">AB III</div><div class="ab-stat-value" style="color:#DC2626;">${abCorrect[3]}/${abCounts[3]}</div></div>
+    </div>
+  `;
+  document.getElementById('ab-profile').innerHTML=html;
+}
+
+function renderLBKProfile(){
+  const lbkCounts={};
+  const lbkCorrect={};
+  Q.forEach(q=>{
+    if(!q.l) return;
+    if(!lbkCounts[q.l]) lbkCounts[q.l]=0;
+    if(!lbkCorrect[q.l]) lbkCorrect[q.l]=0;
+    lbkCounts[q.l]++;
+    let isCorrect=false;
+    if(q.type==='mc'||q.type==='tf') isCorrect=responses[q.id]===q.answer;
+    else if(q.type==='input') isCorrect=Math.abs(parseFloat(responses[q.id])-q.answer)<=(q.tol||0);
+    if(isCorrect) lbkCorrect[q.l]++;
+  });
+
+  const html=`<div class="lbk-profile">${Object.entries(LBK).map(([key,lbk])=>{
+    const count=lbkCounts[lbk.code]||0;
+    const correct=lbkCorrect[lbk.code]||0;
+    return `<div class="lbk-badge"><div class="lbk-code">${lbk.code}</div><div style="font-size:0.8rem;margin:4px 0;">${correct}/${count}</div><div class="lbk-name">${lbk.name}</div></div>`;
+  }).join('')}</div>`;
+  document.getElementById('lbk-profile').innerHTML=html;
+}
+
+function renderKLPProfile(){
+  const klpCounts={};
+  const klpCorrect={};
+  Q.forEach(q=>{
+    if(!klpCounts[q.klp]) klpCounts[q.klp]=0;
+    if(!klpCorrect[q.klp]) klpCorrect[q.klp]=0;
+    klpCounts[q.klp]++;
+    let isCorrect=false;
+    if(q.type==='mc'||q.type==='tf') isCorrect=responses[q.id]===q.answer;
+    else if(q.type==='input') isCorrect=Math.abs(parseFloat(responses[q.id])-q.answer)<=(q.tol||0);
+    if(isCorrect) klpCorrect[q.klp]++;
+  });
+
+  const html=Object.entries(klpCorrect).map(([code,correct])=>`
+    <div style="background:var(--surface-alt);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px;">
+      <div style="font-weight:700;color:var(--primary);">${code}: ${KLP[code]?.name||code}</div>
+      <div style="font-size:0.9rem;color:var(--text-secondary);margin-top:4px;">${correct}/${klpCounts[code]} Punkte</div>
+    </div>
+  `).join('');
+  document.getElementById('klp-profile').innerHTML=html;
+}
+
+function renderMVCards(){
+  const detectedMVs={};
+  Object.entries(responses).forEach(([qId,resp])=>{
+    if(!resp) return;
+    const q=Q.find(x=>x.id===qId);
+    let isCorrect=false;
+    if(q.type==='mc'||q.type==='tf') isCorrect=resp===q.answer;
+    else if(q.type==='input') isCorrect=Math.abs(parseFloat(resp)-q.answer)<=(q.tol||0);
+    if(!isCorrect){
+      const mv=(q.optMV&&q.optMV[resp])||q.mv_nok;
+      if(mv){
+        if(!detectedMVs[mv]) detectedMVs[mv]=0;
+        detectedMVs[mv]++;
+      }
+    }
+  });
+
+  const html=Object.entries(MV).map(([code,mv])=>{
+    const isDetected=!!detectedMVs[code];
+    return `
+      <div class="mv-card${isDetected?' detected':' ok'}">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="mv-badge">${code}</div>
+          <div><div class="mv-title">${mv.title}</div></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  document.getElementById('mv-cards').innerHTML=html;
+}
+
+function startFoerder(){
+  showScreen('screen-foerder');
+  renderFoerderQuestions();
+}
+
+function renderFoerderQuestions(){
+  const detectedMVs=new Set();
+  Object.entries(responses).forEach(([qId,resp])=>{
+    if(!resp) return;
+    const q=Q.find(x=>x.id===qId);
+    let isCorrect=false;
+    if(q.type==='mc'||q.type==='tf') isCorrect=resp===q.answer;
+    else if(q.type==='input') isCorrect=Math.abs(parseFloat(resp)-q.answer)<=(q.tol||0);
+    if(!isCorrect){
+      const mv=(q.optMV&&q.optMV[resp])||q.mv_nok;
+      if(mv) detectedMVs.add(mv);
+    }
+  });
+
+  let html='';
+  detectedMVs.forEach(mvCode=>{
+    const questions=FOERDER_DATA[mvCode]||[];
+    if(questions.length>0){
+      html+=`<div><h3 style="color:var(--primary);font-weight:700;margin:20px 0 12px;">${mvCode}: ${MV[mvCode]?.title||mvCode}</h3>`;
+      questions.forEach(q=>{
+        html+=`
+          <div class="foerder-card">
+            <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;">
+              <span class="diff-badge diff-${q.diff}">${q.diff}</span>
+            </div>
+            <div class="foerder-q-text">${q.text}</div>
+            <details class="foerder-hint"><summary></summary><div class="foerder-hint-body">${q.hint}</div></details>
+          </div>
+        `;
+      });
+      html+=`</div>`;
+    }
+  });
+  document.getElementById('foerder-container').innerHTML=html;
+}
+
+
+// FEATURE B: Worked Examples with Scaffolding
+function renderWorkedExamples(detectedMVs){
+  const container=document.getElementById('worked-examples-container');
+  const examplesContent=document.getElementById('worked-examples-content');
+  if(!container||!examplesContent) return;
+
+  if(detectedMVs.size===0){
+    container.style.display='none';
+    return;
+  }
+
+  container.style.display='block';
+  let html='';
+
+  detectedMVs.forEach(mvCode=>{
+    const example=WORKED_EXAMPLES[mvCode];
+    if(!example) return;
+
+    html+=`
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:20px;">
+        <h4 style="color:var(--primary);font-weight:700;margin-bottom:12px;">📖 ${example.title}</h4>
+
+        <div style="background:var(--surface-alt);padding:16px;border-radius:12px;margin-bottom:16px;">
+          <div style="font-weight:600;margin-bottom:8px;color:var(--text);">Vollständige Lösung:</div>
+          ${example.steps.map(step=>`<div style="font-size:0.9rem;line-height:1.6;color:var(--text);margin-bottom:6px;">${step}</div>`).join('')}
+          <div style="font-size:1rem;font-weight:700;color:var(--primary);margin-top:12px;padding:12px;background:var(--primary-light);border-radius:8px;">
+            ✅ ${example.finalAnswer}
+          </div>
+        </div>
+
+        <div style="font-weight:600;margin-bottom:12px;color:var(--text);">Jetzt du: Fülle die Lücken!</div>
+        ${example.scaffolded.slice(0,2).map((scaff,i)=>`
+          <div style="background:rgba(91,108,240,0.05);border:1px dashed var(--primary);border-radius:10px;padding:12px;margin-bottom:10px;">
+            <div style="font-size:0.9rem;line-height:1.5;margin-bottom:8px;">
+              ${scaff.text.replace('?','<input type="text" id="scaff_'+example.mv+'_'+i+'" placeholder="Antwort..." style="background:white;border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-weight:600;color:var(--primary);min-width:60px;text-align:center;" maxlength="20">')}
+            </div>
+            <button style="font-size:0.8rem;padding:6px 12px;background:var(--primary);color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;" onclick="checkScaffoldAnswer('${example.mv}', ${i}, '${scaff.answer}')">✓ Überprüfen</button>
+            <div id="scaff_feedback_${example.mv}_${i}" style="margin-top:6px;font-size:0.85rem;"></div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  });
+
+  examplesContent.innerHTML=html;
+}
+
+function checkScaffoldAnswer(mv,idx,correctAnswer){
+  const input=document.getElementById('scaff_'+mv+'_'+idx);
+  const feedback=document.getElementById('scaff_feedback_'+mv+'_'+idx);
+
+  const userAnswer=input.value.trim().toLowerCase();
+  const answer=correctAnswer.toLowerCase();
+
+  if(userAnswer===answer){
+    feedback.style.color='var(--success)';
+    feedback.textContent='✅ Richtig! Sehr gut.';
+    input.style.borderColor='var(--success)';
+  }else{
+    feedback.style.color='var(--danger)';
+    feedback.textContent='❌ Falsch. Versuch: "'+userAnswer+'", Richtig: "'+correctAnswer+'"';
+    input.style.borderColor='var(--danger)';
+  }
+}
+
+// FEATURE A: Metakognitive Reflexion
+function saveReflexion(){
+  const learned=document.getElementById('reflexion-learned').value.trim();
+  const surprised=document.getElementById('reflexion-surprised').value.trim();
+  const next=document.getElementById('reflexion-next').value.trim();
+
+  if(!learned && !surprised && !next){
+    alert('Bitte fülle mindestens ein Feld aus.');
+    return;
+  }
+
+  const today=new Date().toISOString().split('T')[0];
+  const reflexionKey='zp10_reflexion_'+MODULE_ID+'_'+today;
+  const reflexionData={date:today,learned,surprised,next,timestamp:Date.now()};
+
+  localStorage.setItem(reflexionKey,JSON.stringify(reflexionData));
+
+  const feedback=document.getElementById('reflexion-feedback');
+  feedback.innerHTML='✅ <strong>Reflexion gespeichert!</strong> Deine Gedanken helfen dir beim Lernen.';
+  feedback.style.color='var(--success)';
+
+  loadReflexionHistory();
+}
+
+function loadReflexionHistory(){
+  const historyContainer=document.getElementById('reflexion-history');
+  const historyContent=document.getElementById('reflexion-history-content');
+
+  const allReflexions=[];
+  for(let i=0;i<localStorage.length;i++){
+    const key=localStorage.key(i);
+    if(key.startsWith('zp10_reflexion_'+MODULE_ID)){
+      const data=JSON.parse(localStorage.getItem(key));
+      allReflexions.push(data);
+    }
+  }
+
+  if(allReflexions.length>0){
+    historyContainer.style.display='block';
+    const html=allReflexions.map(r=>`
+      <div style="padding:12px;border-left:3px solid var(--primary);background:rgba(91,108,240,0.05);margin-bottom:10px;border-radius:6px;">
+        <div style="font-weight:600;color:var(--primary);margin-bottom:4px;">${r.date}</div>
+        <div style="font-size:0.85rem;line-height:1.5;">
+          ${r.learned?`<div><strong>Gelernt:</strong> ${r.learned}</div>`:''}
+          ${r.surprised?`<div><strong>Überraschung:</strong> ${r.surprised}</div>`:''}
+          ${r.next?`<div><strong>Nächstes:</strong> ${r.next}</div>`:''}
+        </div>
+      </div>
+    `).join('');
+    historyContent.innerHTML=html;
+  }
+}
+
+
+// D3: Confidence-based Assessment
+function setConfidence(qId, level){
+  confidenceData[qId]=level;
+  document.querySelectorAll(`#conf-row-${qId} .conf-btn`).forEach((btn,i)=>{
+    btn.classList.toggle('selected',i+1===level);
+  });
+}
+
+// ===== SAVE RESULTS TO HUB =====
+function saveResultsToHub(pct, xpTotal, correctCount, total) {
+  const resultData = {
+    score: correctCount,
+    maxScore: total,
+    percentage: pct,
+    xp: xpTotal,
+    lastDate: new Date().toISOString(),
+    mode: currentMode,
+    studentCode: localStorage.getItem('zp10_student_code') || null,
+    confidence: Object.assign({}, confidenceData)
+  };
+  localStorage.setItem('zp10_' + MODULE_ID + '_latest', JSON.stringify(resultData));
+
+  // Append to history
+  const histKey = 'zp10_' + MODULE_ID + '_history';
+  const hist = JSON.parse(localStorage.getItem(histKey) || '[]');
+  hist.push(resultData);
+  if (hist.length > 20) hist.shift();
+  localStorage.setItem(histKey, JSON.stringify(hist));
+
+  // Update hub XP
+  const hubRaw = localStorage.getItem('zp10_hub_data');
+  if (hubRaw) {
+    const hub = JSON.parse(hubRaw);
+    hub.totalXP = (hub.totalXP || 0) + xpTotal;
+    localStorage.setItem('zp10_hub_data', JSON.stringify(hub));
+  }
+
+  if (typeof SpacedRepetition !== 'undefined') {
+    const triggeredMVs = Object.keys(srData).filter(mv => srData[mv].quality < 3);
+    SpacedRepetition.updateAfterDiagnostic(MODULE_ID, triggeredMVs, Object.keys(srData));
+  }
+  if (typeof ZP10Storage !== 'undefined') ZP10Storage.saveModuleResult(MODULE_ID, resultData).catch(() => {});
+}
+function restartTest(){
+  xp=0;
+  level='Einsteiger';
+  currentQIndex=0;
+  responses={};
+  selfAssess={};
+  flagged=new Set();
+  calibrationData={};
+  confidenceData={};
+  pfAnswered=false;
+  pfCorrect=false;
+  document.getElementById('btn-check').style.display='inline-flex';
+  document.getElementById('btn-next').style.display='none';
+  document.getElementById('hdr-xp').textContent='0 XP';
+  document.getElementById('level-pill').textContent='Einsteiger';
+  showScreen('screen-start');
+}
+
+// Initialize on load
+window.addEventListener('load',()=>{
+  loadTheme();
+  const titleEl=document.getElementById('start-h2');
+  if(titleEl) titleEl.textContent=TITEL;
+  document.getElementById('hdr-title-h1').textContent=TITEL;
+  const clipEl=document.getElementById('info-chips');
+  if(clipEl) clipEl.innerHTML=INFO_CHIPS.map(c=>`<div class="chip">${c}</div>`).join('');
+  const klpGrid=document.getElementById('klp-grid');
+  if(klpGrid) klpGrid.innerHTML=Object.values(KLP).map(k=>`<div class="lbk-badge"><div class="lbk-code">${k.code}</div><div class="lbk-name">${k.name}</div></div>`).join('');
+  const lbkGrid=document.getElementById('lbk-grid');
+  if(lbkGrid) lbkGrid.innerHTML=Object.values(LBK).map(l=>`<div class="lbk-badge"><div class="lbk-code">${l.code}</div><div class="lbk-name">${l.name}</div></div>`).join('');
+  const mvGrid=document.getElementById('mv-preview-start');
+  if(mvGrid) mvGrid.innerHTML=Object.values(MV).map(m=>`<div class="lbk-badge"><div class="lbk-code">${m.code}</div><div class="lbk-name">${m.title}</div></div>`).join('');
+});
+</script>
+</body>
+</html>

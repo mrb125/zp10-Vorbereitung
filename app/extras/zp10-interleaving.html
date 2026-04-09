@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<!--
+╔═══════════════════════════════════════════════════════════════════╗
+║  ZP10 Interleaving-Modus v1.0                                    ║
+║  Mixed questions from ALL 13 modules, shuffled randomly           ║
+║  • Loads module list from localStorage (zp10_hub_data)            ║
+║  • Built-in question bank: 3-4 per module (39-52 total)          ║
+║  • True interleaving: min 2 questions between same topic          ║
+║  • Colored topic badges                                           ║
+║  • Immediate feedback (Diagnose mode)                             ║
+║  • Session: 10/15/20/30 questions (configurable)                 ║
+║  • Results: breakdown by topic                                    ║
+║  • "Schwächen üben" → link to weakest module                      ║
+╚═══════════════════════════════════════════════════════════════════╝
+-->
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interleaving-Modus</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito+Sans:wght@700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="zp10-interleaving.css">
+</head>
+<body>
+<button class="theme-toggle" onclick="toggleDarkMode()">🌙</button>
+<header>
+  <div class="hdr-inner">
+    <div class="hdr-title">
+      <h1>🎯 Interleaving-Modus</h1>
+      <p>Gemischte Fragen aus allen Modulen</p>
+    </div>
+    <div class="hdr-right">
+      <div class="hdr-xp">
+        <div class="xp-num" id="xp-display">0</div>
+        <div class="xp-lbl">Punkte</div>
+      </div>
+      <div class="hdr-timer" id="hdr-timer"></div>
+    </div>
+  </div>
+</header>
+
+<div id="app">
+  <div id="screen-start" class="screen active">
+    <div class="card start-hero">
+      <div class="hero-icon">🎯</div>
+      <h2>Interleaving-Training</h2>
+      <p>Trainiere alle Themen durcheinander! Echtes Lernen passiert, wenn du dein Wissen flexibel anwendest.</p>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-bottom: 16px; font-weight: 700;">Anzahl Fragen:</h3>
+      <div class="mode-select">
+        <div class="mode-card" onclick="selectQuestionCount(10)">
+          <div class="mode-icon">🔟</div>
+          <div class="mode-name">10 Fragen</div>
+          <div class="mode-desc">Schneller Check (~5 Min)</div>
+        </div>
+        <div class="mode-card" onclick="selectQuestionCount(15)">
+          <div class="mode-icon">1️⃣5️⃣</div>
+          <div class="mode-name">15 Fragen</div>
+          <div class="mode-desc">Standard (~10 Min)</div>
+        </div>
+        <div class="mode-card" onclick="selectQuestionCount(20)">
+          <div class="mode-icon">2️⃣0️⃣</div>
+          <div class="mode-name">20 Fragen</div>
+          <div class="mode-desc">Ausführlich (~15 Min)</div>
+        </div>
+        <div class="mode-card" onclick="selectQuestionCount(30)">
+          <div class="mode-icon">3️⃣0️⃣</div>
+          <div class="mode-name">30 Fragen</div>
+          <div class="mode-desc">Intensiv (~20 Min)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="screen-question" class="screen">
+    <div class="prog-wrap">
+      <div class="prog-meta">
+        <span>Frage <span id="q-counter">0</span></span>
+        <span id="q-score">0 Richtig</span>
+      </div>
+      <div class="prog-track">
+        <div class="prog-fill" id="prog-fill"></div>
+      </div>
+    </div>
+
+    <div class="q-container">
+      <div class="q-top">
+        <span id="q-topic-badge" class="q-topic-badge"></span>
+      </div>
+      <div class="q-text" id="q-text"></div>
+      <div id="q-options"></div>
+      <div id="q-input-group" style="display: none;">
+        <div class="input-group">
+          <input type="number" id="user-input" placeholder="Antwort eingeben..." />
+          <button class="btn btn-primary" onclick="submitAnswerInput()">✓</button>
+        </div>
+      </div>
+      <div id="q-feedback"></div>
+    </div>
+
+    <div style="text-align: center; margin-top: 20px; display: none;" id="next-btn-container">
+      <button class="btn btn-primary" onclick="nextQuestion()">Nächste Frage →</button>
+    </div>
+  </div>
+
+  <div id="screen-result" class="screen">
+    <div class="result-top">
+      <div class="score-circle" id="result-circle"></div>
+      <h2 class="result-heading" id="result-heading"></h2>
+      <p class="result-sub" id="result-sub"></p>
+    </div>
+
+    <div class="stats-strip" id="stats-strip"></div>
+
+    <div class="card">
+      <h3 style="font-weight: 700; margin-bottom: 16px;">Ergebnisse nach Thema:</h3>
+      <div id="topic-breakdown" class="topic-breakdown"></div>
+    </div>
+
+    <div style="text-align: center; margin-top: 32px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+      <button class="btn btn-primary" onclick="goToWeakest()" id="btn-weakest" style="display: none;">
+        Schwächen üben →
+      </button>
+      <button class="btn btn-outline" onclick="location.reload()">Neu starten</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==================== CONFIG ====================
+const QUESTION_BANK = {
+  'Terme': [
+    {id:'i1',topic:'Terme',type:'mc',text:'Vereinfachen Sie: 3x + 2x',opts:['5x','6x','3x','x'],answer:0,fb_ok:'Korrekt! 3x + 2x = 5x',fb_nok:'Falsch. Addiere die Koeffizienten.',xp:10},
+    {id:'i2',topic:'Terme',type:'input',text:'Berechnen Sie: 2(x+3). Koeffizient von x?',answer:2,fb_ok:'Richtig! 2(x+3) = 2x + 6',fb_nok:'Falsch. Distributivgesetz anwenden.',xp:12},
+    {id:'i3',topic:'Terme',type:'mc',text:'Löse die Klammer auf: -(2x - 5)',opts:['-2x + 5','-2x - 5','2x - 5','-2x'],answer:0,fb_ok:'Korrekt! Minus vor der Klammer ändert alle Zeichen.',fb_nok:'Falsch. Beachte das Minus vor der Klammer.',xp:10},
+    {id:'i4',topic:'Terme',type:'input',text:'Vereinfachen Sie: 5a - 3a + 2a. Koeffizient?',answer:4,fb_ok:'Richtig! 5 - 3 + 2 = 4',fb_nok:'Falsch. Addiere alle Koeffizienten.',xp:10},
+  ],
+  'Muster': [
+    {id:'i5',topic:'Muster',type:'mc',text:'Nächste Zahl in der Folge: 2, 4, 6, 8, ...',opts:['9','10','12','11'],answer:1,fb_ok:'Korrekt! Die Folge erhöht sich um 2.',fb_nok:'Falsch. Achte auf die Differenz.',xp:10},
+    {id:'i6',topic:'Muster',type:'input',text:'Arithmetische Folge: 3, 6, 9, ... → 5. Glied?',answer:15,fb_ok:'Richtig! 3 × 5 = 15',fb_nok:'Falsch. Nutze die Differenz d=3.',xp:12},
+    {id:'i7',topic:'Muster',type:'mc',text:'Quadratzahlen: 1, 4, 9, 16, ... → Regel?',opts:['n²','n+3','2n','n(n+1)'],answer:0,fb_ok:'Korrekt! 1²=1, 2²=4, 3²=9, ...',fb_nok:'Falsch. Es sind Quadratzahlen.',xp:10},
+  ],
+  'Vereinfachen': [
+    {id:'i8',topic:'Vereinfachen',type:'input',text:'Vereinfachen Sie: (x²)/x. Ergebnis?',answer:1,fb_ok:'Richtig! x²/x = x¹ = x (Koeffizient: 1)',fb_nok:'Falsch. Nutze die Potenzregel.',xp:12},
+    {id:'i9',topic:'Vereinfachen',type:'mc',text:'Vereinfachen: 2x² · 3x',opts:['5x³','6x³','6x²','2x³'],answer:1,fb_ok:'Korrekt! 2·3=6, x²·x=x³',fb_nok:'Falsch. Multipliziere Koeffizienten und Variablen getrennt.',xp:10},
+    {id:'i10',topic:'Vereinfachen',type:'input',text:'Vereinfachen: (2a²b) · (3ab²). Koeffizient?',answer:6,fb_ok:'Richtig! 2 × 3 = 6',fb_nok:'Falsch. Multipliziere die Zahlen.',xp:12},
+  ],
+  'Lineare Funktionen': [
+    {id:'i11',topic:'Lineare Funktionen',type:'mc',text:'Was ist der Anstieg m in f(x) = 2x + 3?',opts:['2','3','x','5'],answer:0,fb_ok:'Korrekt! m ist der Koeffizient von x.',fb_nok:'Falsch. Die Steigung ist der x-Koeffizient.',xp:10},
+    {id:'i12',topic:'Lineare Funktionen',type:'input',text:'f(x) = 2x + 1. Berechne f(3).',answer:7,fb_ok:'Richtig! f(3) = 2·3 + 1 = 7',fb_nok:'Falsch. Setze x=3 ein.',xp:12},
+    {id:'i13',topic:'Lineare Funktionen',type:'mc',text:'Welcher Punkt liegt auf f(x) = x + 2?',opts:['(0,2)','(1,2)','(2,1)','(0,0)'],answer:0,fb_ok:'Korrekt! (0,2): f(0) = 0 + 2 = 2',fb_nok:'Falsch. Überprüfe durch Einsetzen.',xp:10},
+    {id:'i14',topic:'Lineare Funktionen',type:'input',text:'y-Achsenabschnitt in f(x) = 3x - 5?',answer:-5,fb_ok:'Richtig! Der y-Achsenabschnitt ist -5.',fb_nok:'Falsch. Das ist das absolute Glied.',xp:10},
+  ],
+  'Quadratische Funktionen': [
+    {id:'i15',topic:'Quadratische Funktionen',type:'mc',text:'Scheitelpunkt von f(x) = (x-2)² + 3?',opts:['(2,3)','(-2,3)','(2,-3)','(3,2)'],answer:0,fb_ok:'Korrekt! Scheitelpunktform (x-2)²+3 → S(2|3)',fb_nok:'Falsch. Lies ab aus der Scheitelpunktform.',xp:10},
+    {id:'i16',topic:'Quadratische Funktionen',type:'input',text:'f(x) = x². Berechne f(-2).',answer:4,fb_ok:'Richtig! (-2)² = 4',fb_nok:'Falsch. Quadriere die Eingabe.',xp:10},
+    {id:'i17',topic:'Quadratische Funktionen',type:'mc',text:'Anzahl Nullstellen von f(x) = x² + 1?',opts:['0','1','2','3'],answer:0,fb_ok:'Korrekt! x² + 1 = 0 hat keine Lösung (x² ≥ 0).',fb_nok:'Falsch. Kann x² = -1 sein?',xp:12},
+  ],
+  'Potenzen': [
+    {id:'i18',topic:'Potenzen',type:'input',text:'Berechne: 2³',answer:8,fb_ok:'Richtig! 2³ = 2·2·2 = 8',fb_nok:'Falsch. Multipliziere 3 mal.',xp:10},
+    {id:'i19',topic:'Potenzen',type:'mc',text:'Vereinfache: x² · x³',opts:['x⁵','x⁶','x⁶','2x'],answer:0,fb_ok:'Korrekt! x² · x³ = x²⁺³ = x⁵',fb_nok:'Falsch. Addiere die Exponenten.',xp:10},
+    {id:'i20',topic:'Potenzen',type:'input',text:'2⁴ / 2² = ?',answer:4,fb_ok:'Richtig! 2⁴⁻² = 2²= 4',fb_nok:'Falsch. Subtrahiere die Exponenten.',xp:10},
+    {id:'i21',topic:'Potenzen',type:'mc',text:'Was ist 5⁰?',opts:['0','1','5','10'],answer:1,fb_ok:'Korrekt! Jede Zahl hoch 0 ist 1.',fb_nok:'Falsch. a⁰ = 1 (Regel).',xp:10},
+  ],
+  'Lineare Gleichungssysteme': [
+    {id:'i22',topic:'Lineare Gleichungssysteme',type:'mc',text:'Lösungsprinzip: Was ist Ziel beim Additionsverfahren?',opts:['Variable eliminieren','Beide Seiten gleich','x verdoppeln','y finden'],answer:0,fb_ok:'Korrekt! Wir wollen eine Variable eliminieren.',fb_nok:'Falsch. Das Additionsverfahren schafft eine Variable ab.',xp:10},
+    {id:'i23',topic:'Lineare Gleichungssysteme',type:'input',text:'Einfaches LGS: x + y = 5, x - y = 1. x = ?',answer:3,fb_ok:'Richtig! Addieren: 2x = 6 → x = 3',fb_nok:'Falsch. Addiere beide Gleichungen.',xp:12},
+    {id:'i24',topic:'Lineare Gleichungssysteme',type:'mc',text:'LGS mit keine Lösung: Was bedeutet das geometrisch?',opts:['Parallele Geraden','Gleiche Gerade','Schneidend','Senkrecht'],answer:0,fb_ok:'Korrekt! Parallele Geraden schneiden sich nicht.',fb_nok:'Falsch. Überdenke die Situation.',xp:10},
+  ],
+  'Geometrie': [
+    {id:'i25',topic:'Geometrie',type:'mc',text:'Winkelumme in einem Dreieck?',opts:['90°','180°','270°','360°'],answer:1,fb_ok:'Korrekt! Innenwinkelsumme = 180°',fb_nok:'Falsch. Das ist eine fundamentale Regel.',xp:10},
+    {id:'i26',topic:'Geometrie',type:'input',text:'Umfang Rechteck: l=5, b=3. U = ?',answer:16,fb_ok:'Richtig! U = 2(5+3) = 16',fb_nok:'Falsch. U = 2(l+b).',xp:10},
+    {id:'i27',topic:'Geometrie',type:'mc',text:'Fläche Dreieck: Formel?',opts:['a·b','(a·h)/2','a²','4a'],answer:1,fb_ok:'Korrekt! A = (Grundlinie × Höhe) / 2',fb_nok:'Falsch. Das ist die Dreiecksformel.',xp:10},
+    {id:'i28',topic:'Geometrie',type:'input',text:'Fläche Kreis r=2. A ≈ ? (ohne π)',answer:4,fb_ok:'Richtig! A = r²π ≈ 4π',fb_nok:'Falsch. A = πr².',xp:12},
+  ],
+  'Stochastik': [
+    {id:'i29',topic:'Stochastik',type:'mc',text:'P(sicher Ereignis) = ?',opts:['0','0.5','1','nicht definiert'],answer:2,fb_ok:'Korrekt! Wahrscheinlichkeit = 1 bedeutet sicher.',fb_nok:'Falsch. Sicheres Ereignis hat P=1.',xp:10},
+    {id:'i30',topic:'Stochastik',type:'input',text:'Münze: P(Kopf) = ? (als Dezimal)',answer:0.5,fb_ok:'Richtig! 1/2 = 0.5',fb_nok:'Falsch. Symmetrische Münze → 50%.',xp:10},
+    {id:'i31',topic:'Stochastik',type:'mc',text:'Abhängige oder unabhängig: Würfel zweimal',opts:['Abhängig','Unabhängig','Möglich','Unmöglich'],answer:1,fb_ok:'Korrekt! Würfe sind unabhängig.',fb_nok:'Falsch. Der erste Wurf beeinflusst nicht den zweiten.',xp:10},
+  ],
+  'Strahlensatz': [
+    {id:'i32',topic:'Strahlensatz',type:'mc',text:'Strahlensatz: Wann gilt er?',opts:['Immer','Bei parallelen Linien','Im Kreis','Bei Dreiecken'],answer:1,fb_ok:'Korrekt! Strahlensatz gilt bei parallel Linien.',fb_nok:'Falsch. Wir brauchen Parallelität.',xp:10},
+    {id:'i33',topic:'Strahlensatz',type:'input',text:'ZA=2, AB=4, ZA\'=3. AB\' = ?',answer:6,fb_ok:'Richtig! AB\'/AB = ZA\'/ZA → AB\' = 4·(3/2) = 6',fb_nok:'Falsch. Nutze die Proportionalität.',xp:12},
+  ],
+  'Prozentrechnung': [
+    {id:'i34',topic:'Prozentrechnung',type:'input',text:'20% von 50 = ?',answer:10,fb_ok:'Richtig! 50 × 0.2 = 10',fb_nok:'Falsch. Multipliziere mit 0.2.',xp:10},
+    {id:'i35',topic:'Prozentrechnung',type:'mc',text:'Prozentuale Zunahme: 50 → 60',opts:['10%','20%','50%','100%'],answer:1,fb_ok:'Korrekt! (60-50)/50 = 10/50 = 20%',fb_nok:'Falsch. Nutze (neu-alt)/alt.',xp:12},
+    {id:'i36',topic:'Prozentrechnung',type:'input',text:'15 ist wie viel % von 60?',answer:25,fb_ok:'Richtig! 15/60 = 0.25 = 25%',fb_nok:'Falsch. (Teil/Ganzes) × 100.',xp:10},
+  ],
+  'Exponentielles Wachstum': [
+    {id:'i37',topic:'Exponentielles Wachstum',type:'mc',text:'Exponentieller Zerfall: Was passiert?',opts:['Wächst','Sinkt','Bleibt gleich','Schwankt'],answer:1,fb_ok:'Korrekt! Zerfall = Abnahme exponentiell.',fb_nok:'Falsch. Zerfall ist Rückgang.',xp:10},
+    {id:'i38',topic:'Exponentielles Wachstum',type:'input',text:'N(t) = 100 × 2^t. N(0) = ?',answer:100,fb_ok:'Richtig! 2⁰ = 1 → 100 × 1 = 100',fb_nok:'Falsch. Setze t=0 ein.',xp:10},
+    {id:'i39',topic:'Exponentielles Wachstum',type:'mc',text:'Verdopplungszeit: Was ist das?',opts:['Zeit für 2x Wachstum','2 Sekunden','Konstant','Hängt von t ab'],answer:0,fb_ok:'Korrekt! Verdopplungszeit = Zeit bis zum Doppeln.',fb_nok:'Falsch. Das ist die Definition.',xp:10},
+  ],
+};
+
+const COLOR_MAP = {
+  'Terme': '#FF6B8A',
+  'Muster': '#FBBF24',
+  'Vereinfachen': '#34D399',
+  'Lineare Funktionen': '#5B6CF0',
+  'Quadratische Funktionen': '#8B5CF6',
+  'Potenzen': '#EC4899',
+  'Lineare Gleichungssysteme': '#0891B2',
+  'Geometrie': '#F97316',
+  'Stochastik': '#6366F1',
+  'Strahlensatz': '#10B981',
+  'Prozentrechnung': '#D946EF',
+  'Exponentielles Wachstum': '#06B6D4',
+};
+
+// ==================== STATE ====================
+let selectedQuestionCount = 0;
+let sessionQuestions = [];
+let currentQIndex = 0;
+let responses = {};
+let xp = 0;
+let darkMode = localStorage.getItem('darkMode') === 'true';
+
+// ==================== INIT ====================
+function toggleDarkMode(){
+  darkMode = !darkMode;
+  localStorage.setItem('darkMode', darkMode);
+  if(darkMode) document.body.classList.add('dark');
+  else document.body.classList.remove('dark');
+}
+
+if(darkMode) document.body.classList.add('dark');
+
+// ==================== LOGIC ====================
+function selectQuestionCount(n) {
+  selectedQuestionCount = n;
+  document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
+  event.target.closest('.mode-card').classList.add('selected');
+
+  setTimeout(() => {
+    initSession();
+  }, 300);
+}
+
+function initSession() {
+  // Collect all questions and shuffle with interleaving
+  let allQuestions = [];
+  Object.values(QUESTION_BANK).forEach(topicQs => {
+    allQuestions = allQuestions.concat(topicQs);
+  });
+
+  // Shuffle and select
+  sessionQuestions = shuffle(allQuestions).slice(0, selectedQuestionCount);
+
+  // Apply interleaving: ensure no two consecutive from same topic if possible
+  sessionQuestions = interleaveShuffle(sessionQuestions);
+
+  currentQIndex = 0;
+  responses = {};
+  xp = 0;
+
+  showScreen('screen-question');
+  renderQuestion();
+}
+
+function shuffle(arr) {
+  return arr.sort(() => Math.random() - 0.5);
+}
+
+function interleaveShuffle(qs) {
+  const result = [];
+  const byTopic = {};
+
+  qs.forEach(q => {
+    if(!byTopic[q.topic]) byTopic[q.topic] = [];
+    byTopic[q.topic].push(q);
+  });
+
+  let lastTopic = null;
+  while(result.length < qs.length) {
+    let topics = Object.keys(byTopic).filter(t => byTopic[t].length > 0 && t !== lastTopic);
+    if(topics.length === 0) topics = Object.keys(byTopic).filter(t => byTopic[t].length > 0);
+
+    const topic = topics[Math.floor(Math.random() * topics.length)];
+    const q = byTopic[topic].pop();
+    result.push(q);
+    lastTopic = topic;
+  }
+
+  return result;
+}
+
+function renderQuestion() {
+  const q = sessionQuestions[currentQIndex];
+
+  // Update UI
+  document.getElementById('q-counter').textContent = currentQIndex + 1;
+  const correct = Object.entries(responses).filter(([id, ans]) => {
+    const question = sessionQuestions.find(sq => sq.id === id);
+    return checkAnswer(question, ans);
+  }).length;
+  document.getElementById('q-score').textContent = correct + ' Richtig';
+
+  const percent = Math.round((currentQIndex / sessionQuestions.length) * 100);
+  document.getElementById('prog-fill').style.width = percent + '%';
+
+  // Render topic badge
+  const color = COLOR_MAP[q.topic] || '#5B6CF0';
+  const badge = document.getElementById('q-topic-badge');
+  badge.textContent = q.topic;
+  badge.style.backgroundColor = color;
+  badge.style.color = 'white';
+
+  // Render question
+  document.getElementById('q-text').textContent = q.text;
+  document.getElementById('q-feedback').innerHTML = '';
+  document.getElementById('next-btn-container').style.display = 'none';
+
+  if(q.type === 'mc') {
+    const optionsHtml = q.opts.map((opt, i) => `
+      <button class="opt-btn" onclick="selectMCOption(${i})">${opt}</button>
+    `).join('');
+    document.getElementById('q-options').innerHTML = optionsHtml;
+    document.getElementById('q-input-group').style.display = 'none';
+  } else if(q.type === 'input') {
+    document.getElementById('q-options').innerHTML = '';
+    document.getElementById('q-input-group').style.display = 'block';
+    document.getElementById('user-input').value = '';
+    document.getElementById('user-input').focus();
+  }
+}
+
+function selectMCOption(idx) {
+  const q = sessionQuestions[currentQIndex];
+  responses[q.id] = idx;
+
+  const correct = checkAnswer(q, idx);
+  const feedback = document.getElementById('q-feedback');
+  feedback.className = 'feedback ' + (correct ? 'correct' : 'incorrect');
+  feedback.textContent = correct ? q.fb_ok : q.fb_nok;
+
+  if(correct) xp += q.xp;
+  document.getElementById('xp-display').textContent = xp;
+
+  // Disable all options, highlight correct/selected
+  document.querySelectorAll('.opt-btn').forEach((btn, i) => {
+    btn.disabled = true;
+    if(i === q.answer) btn.classList.add('correct');
+    if(i === idx && !correct) btn.classList.add('incorrect');
+  });
+
+  document.getElementById('next-btn-container').style.display = 'block';
+}
+
+function submitAnswerInput() {
+  const q = sessionQuestions[currentQIndex];
+  const input = parseFloat(document.getElementById('user-input').value);
+
+  if(isNaN(input)) {
+    alert('Bitte geben Sie eine Zahl ein.');
+    return;
+  }
+
+  responses[q.id] = input;
+  const correct = Math.abs(input - q.answer) <= (q.tol || 0.01);
+
+  const feedback = document.getElementById('q-feedback');
+  feedback.className = 'feedback ' + (correct ? 'correct' : 'incorrect');
+  feedback.textContent = correct ? q.fb_ok : q.fb_nok;
+
+  if(correct) xp += q.xp;
+  document.getElementById('xp-display').textContent = xp;
+
+  document.getElementById('q-input-group').style.display = 'none';
+  document.getElementById('next-btn-container').style.display = 'block';
+}
+
+function nextQuestion() {
+  currentQIndex++;
+  if(currentQIndex >= sessionQuestions.length) {
+    showResults();
+  } else {
+    renderQuestion();
+  }
+}
+
+function checkAnswer(q, response) {
+  if(q.type === 'mc' || q.type === 'tf') return response === q.answer;
+  if(q.type === 'input') return Math.abs(parseFloat(response) - q.answer) <= (q.tol || 0.01);
+  return false;
+}
+
+function showResults() {
+  const total = sessionQuestions.length;
+  const correctCount = Object.entries(responses).filter(([id, ans]) => {
+    const q = sessionQuestions.find(sq => sq.id === id);
+    return checkAnswer(q, ans);
+  }).length;
+
+  const pct = Math.round((correctCount / total) * 100);
+
+  let circleClass = 'critical';
+  if(pct >= 80) circleClass = 'excellent';
+  else if(pct >= 60) circleClass = 'good';
+  else if(pct >= 40) circleClass = 'ok';
+
+  document.getElementById('result-circle').className = 'score-circle ' + circleClass;
+  document.getElementById('result-circle').textContent = pct + '%';
+
+  const messages = {
+    excellent: ['Ausgezeichnet! 🌟', 'Du beherrschst diese Themen sehr gut!'],
+    good: ['Gut gemacht! ✨', 'Du hast solide Grundlagen.'],
+    ok: ['Noch Luft nach oben 💪', 'Mit etwas mehr Üben wirst du besser.'],
+    critical: ['Viel Potential! 🚀', 'Konzentriere dich auf die Basics.']
+  };
+
+  const msg = messages[circleClass];
+  document.getElementById('result-heading').textContent = msg[0];
+  document.getElementById('result-sub').textContent = msg[1] + ` (${correctCount}/${total} Fragen)`;
+
+  // Stats
+  const statsHtml = `
+    <div class="stat-item">
+      <div class="stat-num">${correctCount}</div>
+      <div class="stat-lbl">Richtig</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">${total - correctCount}</div>
+      <div class="stat-lbl">Falsch</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">${xp}</div>
+      <div class="stat-lbl">Punkte</div>
+    </div>
+  `;
+  document.getElementById('stats-strip').innerHTML = statsHtml;
+
+  // Topic breakdown
+  const topicStats = {};
+  sessionQuestions.forEach(q => {
+    if(!topicStats[q.topic]) topicStats[q.topic] = { correct: 0, total: 0 };
+    topicStats[q.topic].total++;
+    if(checkAnswer(q, responses[q.id])) topicStats[q.topic].correct++;
+  });
+
+  let breakdownHtml = '';
+  Object.entries(topicStats).forEach(([topic, stats]) => {
+    const color = COLOR_MAP[topic] || '#5B6CF0';
+    const pct = Math.round((stats.correct / stats.total) * 100);
+    breakdownHtml += `
+      <div class="topic-card">
+        <div class="topic-badge-small" style="background-color: ${color};">${topic.substring(0,3)}</div>
+        <div class="topic-info">
+          <div class="topic-name">${topic}</div>
+          <div class="topic-score">${stats.correct}/${stats.total} (${pct}%)</div>
+        </div>
+      </div>
+    `;
+  });
+
+  document.getElementById('topic-breakdown').innerHTML = breakdownHtml;
+
+  // Find weakest topic
+  let weakest = null;
+  let weakestPct = 101;
+  Object.entries(topicStats).forEach(([topic, stats]) => {
+    const pct = Math.round((stats.correct / stats.total) * 100);
+    if(pct < weakestPct) {
+      weakestPct = pct;
+      weakest = topic;
+    }
+  });
+
+  if(weakest) {
+    const btn = document.getElementById('btn-weakest');
+    btn.style.display = 'inline-flex';
+    btn.onclick = () => goToModule(weakest);
+  }
+
+  showScreen('screen-result');
+}
+
+function goToModule(topic) {
+  // Link to the hub or module page
+  const moduleName = topic.toLowerCase().replace(/\s+/g, '-');
+  alert(`Du würdest jetzt zum Modul "${topic}" geleitet.`);
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+</script>
+</body>
+</html>

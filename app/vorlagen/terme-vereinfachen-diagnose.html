@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagnose-App · Terme vereinfachen</title>
+<style>
+  :root {
+    --bg:#0f172a; --card:#1e293b; --card2:#273449; --border:#334155;
+    --text:#e2e8f0; --text2:#94a3b8;
+    --blue:#3b82f6; --green:#22c55e; --red:#ef4444; --yellow:#eab308;
+    --orange:#f97316; --purple:#a855f7; --teal:#14b8a6;
+    --r:12px; --sh:0 4px 20px rgba(0,0,0,.4);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center}
+  header{width:100%;background:linear-gradient(135deg,#0c1526,#1a2744);padding:14px 24px;border-bottom:1px solid var(--border)}
+  .hdr-inner{max-width:740px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .hdr-title h1{font-size:1.15rem}
+  .hdr-title p{font-size:.78rem;color:var(--text2);margin-top:2px}
+  .hdr-xp{display:flex;align-items:center;gap:12px;flex-shrink:0}
+  .xp-block{text-align:right}
+  .xp-num{font-size:1.3rem;font-weight:800;color:var(--blue)}
+  .xp-lbl{font-size:.68rem;color:var(--text2)}
+  .level-pill{background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:3px 12px;font-size:.78rem;font-weight:700}
+  .streak-pill{background:#7c2d12;color:#fb923c;border-radius:20px;padding:3px 10px;font-size:.78rem;font-weight:700;display:none}
+  .streak-pill.show{display:inline-block}
+  #app{width:100%;max-width:740px;padding:22px 14px 60px}
+  .screen{display:none}
+  .screen.active{display:block;animation:fadeIn .3s}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh);padding:24px;margin-bottom:14px}
+  .start-hero{text-align:center;padding:28px 16px}
+  .hero-icon{font-size:3.5rem;margin-bottom:14px}
+  .start-hero h2{font-size:1.5rem;margin-bottom:10px}
+  .start-hero p{color:var(--text2);line-height:1.7;max-width:500px;margin:0 auto 20px}
+  .info-chip{background:var(--card2);color:var(--blue);border:1px solid var(--border);border-radius:20px;padding:5px 14px;font-size:.82rem;font-weight:600;display:inline-block;margin:3px}
+  .klp-intro{background:var(--card2);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;margin-bottom:14px}
+  .klp-intro h3{color:var(--teal);font-size:.9rem;margin-bottom:8px}
+  .klp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px}
+  .klp-item{background:var(--card);border-radius:8px;padding:8px 12px;font-size:.78rem;border-left:3px solid var(--teal)}
+  .klp-code{font-weight:700;color:var(--teal);font-size:.75rem}
+  .mv-preview{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin:14px 0}
+  .mvp-item{background:var(--card2);border-radius:8px;padding:9px 12px;font-size:.8rem;border-left:3px solid var(--blue)}
+  .mvp-code{font-weight:700;color:var(--blue)}
+  .gami-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+  .gami-item{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center}
+  .gami-icon{font-size:1.5rem;margin-bottom:4px}
+  .gami-label{font-size:.75rem;color:var(--purple);font-weight:600}
+  .prog-wrap{margin-bottom:18px}
+  .prog-meta{display:flex;justify-content:space-between;font-size:.82rem;color:var(--text2);margin-bottom:5px}
+  .streak-badge{background:#7c2d12;color:#fb923c;border-radius:10px;padding:2px 8px;font-size:.75rem;font-weight:700;display:none}
+  .streak-badge.show{display:inline-block}
+  .prog-track{background:var(--card2);border-radius:10px;height:8px;overflow:hidden}
+  .prog-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--blue),#6366f1);transition:width .4s cubic-bezier(.4,0,.2,1)}
+  .xp-pop{position:fixed;top:80px;right:20px;background:var(--green);color:#0f172a;padding:10px 18px;border-radius:12px;font-weight:700;font-size:1rem;z-index:9999;opacity:0;transform:translateY(-10px);pointer-events:none;transition:opacity .3s,transform .3s}
+  .xp-pop.show{opacity:1;transform:none}
+  .q-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+  .q-category{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--blue);background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.25);border-radius:20px;padding:3px 10px}
+  .klp-tag{font-size:.7rem;font-weight:700;border-radius:20px;padding:3px 9px}
+  .klp-tag.K1{background:#1e1b4b;color:#818cf8}
+  .klp-tag.K2{background:#022c22;color:#34d399}
+  .klp-tag.K3{background:#500724;color:#f472b6}
+  .klp-tag.K4{background:#431407;color:#fb923c}
+  .klp-tag.K5{background:#2e1065;color:#a78bfa}
+  .klp-tag.K6{background:#0c4a6e;color:#38bdf8}
+  .q-text{font-size:1rem;line-height:1.6;margin-bottom:16px}
+  .q-formula{font-family:'Georgia',serif;background:var(--card2);border-left:3px solid #6366f1;border-radius:8px;padding:7px 14px;display:inline-block;font-size:1rem;color:#a5b4fc;margin:4px 0 12px;font-weight:600}
+  .q-hint{font-size:.8rem;color:var(--text2);background:var(--card2);padding:7px 11px;border-radius:8px;margin-bottom:12px;border:1px solid var(--border)}
+  .q-graph{margin:10px 0;text-align:center}
+  .mc-grid{display:flex;flex-direction:column;gap:7px}
+  .mc-opt{display:flex;align-items:center;gap:11px;border:2px solid var(--border);border-radius:10px;padding:11px 14px;cursor:pointer;transition:all .15s;background:var(--card2);text-align:left;font-size:.93rem;width:100%;color:var(--text)}
+  .mc-opt:hover:not(:disabled){border-color:var(--blue);background:#1d3a5f}
+  .opt-letter{width:26px;height:26px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.78rem;flex-shrink:0;color:var(--text2)}
+  .mc-opt:hover:not(:disabled) .opt-letter,.mc-opt.selected .opt-letter{background:var(--blue);color:#fff}
+  .mc-opt.selected{border-color:var(--blue);background:#1d3a5f}
+  .mc-opt.correct{border-color:var(--green)!important;background:#14532d!important;color:#86efac}
+  .mc-opt.correct .opt-letter{background:var(--green);color:#0f172a}
+  .mc-opt.wrong{border-color:var(--red)!important;background:#450a0a!important;color:#fca5a5}
+  .mc-opt.wrong .opt-letter{background:var(--red);color:#fff}
+  .mc-opt:disabled{cursor:default}
+  .tf-row{display:flex;gap:10px}
+  .tf-btn{flex:1;padding:13px;border:2px solid var(--border);border-radius:10px;cursor:pointer;font-size:.95rem;font-weight:600;background:var(--card2);color:var(--text);transition:all .15s}
+  .tf-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.4)}
+  .tf-btn.true-btn:hover:not(:disabled),.tf-btn.true-btn.selected{border-color:var(--green);background:#14532d;color:#86efac}
+  .tf-btn.false-btn:hover:not(:disabled),.tf-btn.false-btn.selected{border-color:var(--red);background:#450a0a;color:#fca5a5}
+  .tf-btn.correct{border-color:var(--green)!important;background:#14532d!important;color:#86efac}
+  .tf-btn.wrong{border-color:var(--red)!important;background:#450a0a!important;color:#fca5a5}
+  .tf-btn:disabled{cursor:default}
+  .input-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .input-row input{border:2px solid var(--border);border-radius:8px;padding:9px 13px;font-size:.95rem;width:150px;background:var(--card2);color:var(--text);transition:border-color .2s}
+  .input-row input:focus{outline:none;border-color:var(--blue)}
+  .input-row input.correct{border-color:var(--green);background:#14532d;color:#86efac}
+  .input-row input.wrong{border-color:var(--red);background:#450a0a;color:#fca5a5}
+  .unit-lbl{color:var(--text2);font-size:.88rem}
+  .feedback{border-radius:10px;padding:14px 16px;margin-top:14px;display:none}
+  .feedback.show{display:block;animation:fadeIn .25s}
+  .feedback.correct{background:#052e16;border:1.5px solid #166534;color:#86efac}
+  .feedback.wrong{background:#1c0505;border:1.5px solid #7f1d1d;color:#fca5a5}
+  .fb-header{font-weight:700;font-size:.95rem;margin-bottom:7px}
+  .fb-text{font-size:.88rem;line-height:1.6}
+  .fb-solution{font-family:'Georgia',serif;background:var(--card2);border-radius:6px;padding:5px 11px;display:inline-block;margin-top:7px;font-size:.92rem;border:1px solid var(--border)}
+  .mv-alert{margin-top:9px;background:#431407;border:1px solid var(--orange);border-radius:8px;padding:9px 13px;font-size:.83rem;color:#fdba74}
+  .mv-alert strong{display:block;margin-bottom:2px}
+  .klp-feedback{margin-top:9px;background:rgba(20,184,166,.1);border:1px solid rgba(20,184,166,.3);border-radius:8px;padding:8px 12px;font-size:.8rem;color:#5eead4}
+  .klp-feedback strong{color:var(--teal)}
+  .xp-gained{display:inline-flex;align-items:center;gap:5px;background:var(--purple);color:#fff;border-radius:20px;padding:3px 10px;font-size:.78rem;font-weight:700;margin-top:7px}
+  .btn{padding:10px 22px;border:none;border-radius:10px;cursor:pointer;font-size:.92rem;font-weight:600;transition:all .15s;display:inline-flex;align-items:center;gap:6px;justify-content:center}
+  .btn-primary{background:linear-gradient(135deg,#3b82f6,#6366f1);color:#fff}
+  .btn-primary:hover{opacity:.88;transform:translateY(-1px)}
+  .btn-large{padding:13px 34px;font-size:1rem;border-radius:12px}
+  .btn-outline{background:var(--card2);color:var(--text);border:1px solid var(--border)}
+  .btn-outline:hover{background:var(--card);border-color:var(--blue)}
+  .btn-row{display:flex;gap:9px;margin-top:16px;justify-content:flex-end;flex-wrap:wrap}
+  .result-top{text-align:center;padding:24px 16px 16px;border-bottom:1px solid var(--border);margin-bottom:20px}
+  .score-circle{width:100px;height:100px;border-radius:50%;margin:0 auto 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:1.8rem;font-weight:800;border:5px solid}
+  .score-circle.excellent{border-color:var(--green);color:var(--green);background:rgba(34,197,94,.12)}
+  .score-circle.good{border-color:var(--blue);color:var(--blue);background:rgba(59,130,246,.12)}
+  .score-circle.ok{border-color:var(--yellow);color:var(--yellow);background:rgba(234,179,8,.12)}
+  .score-circle.critical{border-color:var(--red);color:var(--red);background:rgba(239,68,68,.12)}
+  .score-lbl{font-size:.65rem;letter-spacing:.05em;font-weight:500}
+  .result-heading{font-size:1.25rem;font-weight:700;margin-bottom:6px}
+  .result-sub{color:var(--text2);font-size:.87rem}
+  .stats-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:4px}
+  .stat-item{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:11px;text-align:center}
+  .stat-num{font-size:1.4rem;font-weight:800;color:var(--blue)}
+  .stat-lbl{font-size:.68rem;color:var(--text2);margin-top:2px}
+  .ach-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+  .ach-card{border-radius:10px;padding:12px 14px;display:flex;gap:10px;align-items:center}
+  .ach-card.unlocked{background:#1a0533;border:1px solid var(--purple)}
+  .ach-card.locked{background:var(--card2);border:1px solid var(--border);opacity:.45}
+  .ach-icon{font-size:1.6rem}
+  .ach-title{font-weight:700;font-size:.85rem}
+  .ach-card.unlocked .ach-title{color:#d8b4fe}
+  .ach-desc{font-size:.72rem;color:var(--text2)}
+  .klp-komp-row{margin-bottom:12px}
+  .klp-komp-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-size:.84rem}
+  .klp-bar-wrap{background:var(--card2);border-radius:8px;height:9px;overflow:hidden}
+  .klp-bar-fill{height:100%;border-radius:8px;transition:width .6s}
+  .mv-card{border-radius:var(--r);padding:16px 18px;margin-bottom:12px;border:1.5px solid}
+  .mv-card.detected{background:rgba(120,53,15,.25);border-color:#92400e}
+  .mv-card.ok{background:rgba(22,101,52,.2);border-color:#166534}
+  .mv-header{display:flex;align-items:flex-start;gap:11px;margin-bottom:8px}
+  .mv-badge{flex-shrink:0;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.8rem}
+  .mv-card.detected .mv-badge{background:var(--orange);color:#0f172a}
+  .mv-card.ok .mv-badge{background:var(--green);color:#0f172a}
+  .mv-title{font-weight:700;font-size:.92rem}
+  .mv-card.detected .mv-title{color:#fdba74}
+  .mv-card.ok .mv-title{color:#86efac}
+  .mv-sub{font-size:.75rem;color:var(--text2);margin-top:2px}
+  .mv-false{background:rgba(120,53,15,.3);border-radius:7px;padding:7px 11px;font-size:.83rem;margin:5px 0;border-left:3px solid var(--orange);color:#fdba74;font-style:italic}
+  .mv-false::before{content:'❌ Gedacht: ';font-style:normal;font-weight:600}
+  .mv-correct{background:rgba(22,101,52,.3);border-radius:7px;padding:7px 11px;font-size:.83rem;margin:5px 0;border-left:3px solid var(--green);color:#86efac}
+  .mv-correct::before{content:'✅ Richtig: ';font-weight:600}
+  .mv-example{font-family:'Georgia',serif;background:var(--card2);border-radius:6px;padding:5px 11px;display:inline-block;margin-top:5px;font-size:.88rem;border:1px solid var(--border)}
+  .rec-box{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);border-radius:var(--r);padding:16px 18px}
+  .rec-box h3{color:var(--blue);margin-bottom:9px;font-size:.92rem}
+  .rec-list{list-style:none}
+  .rec-list li{padding:4px 0;font-size:.85rem;display:flex;gap:7px}
+  .rec-list li::before{content:'→';color:var(--blue);font-weight:700;flex-shrink:0}
+  .links-section h3{font-size:.92rem;color:var(--blue);margin-bottom:12px}
+  .links-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-bottom:16px}
+  .link-card{display:flex;align-items:center;gap:10px;background:var(--card2);border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;text-decoration:none;color:var(--text);font-size:.83rem;font-weight:600;transition:all .15s}
+  .link-card:hover{background:var(--card);border-color:var(--blue);transform:translateY(-1px)}
+  .link-icon{font-size:1.4rem;flex-shrink:0}
+  .link-desc{font-size:.72rem;color:var(--text2);font-weight:400;margin-top:2px}
+  .foerder-section-title{font-size:.75rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text2);margin-bottom:10px}
+  .foerder-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:12px;border-top:3px solid var(--orange)}
+  .foerder-mv-tag{font-size:.72rem;font-weight:700;background:rgba(249,115,22,.15);color:var(--orange);border:1px solid rgba(249,115,22,.25);border-radius:20px;padding:3px 9px}
+  .diff-badge{font-size:.68rem;font-weight:700;border-radius:20px;padding:2px 9px}
+  .diff-leicht{background:#14532d;color:#86efac}
+  .diff-mittel{background:#713f12;color:#fde68a}
+  .diff-schwer{background:#3b0764;color:#d8b4fe}
+  .foerder-q-text{font-size:.95rem;line-height:1.6;margin-bottom:12px}
+  .foerder-hint{margin-bottom:12px}
+  .foerder-hint summary{font-size:.8rem;color:var(--blue);cursor:pointer;font-weight:600;padding:4px 0;user-select:none;list-style:none}
+  .foerder-hint summary::-webkit-details-marker{display:none}
+  .foerder-hint summary::before{content:"💡 Tipp anzeigen"}
+  .foerder-hint[open] summary::before{content:"💡 Tipp verbergen"}
+  .foerder-hint-body{background:#0c2340;border:1px solid #1e40af;border-radius:8px;padding:10px 13px;font-size:.83rem;color:#93c5fd;margin-top:6px;line-height:1.6}
+  .foerder-result{border-radius:8px;padding:10px 13px;margin-top:10px;font-size:.85rem;font-weight:600;display:none}
+  .foerder-result.show{display:block}
+  .foerder-result.ok{background:#052e16;color:#86efac;border:1px solid #166534}
+  .foerder-result.bad{background:#1c0505;color:#fca5a5;border:1px solid #7f1d1d}
+  .foerder-sol{font-family:'Georgia',serif;background:var(--card2);border-radius:5px;padding:4px 10px;display:inline-block;margin-top:5px;font-size:.88rem;border:1px solid var(--border);font-weight:400}
+  #toast{position:fixed;bottom:18px;right:18px;background:var(--card);color:var(--text);padding:10px 18px;border-radius:10px;font-size:.88rem;z-index:9999;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none;max-width:300px;border:1px solid var(--border)}
+  #toast.show{transform:none;opacity:1}
+  #toast.orange{background:#431407;color:#fdba74;border-color:#92400e}
+  @media(max-width:500px){
+    .stats-strip{grid-template-columns:repeat(2,1fr)}
+    .tf-row{flex-direction:column}
+    .mv-preview{grid-template-columns:1fr}
+    .hdr-inner{justify-content:center;text-align:center}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hdr-inner">
+    <div class="hdr-title">
+      <h1 id="hdr-title-h1"></h1>
+      <p id="hdr-title-p"></p>
+    </div>
+    <div class="hdr-xp">
+      <div class="xp-block">
+        <div class="xp-num" id="hdr-xp">0 XP</div>
+        <div class="xp-lbl">Punkte</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+        <div class="level-pill" id="hdr-level">Einsteiger</div>
+        <div class="streak-pill" id="hdr-streak">🔥</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div id="app">
+<div id="screen-start" class="screen active">
+  <div class="card start-hero">
+    <div class="hero-icon" id="hero-icon-el"></div>
+    <h2 id="start-h2"></h2>
+    <p>Diese Diagnose prüft deine Antworten, erkennt gezielt <strong>Fehlvorstellungen</strong>
+      und ordnet jede Frage den Kompetenzen des <strong>NRW-Kernlehrplans</strong> zu.</p>
+    <div style="margin:16px 0" id="info-chips"></div>
+    <button class="btn btn-primary btn-large" onclick="startTest()">🚀 Diagnose starten</button>
+  </div>
+  <div class="klp-intro">
+    <h3>📜 Kernlehrplan NRW – Prozessbezogene Kompetenzen (Sek I Gymnasium)</h3>
+    <p style="font-size:.8rem;color:var(--text2);margin-bottom:10px">Jede Frage ist einer der 6 Kompetenzen zugeordnet:</p>
+    <div class="klp-grid">
+      <div class="klp-item"><span class="klp-code">K1</span> Argumentieren &amp; Beweisen</div>
+      <div class="klp-item"><span class="klp-code">K2</span> Problemlösen &amp; Erkunden</div>
+      <div class="klp-item"><span class="klp-code">K3</span> Modellieren</div>
+      <div class="klp-item"><span class="klp-code">K4</span> Darstellungen nutzen</div>
+      <div class="klp-item"><span class="klp-code">K5</span> Kommunizieren</div>
+      <div class="klp-item"><span class="klp-code">K6</span> Werkzeuge nutzen</div>
+    </div>
+  </div>
+  <div class="card" style="padding:18px">
+    <h3 style="font-size:.92rem;color:var(--blue);margin-bottom:10px">🎮 Gamification</h3>
+    <div class="gami-strip">
+      <div class="gami-item"><div class="gami-icon">⭐</div><div class="gami-label">XP pro Frage</div></div>
+      <div class="gami-item"><div class="gami-icon">🔥</div><div class="gami-label">Streak-Bonus</div></div>
+      <div class="gami-item"><div class="gami-icon">🏅</div><div class="gami-label">Errungenschaften</div></div>
+    </div>
+  </div>
+  <div class="card" style="padding:18px">
+    <h3 style="font-size:.92rem;color:var(--blue);margin-bottom:10px">🧠 Geprüfte Fehlvorstellungen</h3>
+    <div class="mv-preview" id="mv-preview-start"></div>
+  </div>
+</div>
+
+<div id="screen-test" class="screen">
+  <div class="prog-wrap">
+    <div class="prog-meta">
+      <span id="prog-label">Frage 1</span>
+      <span><span class="streak-badge" id="streak-badge"></span>&nbsp;<span id="prog-pct">0 %</span></span>
+    </div>
+    <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  </div>
+  <div class="card" id="question-card"></div>
+  <div class="btn-row">
+    <button class="btn btn-primary" id="btn-check" onclick="checkAnswer()" style="display:none">Antwort prüfen</button>
+    <button class="btn btn-primary" id="btn-next" onclick="nextQuestion()" style="display:none">Weiter →</button>
+  </div>
+</div>
+
+<div id="screen-result" class="screen">
+  <div class="card">
+    <div class="result-top" id="result-top"></div>
+    <div class="stats-strip" id="stats-strip"></div>
+  </div>
+  <div class="card">
+    <h2 style="font-size:1.05rem;color:var(--blue);margin-bottom:14px">🎖️ Errungenschaften</h2>
+    <div class="ach-grid" id="ach-grid"></div>
+  </div>
+  <div class="card">
+    <h2 style="font-size:1.05rem;color:var(--teal);margin-bottom:14px">📜 Kernlehrplan-Kompetenzprofil</h2>
+    <p style="font-size:.8rem;color:var(--text2);margin-bottom:12px">Auswertung nach prozessbezogenen Kompetenzen (KLP NRW Gymnasium Sek I)</p>
+    <div id="klp-profile"></div>
+  </div>
+  <div class="card">
+    <h2 style="font-size:1.05rem;color:var(--orange);margin-bottom:6px">🧠 Fehlvorstellungs-Diagnose</h2>
+    <p style="font-size:.82rem;color:var(--text2);margin-bottom:14px">Detailanalyse aller geprüften Fehlvorstellungen.</p>
+    <div id="mv-cards"></div>
+  </div>
+  <div class="card"><div class="rec-box" id="recs"></div></div>
+  <div class="card" id="links-card" style="display:none">
+    <div class="links-section">
+      <h3>▶️ Lernvideos – Empfehlungen</h3>
+      <div class="links-grid" id="links-videos"></div>
+      <h3 style="margin-top:4px">📝 Übungsaufgaben – direkte Links</h3>
+      <div class="links-grid" id="links-uebung"></div>
+    </div>
+  </div>
+  <div style="text-align:center;margin-top:20px;padding-bottom:20px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+    <button class="btn btn-primary btn-large" id="btn-foerder" onclick="startFoerder()" style="display:none">🎯 Förder-Level starten</button>
+    <button class="btn btn-outline btn-large" onclick="restartTest()">🔄 Diagnose wiederholen</button>
+  </div>
+</div>
+
+<div id="screen-foerder" class="screen">
+  <div class="card">
+    <div style="text-align:center;padding:20px 16px 14px">
+      <div style="font-size:2.5rem;margin-bottom:8px">🎯</div>
+      <h2 style="font-size:1.3rem;margin-bottom:6px">Förder-Level – gezielte Übungen</h2>
+      <p style="font-size:.85rem;color:var(--text2)">Aufgaben genau zu den Fehlvorstellungen, bei denen Lücken erkannt wurden.</p>
+    </div>
+  </div>
+  <div id="foerder-content"></div>
+  <div style="text-align:center;margin-top:20px;padding-bottom:20px">
+    <button class="btn btn-outline" onclick="restartTest()">🔄 Diagnose wiederholen</button>
+  </div>
+</div>
+</div>
+
+<div id="toast"></div>
+<div class="xp-pop" id="xp-pop"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════
+//  DATA-BEREICH
+// ══════════════════════════════════════════════════════════════════════
+
+const SVG_KREISMUSTER = `<svg viewBox="0 0 480 165" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:480px;display:block;margin:0 auto">
+  <style>.c{fill:none;stroke:#3b82f6;stroke-width:2.2}.l{font-family:system-ui,sans-serif;font-size:11px;fill:#94a3b8;text-anchor:middle;font-weight:600}</style>
+  <!-- n=1: 1 Kreis -->
+  <circle class="c" cx="60" cy="72" r="16"/>
+  <text class="l" x="60" y="115">n = 1</text>
+  <text class="l" x="60" y="128">1 Kreis</text>
+  <!-- n=2: 5 Kreise -->
+  <circle class="c" cx="200" cy="72" r="16"/>
+  <circle class="c" cx="200" cy="40" r="16"/>
+  <circle class="c" cx="200" cy="104" r="16"/>
+  <circle class="c" cx="168" cy="72" r="16"/>
+  <circle class="c" cx="232" cy="72" r="16"/>
+  <text class="l" x="200" y="135">n = 2</text>
+  <text class="l" x="200" y="148">5 Kreise</text>
+  <!-- n=3: 9 Kreise -->
+  <circle class="c" cx="380" cy="72" r="16"/>
+  <circle class="c" cx="380" cy="40" r="16"/>
+  <circle class="c" cx="380" cy="8" r="16"/>
+  <circle class="c" cx="380" cy="104" r="16"/>
+  <circle class="c" cx="380" cy="136" r="16"/>
+  <circle class="c" cx="348" cy="72" r="16"/>
+  <circle class="c" cx="316" cy="72" r="16"/>
+  <circle class="c" cx="412" cy="72" r="16"/>
+  <circle class="c" cx="444" cy="72" r="16"/>
+  <text class="l" x="380" y="158">n = 3 &nbsp;·&nbsp; 9 Kreise</text>
+</svg>`;
+
+const TITEL      = '🔢 Diagnose-App · Terme vereinfachen';
+const UNTERTITEL = 'Klasse 8 · NRW Gymnasium · Fehlvorstellungen & KLP Sek I';
+const HERO_ICON  = '🔢';
+const INFO_CHIPS = ['📝 15 Fragen', '⏱️ ca. 18 Min.', '🔬 10 Fehlvorstellungen'];
+
+const MV = {
+  M1: {code:'M1', title:'Unvereinfachbarer Term',
+    false_belief:'Man kann jeden Term weiter vereinfachen – z.B. 3x + 5 zu 8x oder 8.',
+    correct:'Nur gleichartige Terme (gleiche Variable, gleicher Exponent) duerfen zusammengefasst werden. 3x + 5 ist fertig.',
+    example:'3x + 5 bleibt 3x + 5 (nicht 8x oder 8)',
+    rec:'Ueben, wann Terme gleichartig sind: nur gleiche Variable + gleicher Exponent.'},
+  M2: {code:'M2', title:'x + x = x² (Addieren statt Potenzieren)',
+    false_belief:'x + x = x², weil man x und x miteinander multipliziert.',
+    correct:'x + x = 1x + 1x = 2x. Koeffizienten addieren, Variable bleibt.',
+    example:'x + x = 2x, nicht x²',
+    rec:'Unterschied zwischen Addition (2x) und Multiplikation (x²) vertiefen.'},
+  M3: {code:'M3', title:'Verschiedene Variablen zusammenfassen',
+    false_belief:'3x + 2y = 5xy, weil man alle Terme mit Variablen kombinieren darf.',
+    correct:'x und y sind verschiedene Variablen und nie gleichartig.',
+    example:'3x + 2y bleibt 3x + 2y',
+    rec:'Klarmachen: nur identische Variablen (+ Exponent) duerfen zusammengefasst werden.'},
+  M4: {code:'M4', title:'Unsichtbarer Koeffizient 1',
+    false_belief:'3x + x = 3x, weil x keine sichtbare Zahl davor hat.',
+    correct:'x bedeutet 1x. Daher gilt: 3x + x = 3x + 1x = 4x.',
+    example:'3x + x = 4x (nicht 3x)',
+    rec:'Uebung: x immer als 1x aufschreiben, bevor man zusammenfasst.'},
+  M5: {code:'M5', title:'Vorzeichen geht beim Umordnen verloren',
+    false_belief:'5 + 3x - 2 = 3x + 7, weil 5 und 2 addiert werden.',
+    correct:'Das Vorzeichen gehoert zum Term: 5 + 3x - 2 = 3x + (5-2) = 3x + 3.',
+    example:'5 + 3x - 2 = 3x + 3 (nicht 3x + 7)',
+    rec:'Vorzeichen als Teil des Terms markieren und beim Umordnen mitfuehren.'},
+  M6: {code:'M6', title:'Koeffizienten multiplizieren statt addieren',
+    false_belief:'2x + 3x = 6x, weil 2 mal 3 gleich 6 ist.',
+    correct:'Beim Zusammenfassen addiert man die Koeffizienten: 2 + 3 = 5, also 5x.',
+    example:'2x + 3x = (2+3)x = 5x (nicht 6x)',
+    rec:'Merkrege: Koeffizient = Anzahl der x. Zusammenfassen = Zaehlen.'},
+  M7: {code:'M7', title:'Gleichwertige Terme als verschieden angesehen',
+    false_belief:'4x - 3 und 1 + 4x - 4 sind verschiedene Terme, weil sie anders aussehen.',
+    correct:'Zwei Terme sind gleichwertig, wenn sie fuer jedes x denselben Wert liefern.',
+    example:'1 + 4x - 4 = 4x + (1-4) = 4x - 3',
+    rec:'Terme durch Einsetzen von Zahlen auf Gleichwertigkeit pruefen.'},
+  M8: {code:'M8', title:'Negatives Vorzeichen bei Subtraktion falsch',
+    false_belief:'-4x + 3x = 7x, weil man 4 und 3 addiert.',
+    correct:'-4x + 3x = (-4+3)x = -x. Vorzeichen in den Koeffizienten einrechnen.',
+    example:'10 - 4x + 3x = 10 - x (nicht 10 + 7x)',
+    rec:'Vorzeichen explizit als + oder - notieren und beim Zusammenfassen beruecksichtigen.'},
+  M9: {code:'M9', title:'x-Term und Zahl addieren',
+    false_belief:'3x + 2 - x = 2x + 2 kann man nicht, weil da noch +2 steht, also 2x + 2 = 4x oder 2x2.',
+    correct:'3x - x = 2x (x-Terme), die Zahl 2 bleibt separat. Ergebnis: 2x + 2.',
+    example:'3x + 2 - x = 2x + 2 (fertig vereinfacht)',
+    rec:'Schritt fuer Schritt: erst x-Terme, dann Zahlen zusammenfassen.'},
+  M10: {code:'M10', title:'Zwei Variablen falsch gruppieren',
+    false_belief:'2x + 3y - x = 2xy - x oder 5xy, weil ich x und y zusammenfassen darf.',
+    correct:'Nur gleichartige Terme: 2x - x = x; 3y bleibt. Ergebnis: x + 3y.',
+    example:'2x + 3y - x = x + 3y',
+    rec:'Schrittweise: erst alle x-Terme, dann alle y-Terme, dann Zahlen separat sammeln.'},
+};
+
+const Q = [
+  {id:'q01', cat:'Begriff & Definition', type:'tf', klp:'K1', klpDesc:'Aussagen zu gleichartigen Termen begruenden',
+    mvTarget:'M1', mv_nok:'M1', xp:10,
+    text:'Der Term 3x + 5 kann nicht weiter vereinfacht werden, weil 3x und 5 nicht gleichartig sind.',
+    answer:true,
+    fb_ok:'Richtig! Gleichartige Terme haben dieselbe Variable mit gleichem Exponenten.',
+    fb_nok:'Falsch! x-Terme und Zahlen sind nie gleichartig. 3x + 5 ist bereits vollstaendig vereinfacht.',
+    sol:'Wahr – 3x und 5 sind nicht gleichartig'},
+
+  {id:'q02', cat:'Vereinfachen & Rechnen', type:'mc', klp:'K2', klpDesc:'Variablenaddition korrekt durchfuehren',
+    mvTarget:'M2', mv_nok:'M2', xp:10,
+    text:'Was ist x + x?',
+    opts:['x\u00b2', '2x', '2', 'x'],
+    answer:1,
+    fb_ok:'Richtig! x + x = 1x + 1x = 2x. Koeffizienten addieren, kein neuer Exponent.',
+    fb_nok:'Falsch! x + x = 1x + 1x = 2x – kein neuer Exponent entsteht!',
+    sol:'x + x = 2x'},
+
+  {id:'q03', cat:'Vereinfachen & Rechnen', type:'input', klp:'K2', klpDesc:'Vereinfachungsschritte ausfuehren und kontrollieren',
+    mvTarget:'M4', mv_nok:'M4', xp:12,
+    text:'Vereinfache 3x + x und setze x = 5 ein. Was ergibt sich?',
+    formula:'3x + x = ? &nbsp;→&nbsp; einsetzen: x = 5',
+    hint:'Denk daran: x = 1·x. Also 3x + x = 3x + 1x = 4x.',
+    answer:20, tol:0.05, unit:'',
+    fb_ok:'Richtig! 3x + x = 4x; fuer x = 5: 4 · 5 = 20.',
+    fb_nok:'Denk daran: x = 1·x, also 3x + x = 4x. Fuer x = 5: 4 · 5 = 20.',
+    sol:'4x; x=5 → 20'},
+
+  {id:'q04', cat:'Analyse & Erkennen', type:'tf', klp:'K1', klpDesc:'Gleichwertige Terme erkennen und begruenden',
+    mvTarget:'M7', mv_nok:'M7', xp:10,
+    text:'Die Terme 4x − 3 und 1 + 4x − 4 sind verschieden, weil sie unterschiedlich aussehen.',
+    answer:false,
+    fb_ok:'Richtig! Zwei Terme sind gleichwertig, wenn sie fuer jedes x denselben Wert liefern.',
+    fb_nok:'Falsch! 1 + 4x − 4 = 4x + (1−4) = 4x − 3. Sie sind absolut identisch!',
+    sol:'Falsch – beide Terme sind gleichwertig'},
+
+  {id:'q05', cat:'Vereinfachen & Rechnen', type:'mc', klp:'K2', klpDesc:'Terme durch Umordnen und Zusammenfassen vereinfachen',
+    mvTarget:'M5', mv_nok:'M5', xp:10,
+    text:'Vereinfache: 5 + 3x − 2',
+    opts:['3x + 7', '3x + 3', '3x − 3', '8x'],
+    answer:1,
+    fb_ok:'Richtig! 3x + (5−2) = 3x + 3.',
+    fb_nok:'Falsch! Das Vorzeichen gehoert zum Term: 5 + 3x − 2 = 3x + (5−2) = 3x + 3.',
+    sol:'5 + 3x − 2 = 3x + 3'},
+
+  {id:'q06', cat:'Vereinfachen & Rechnen', type:'input', klp:'K2', klpDesc:'Koeffizienten korrekt addieren',
+    mvTarget:'M6', mv_nok:'M6', xp:12,
+    text:'Vereinfache 2x + 3x und setze x = 4 ein. Was ergibt sich?',
+    formula:'2x + 3x = ? &nbsp;→&nbsp; einsetzen: x = 4',
+    hint:'Koeffizienten addieren: 2 + 3 = 5. Also 5x. Dann x = 4 einsetzen.',
+    answer:20, tol:0.05, unit:'',
+    fb_ok:'Richtig! 2x + 3x = 5x; fuer x = 4: 5 · 4 = 20.',
+    fb_nok:'Falsch! Koeffizienten addieren: 2+3=5 → 5x. Fuer x=4: 5·4=20.',
+    sol:'5x; x=4 → 20'},
+
+  {id:'q07', cat:'Zwei Variablen', type:'tf', klp:'K1', klpDesc:'Gleichartigkeit von Termen mit verschiedenen Variablen beurteilen',
+    mvTarget:'M3', mv_nok:'M3', xp:10,
+    text:'Der Term 3x + 2y kann zu 5xy vereinfacht werden.',
+    answer:false,
+    fb_ok:'Richtig! x und y sind verschiedene Variablen – sie sind nicht gleichartig.',
+    fb_nok:'Falsch! x-Terme und y-Terme duerfen nie zusammengefasst werden. 3x + 2y bleibt so.',
+    sol:'Falsch – 3x + 2y ist bereits fertig'},
+
+  {id:'q08', cat:'Analyse & Erkennen', type:'mc', klp:'K2', klpDesc:'Negative Koeffizienten korrekt handhaben',
+    mvTarget:'M8', mv_nok:'M8', xp:10,
+    text:'Vereinfache: 10 − 4x + 3x',
+    opts:['10 + 7x', '10 − x', '10 − 7x', '13x'],
+    answer:1,
+    fb_ok:'Richtig! −4x + 3x = (−4+3)x = −x; also 10 − x.',
+    fb_nok:'Falsch! −4x + 3x = (−4+3)x = −1x = −x. Ergebnis: 10 − x.',
+    sol:'10 − 4x + 3x = 10 − x'},
+
+  {id:'q09', cat:'Vereinfachen & Rechnen', type:'input', klp:'K3', klpDesc:'Terme vereinfachen und Ergebnis berechnen',
+    mvTarget:'M9', mv_nok:'M9', xp:12,
+    text:'Vereinfache 3x + 2 − x und setze x = 3 ein.',
+    formula:'3x + 2 − x &nbsp;→&nbsp; einsetzen: x = 3',
+    hint:'x-Terme: 3x − x = 2x. Die Zahl 2 bleibt. Ergebnis: 2x + 2.',
+    answer:8, tol:0.05, unit:'',
+    fb_ok:'Richtig! 3x − x = 2x; 2x + 2 fuer x=3: 2·3+2 = 8.',
+    fb_nok:'3x − x = 2x; dann 2x + 2 fuer x=3: 6+2 = 8.',
+    sol:'2x + 2; x=3 → 8'},
+
+  {id:'q10', cat:'Begriff & Definition', type:'tf', klp:'K1', klpDesc:'Falsche Rechenregel erkennen und widerlegen',
+    mvTarget:'M6', mv_nok:'M6', xp:10,
+    text:'2x + 3x = 6x, weil 2 mal 3 gleich 6 ist.',
+    answer:false,
+    fb_ok:'Richtig! Beim Zusammenfassen addiert man die Koeffizienten: 2 + 3 = 5 → 5x.',
+    fb_nok:'Falsch! Nicht multiplizieren – addieren! 2x + 3x = (2+3)x = 5x.',
+    sol:'Falsch – 2x + 3x = 5x'},
+
+  {id:'q11', cat:'Zwei Variablen', type:'mc', klp:'K4', klpDesc:'Terme mit zwei Variablen korrekt zusammenfassen',
+    mvTarget:'M10', mv_nok:'M10', xp:10,
+    text:'Das Kreismuster ergibt fuer Figur n die Terme 4n − 3 (Gruppe A) und 1 + 4n − 4 (Gruppe B). Warum sind beide Terme richtig?',
+    svg:SVG_KREISMUSTER,
+    opts:['Beide Gruppen haben gezaehlt und dasselbe erhalten',
+          'Die Terme sehen gleich aus',
+          'Man kann jeden Term beliebig umschreiben',
+          'Die Terme sind gleichwertig – sie liefern fuer jedes n denselben Wert'],
+    answer:3,
+    fb_ok:'Richtig! 1 + 4n − 4 = 4n − 3. Gleichwertige Terme sehen anders aus, liefern aber dasselbe Ergebnis.',
+    fb_nok:'Falsch! Gleichwertige Terme muessen fuer jedes n denselben Wert ergeben.',
+    sol:'Beide Terme sind gleichwertig: 1+4n−4 = 4n−3'},
+
+  {id:'q12', cat:'Vereinfachen & Rechnen', type:'input', klp:'K2', klpDesc:'Koeffizient 1 korrekt beruecksichtigen',
+    mvTarget:'M4', mv_nok:'M4', xp:12,
+    text:'Vereinfache 5x − 2x + x und setze x = 6 ein.',
+    formula:'5x − 2x + x &nbsp;→&nbsp; einsetzen: x = 6',
+    hint:'x = 1·x. Also: 5 − 2 + 1 = 4 → 4x. Dann x=6 einsetzen.',
+    answer:24, tol:0.05, unit:'',
+    fb_ok:'Richtig! (5−2+1)x = 4x; fuer x=6: 4·6 = 24.',
+    fb_nok:'Denk an den unsichtbaren 1er: 5x−2x+1x = 4x; 4·6 = 24.',
+    sol:'4x; x=6 → 24'},
+
+  {id:'q13', cat:'Textaufgabe', type:'mc', klp:'K3', klpDesc:'Terme als Modell einer Situation lesen und pruefen',
+    mvTarget:'M5', mv_nok:'M5', xp:12,
+    text:'Lena berechnet: 4 + 2x − 6 = 2x + 10. Was hat sie falsch gemacht?',
+    opts:['Sie hat 4 und 6 addiert statt 4 minus 6 zu rechnen',
+          'Sie hat x vergessen',
+          'Sie hat einen falschen Term aufgestellt',
+          'Sie hat nichts falsch gemacht'],
+    answer:0,
+    fb_ok:'Richtig! 4 − 6 = −2, also 2x + (−2) = 2x − 2. Nicht 2x + 10.',
+    fb_nok:'Falsch! Das Vorzeichen: 4 + 2x − 6 = 2x + (4−6) = 2x − 2.',
+    sol:'Richtig: 4 + 2x − 6 = 2x − 2'},
+
+  {id:'q14', cat:'Zwei Variablen', type:'mc', klp:'K4', klpDesc:'Terme mit x und y schrittweise vereinfachen',
+    mvTarget:'M10', mv_nok:'M10', xp:10,
+    text:'Vereinfache: 4x + y − 2x + 3y',
+    opts:['2x + 4y', '6xy', '2x + 2y', '4x + 4y'],
+    answer:0,
+    fb_ok:'Richtig! x-Terme: 4x−2x=2x; y-Terme: y+3y=4y. Ergebnis: 2x+4y.',
+    fb_nok:'Falsch! x-Terme getrennt: 4x−2x=2x; y-Terme getrennt: y+3y=4y. Ergebnis: 2x+4y.',
+    sol:'4x − 2x + y + 3y = 2x + 4y'},
+
+  {id:'q15', cat:'Vereinfachen & Rechnen', type:'input', klp:'K3', klpDesc:'Komplexeren Term vollstaendig vereinfachen',
+    mvTarget:'M8', mv_nok:'M8', xp:15,
+    text:'Vereinfache 2x + 4 − 5x + x − 1 und setze x = 2 ein.',
+    formula:'2x + 4 − 5x + x − 1 &nbsp;→&nbsp; einsetzen: x = 2',
+    hint:'x-Terme: (2−5+1)x = −2x. Zahlen: 4−1 = 3. Ergebnis: −2x+3.',
+    answer:-1, tol:0.05, unit:'',
+    fb_ok:'Richtig! −2x+3; fuer x=2: −4+3 = −1.',
+    fb_nok:'(2−5+1)=−2 → −2x; 4−1=3 → −2x+3. Fuer x=2: −2·2+3 = −1.',
+    sol:'−2x + 3; x=2 → −1'},
+];
+
+const FOERDER_DATA = {
+  M1: [
+    {diff:'leicht', type:'tf',
+     text:'Der Term 7x − 3 ist vollstaendig vereinfacht.',
+     answer:true, hint:'7x ist ein x-Term, −3 ist eine Zahl – sie sind nicht gleichartig.',
+     fb_ok:'Richtig! Nicht gleichartige Terme koennen nicht zusammengefasst werden.',
+     fb_nok:'Doch! 7x und −3 sind nicht gleichartig – der Term ist fertig.',
+     sol:'Wahr – 7x − 3 ist fertig vereinfacht'},
+    {diff:'mittel', type:'mc',
+     text:'Welcher Term ist bereits vollstaendig vereinfacht?',
+     opts:['2x + 3x', '5y − 2 + y', '4x + 5', 'x + x − 1 + 2'],
+     answer:2, hint:'Schau, ob noch gleichartige Terme vorhanden sind.',
+     fb_ok:'Richtig! 4x + 5 hat keine zwei gleichartigen Terme mehr.',
+     fb_nok:'Nur 4x + 5 ist fertig: 2x+3x=5x; 5y+y=6y; x+x=2x koennte noch vereinfacht werden.',
+     sol:'4x + 5 ist vollstaendig vereinfacht'},
+    {diff:'schwer', type:'input',
+     text:'Vereinfache 6x − 2 + x − 3x und setze x = 4 ein.',
+     formula:'6x − 2 + x − 3x &nbsp;→&nbsp; x = 4',
+     hint:'x-Terme: (6+1−3)x = 4x. Zahl: −2 bleibt. Ergebnis: 4x − 2.',
+     answer:14, tol:0.05, unit:'',
+     fb_ok:'Richtig! 4x − 2; fuer x=4: 16−2 = 14.',
+     fb_nok:'x-Terme: 6+1−3=4 → 4x. 4x−2; x=4: 4·4−2=14.',
+     sol:'4x − 2; x=4 → 14'},
+  ],
+  M2: [
+    {diff:'leicht', type:'tf',
+     text:'x + x + x = 3x',
+     answer:true, hint:'x + x + x = 1x + 1x + 1x. Koeffizienten addieren.',
+     fb_ok:'Richtig! 1+1+1=3 → 3x.',
+     fb_nok:'Doch! x = 1·x, also 1x+1x+1x = 3x.',
+     sol:'x + x + x = 3x'},
+    {diff:'mittel', type:'mc',
+     text:'Was ergibt 2x + x?',
+     opts:['2x²', '3x', '3x²', '2x'],
+     answer:1, hint:'x = 1·x. Koeffizienten: 2 + 1 = 3.',
+     fb_ok:'Richtig! 2x + 1x = (2+1)x = 3x.',
+     fb_nok:'2x + x = 2x + 1x = 3x – Koeffizienten addieren, kein Exponent.',
+     sol:'2x + x = 3x'},
+    {diff:'schwer', type:'input',
+     text:'Berechne x + 2x + x fuer x = 7.',
+     formula:'x + 2x + x &nbsp;→&nbsp; x = 7',
+     hint:'1+2+1 = 4 → 4x. Dann x = 7 einsetzen.',
+     answer:28, tol:0.05, unit:'',
+     fb_ok:'Richtig! 4x; fuer x=7: 4·7=28.',
+     fb_nok:'x+2x+x = 4x. Fuer x=7: 4·7=28.',
+     sol:'4x; x=7 → 28'},
+  ],
+  M3: [
+    {diff:'leicht', type:'tf',
+     text:'3x + 2y = 5xy ist eine richtige Vereinfachung.',
+     answer:false, hint:'x und y sind verschiedene Variablen und nie gleichartig.',
+     fb_ok:'Richtig! 3x und 2y sind nicht gleichartig. Ergebnis bleibt 3x + 2y.',
+     fb_nok:'Falsch! x und y duerfen nicht zusammengefasst werden. 3x + 2y bleibt so.',
+     sol:'Falsch – 3x + 2y kann nicht weiter vereinfacht werden'},
+    {diff:'mittel', type:'mc',
+     text:'Vereinfache 5x + 3y − 2x.',
+     opts:['3x + 3y', '6xy', '5x + y', '3x − 3y'],
+     answer:0, hint:'Nur x-Terme zusammenfassen: 5x − 2x = 3x. 3y bleibt.',
+     fb_ok:'Richtig! 5x − 2x = 3x; 3y bleibt. Ergebnis: 3x + 3y.',
+     fb_nok:'x-Terme: 5x−2x=3x; y-Term: 3y bleibt. Ergebnis: 3x+3y.',
+     sol:'5x + 3y − 2x = 3x + 3y'},
+    {diff:'schwer', type:'input',
+     text:'Vereinfache 2x + 4y − x + y und setze x = 3, y = 2 ein.',
+     formula:'2x + 4y − x + y &nbsp;→&nbsp; x=3, y=2',
+     hint:'x-Terme: 2x−x=x; y-Terme: 4y+y=5y. Ergebnis: x+5y.',
+     answer:13, tol:0.05, unit:'',
+     fb_ok:'Richtig! x + 5y; fuer x=3, y=2: 3+10=13.',
+     fb_nok:'x-Terme: x; y-Terme: 5y → x+5y. Fuer x=3,y=2: 3+10=13.',
+     sol:'x + 5y; x=3,y=2 → 13'},
+  ],
+  M4: [
+    {diff:'leicht', type:'tf',
+     text:'4x + x = 4x, weil x keine Zahl davor hat.',
+     answer:false, hint:'x = 1·x. Also 4x + x = 4x + 1x = 5x.',
+     fb_ok:'Richtig! x bedeutet 1x. Daher 4x + x = 5x.',
+     fb_nok:'Falsch! x = 1·x. 4x + 1x = 5x.',
+     sol:'Falsch – 4x + x = 5x'},
+    {diff:'mittel', type:'mc',
+     text:'Welche Vereinfachung ist richtig?',
+     opts:['6x + x = 6x', '6x + x = 7x', '6x + x = 6x²', '6x + x = 13x'],
+     answer:1, hint:'x = 1·x. Koeffizienten: 6 + 1 = 7.',
+     fb_ok:'Richtig! 6x + 1x = 7x.',
+     fb_nok:'x = 1·x → 6x + x = 6x + 1x = 7x.',
+     sol:'6x + x = 7x'},
+    {diff:'schwer', type:'input',
+     text:'Berechne 8x − x + 2x fuer x = 5.',
+     formula:'8x − x + 2x &nbsp;→&nbsp; x = 5',
+     hint:'(8−1+2)x = 9x. Dann x=5 einsetzen.',
+     answer:45, tol:0.05, unit:'',
+     fb_ok:'Richtig! 9x; fuer x=5: 45.',
+     fb_nok:'8−1+2=9 → 9x. Fuer x=5: 9·5=45.',
+     sol:'9x; x=5 → 45'},
+  ],
+  M5: [
+    {diff:'leicht', type:'tf',
+     text:'3 + 2x − 1 = 2x + 2',
+     answer:true, hint:'Zahlen: 3 − 1 = 2. x-Term: 2x bleibt.',
+     fb_ok:'Richtig! 3 + 2x − 1 = 2x + (3−1) = 2x + 2.',
+     fb_nok:'Doch! 3 − 1 = 2 → 2x + 2.',
+     sol:'3 + 2x − 1 = 2x + 2'},
+    {diff:'mittel', type:'mc',
+     text:'Vereinfache 7 + 4x − 3.',
+     opts:['4x + 10', '4x + 4', '11x', '4x − 4'],
+     answer:1, hint:'Zahlen: 7 − 3 = 4. Vorzeichen beachten!',
+     fb_ok:'Richtig! 4x + (7−3) = 4x + 4.',
+     fb_nok:'Falsch! 7 − 3 = 4 (nicht addieren). Ergebnis: 4x + 4.',
+     sol:'7 + 4x − 3 = 4x + 4'},
+    {diff:'schwer', type:'input',
+     text:'Vereinfache 2 + 5x − 8 und setze x = 3 ein.',
+     formula:'2 + 5x − 8 &nbsp;→&nbsp; x = 3',
+     hint:'Zahlen: 2 − 8 = −6. Ergebnis: 5x − 6.',
+     answer:9, tol:0.05, unit:'',
+     fb_ok:'Richtig! 5x − 6; fuer x=3: 15−6=9.',
+     fb_nok:'2−8=−6 → 5x−6. Fuer x=3: 15−6=9.',
+     sol:'5x − 6; x=3 → 9'},
+  ],
+  M6: [
+    {diff:'leicht', type:'tf',
+     text:'3x + 4x = 12x',
+     answer:false, hint:'Koeffizienten addieren: 3 + 4 = 7, nicht multiplizieren.',
+     fb_ok:'Richtig! 3x + 4x = (3+4)x = 7x, nicht 12x.',
+     fb_nok:'Falsch! Zusammenfassen = addieren: 3+4=7 → 7x.',
+     sol:'Falsch – 3x + 4x = 7x'},
+    {diff:'mittel', type:'mc',
+     text:'Welches Ergebnis ist richtig fuer 4x + 6x?',
+     opts:['24x', '10x', '10x²', '2x'],
+     answer:1, hint:'4 + 6 = 10 → 10x.',
+     fb_ok:'Richtig! 4x + 6x = (4+6)x = 10x.',
+     fb_nok:'Koeffizienten addieren: 4+6=10 → 10x.',
+     sol:'4x + 6x = 10x'},
+    {diff:'schwer', type:'input',
+     text:'Berechne 3x + 5x + 2x fuer x = 3.',
+     formula:'3x + 5x + 2x &nbsp;→&nbsp; x = 3',
+     hint:'3+5+2=10 → 10x. Dann x=3 einsetzen.',
+     answer:30, tol:0.05, unit:'',
+     fb_ok:'Richtig! 10x; fuer x=3: 30.',
+     fb_nok:'3+5+2=10 → 10x. Fuer x=3: 10·3=30.',
+     sol:'10x; x=3 → 30'},
+  ],
+  M7: [
+    {diff:'leicht', type:'tf',
+     text:'1 + 4x − 4 und 4x − 3 sind gleichwertige Terme.',
+     answer:true, hint:'Vereinfache 1 + 4x − 4: 4x + (1−4) = 4x − 3.',
+     fb_ok:'Richtig! 1 + 4x − 4 = 4x − 3.',
+     fb_nok:'Doch! 1 + 4x − 4 = 4x + (1−4) = 4x − 3.',
+     sol:'Wahr – beide Terme sind gleich'},
+    {diff:'mittel', type:'mc',
+     text:'Welcher Term ist gleichwertig zu 2x + 3?',
+     opts:['5 + 2x − 2', '2x − 1', '3 + x + x', '2x + 3x'],
+     answer:2, hint:'3 + x + x = 3 + 2x = 2x + 3. Gleichwertig!',
+     fb_ok:'Richtig! 3 + x + x = 3 + 2x = 2x + 3.',
+     fb_nok:'3 + x + x = 3 + 2x = 2x + 3 – das ist gleichwertig.',
+     sol:'3 + x + x = 2x + 3'},
+    {diff:'schwer', type:'input',
+     text:'Setze x = 4 in 3 + 2x − 1 ein. Dann setze x = 4 in 2x + 2 ein. Sind die Ergebnisse gleich? Gib das Ergebnis an.',
+     formula:'3 + 2x − 1 fuer x = 4',
+     hint:'3 + 2x − 1 = 2x + 2. Fuer x=4: 2·4+2=10.',
+     answer:10, tol:0.05, unit:'',
+     fb_ok:'Richtig! Beide Terme ergeben 10 fuer x=4 – sie sind gleichwertig.',
+     fb_nok:'3 + 2x − 1 = 2x + 2. Fuer x=4: 8+2=10.',
+     sol:'2x + 2; x=4 → 10'},
+  ],
+  M8: [
+    {diff:'leicht', type:'tf',
+     text:'−3x + 5x = 2x',
+     answer:true, hint:'(−3+5)x = 2x. Vorzeichen beachten.',
+     fb_ok:'Richtig! −3 + 5 = 2 → 2x.',
+     fb_nok:'Doch! −3 + 5 = +2 → 2x.',
+     sol:'−3x + 5x = 2x'},
+    {diff:'mittel', type:'mc',
+     text:'Vereinfache 8 − 5x + 2x.',
+     opts:['8 + 7x', '8 − 3x', '8 + 3x', '3x'],
+     answer:1, hint:'−5x + 2x = (−5+2)x = −3x.',
+     fb_ok:'Richtig! −5x + 2x = −3x; also 8 − 3x.',
+     fb_nok:'Falsch! −5 + 2 = −3 → −3x. Ergebnis: 8 − 3x.',
+     sol:'8 − 5x + 2x = 8 − 3x'},
+    {diff:'schwer', type:'input',
+     text:'Vereinfache 10 − 6x + 2x + x und setze x = 3 ein.',
+     formula:'10 − 6x + 2x + x &nbsp;→&nbsp; x = 3',
+     hint:'(−6+2+1)x = −3x. Ergebnis: 10 − 3x.',
+     answer:1, tol:0.05, unit:'',
+     fb_ok:'Richtig! 10 − 3x; fuer x=3: 10−9=1.',
+     fb_nok:'(−6+2+1)=−3 → 10−3x. Fuer x=3: 10−9=1.',
+     sol:'10 − 3x; x=3 → 1'},
+  ],
+  M9: [
+    {diff:'leicht', type:'tf',
+     text:'5x + 3 − 2x = 3x + 3',
+     answer:true, hint:'x-Terme: 5x−2x=3x. Zahl 3 bleibt.',
+     fb_ok:'Richtig! 5x − 2x = 3x; +3 bleibt. Ergebnis: 3x + 3.',
+     fb_nok:'Doch! 5x − 2x = 3x, die 3 ist eine Zahl und bleibt separat.',
+     sol:'5x + 3 − 2x = 3x + 3'},
+    {diff:'mittel', type:'mc',
+     text:'Vereinfache 4x + 6 − x.',
+     opts:['9x', '3x + 6', '3x − 6', '5x'],
+     answer:1, hint:'x-Terme: 4x−x=3x. Zahl: 6 bleibt.',
+     fb_ok:'Richtig! 4x − x = 3x; 6 bleibt. Ergebnis: 3x + 6.',
+     fb_nok:'x-Terme: 4x−x=3x; Zahl: +6 bleibt → 3x+6.',
+     sol:'4x + 6 − x = 3x + 6'},
+    {diff:'schwer', type:'input',
+     text:'Vereinfache 7x − 4 + x − 6 und setze x = 2 ein.',
+     formula:'7x − 4 + x − 6 &nbsp;→&nbsp; x = 2',
+     hint:'x-Terme: 7x+x=8x. Zahlen: −4−6=−10. Ergebnis: 8x − 10.',
+     answer:6, tol:0.05, unit:'',
+     fb_ok:'Richtig! 8x − 10; fuer x=2: 16−10=6.',
+     fb_nok:'x-Terme: 8x; Zahlen: −10 → 8x−10. Fuer x=2: 16−10=6.',
+     sol:'8x − 10; x=2 → 6'},
+  ],
+  M10: [
+    {diff:'leicht', type:'tf',
+     text:'2x + 3y − x = x + 3y',
+     answer:true, hint:'x-Terme: 2x−x=x. y-Term: 3y bleibt.',
+     fb_ok:'Richtig! 2x−x=x; 3y bleibt. Ergebnis: x+3y.',
+     fb_nok:'Doch! 2x−x=x (x-Terme); 3y bleibt → x+3y.',
+     sol:'2x + 3y − x = x + 3y'},
+    {diff:'mittel', type:'mc',
+     text:'Vereinfache 5x + 2y − 3x + y.',
+     opts:['2x + 3y', '5xy', '3x + y', '2x − y'],
+     answer:0, hint:'x-Terme: 5x−3x=2x. y-Terme: 2y+y=3y.',
+     fb_ok:'Richtig! x-Terme: 2x; y-Terme: 3y. Ergebnis: 2x+3y.',
+     fb_nok:'x-Terme: 5x−3x=2x; y-Terme: 2y+y=3y → 2x+3y.',
+     sol:'5x + 2y − 3x + y = 2x + 3y'},
+    {diff:'schwer', type:'input',
+     text:'Vereinfache 3x + 5y + x − 2y − 1 und setze x = 2, y = 3 ein.',
+     formula:'3x + 5y + x − 2y − 1 &nbsp;→&nbsp; x=2, y=3',
+     hint:'x-Terme: 3x+x=4x; y-Terme: 5y−2y=3y; Zahl: −1. Ergebnis: 4x+3y−1.',
+     answer:16, tol:0.05, unit:'',
+     fb_ok:'Richtig! 4x+3y−1; x=2,y=3: 8+9−1=16.',
+     fb_nok:'4x+3y−1; x=2,y=3: 4·2+3·3−1=8+9−1=16.',
+     sol:'4x + 3y − 1; x=2,y=3 → 16'},
+  ],
+};
+
+const LINKS_VIDEOS = [
+  {icon:'🎬', title:'Lehrerschmidt – Terme vereinfachen', desc:'Gleichartige Terme zusammenfassen', url:'https://www.youtube.com/results?search_query=terme+vereinfachen+gleichartige+lehrerschmidt'},
+  {icon:'🎬', title:'Daniel Jung – Terme vereinfachen', desc:'Schnelle Erklaerung in 5 Min.', url:'https://www.youtube.com/results?search_query=terme+vereinfachen+daniel+jung'},
+];
+const LINKS_UEBUNG = [
+  {icon:'📚', title:'Serlo – Terme vereinfachen', desc:'Interaktive Aufgaben mit Erklaerungen', url:'https://de.serlo.org/mathe/terme/terme-vereinfachen'},
+  {icon:'📝', title:'Mathebibel – Terme', desc:'Aufgaben zu gleichartigen Termen', url:'https://www.mathebibel.de/terme-zusammenfassen'},
+  {icon:'📝', title:'Aufgabenfuchs – Terme', desc:'Umfangreiche Aufgabensammlung', url:'https://www.aufgabenfuchs.de/algebra/terme.shtml'},
+];
+
+// ══════════════════════════════════════════════════════════════════════
+//  ENGINE – IDENTISCH FÜR ALLE APPS
+// ══════════════════════════════════════════════════════════════════════
+
+const KLP={K1:{name:'Argumentieren & Beweisen'},K2:{name:'Problemlösen & Erkunden'},K3:{name:'Modellieren'},K4:{name:'Darstellungen nutzen'},K5:{name:'Kommunizieren'},K6:{name:'Werkzeuge nutzen'}};
+const ACH=[
+  {id:'first',icon:'🌟',title:'Erster Schritt',desc:'Erste Frage richtig',check:s=>s.correct>=1},
+  {id:'streak3',icon:'🔥',title:'Heiße Serie',desc:'3 in Folge richtig',check:s=>s.maxStreak>=3},
+  {id:'streak5',icon:'⚡',title:'Blitz-Serie',desc:'5 in Folge richtig',check:s=>s.maxStreak>=5},
+  {id:'perfect',icon:'💯',title:'Fehlerlos',desc:`Alle ${Q.length} richtig`,check:s=>s.correct===Q.length},
+  {id:'noMV',icon:'🧠',title:'Kein Irrtum',desc:'Keine Fehlvorstellung',check:s=>s.triggeredMVs.length===0},
+  {id:'xp100',icon:'💰',title:'Punktesammler',desc:'100 XP gesammelt',check:s=>s.xp>=100},
+  {id:'xp250',icon:'🏆',title:'Profi',desc:'250+ XP gesammelt',check:s=>s.xp>=250},
+  {id:'klpAll',icon:'📜',title:'KLP-Kenner',desc:'In allen K-Bereichen Punkte',check:s=>Object.values(s.klp).every(v=>v.total>0&&v.right>0)}
+];
+let gs={};
+const LEVELS=[{n:'Einsteiger',min:0},{n:'Lernender',min:50},{n:'Fortgeschritten',min:120},{n:'Experte',min:200}];
+const fTaskMap={};
+
+document.addEventListener('DOMContentLoaded',()=>{
+  document.title=TITEL.replace(/^\p{Emoji}\s*/u,'');
+  document.getElementById('hdr-title-h1').textContent=TITEL;
+  document.getElementById('hdr-title-p').textContent=UNTERTITEL;
+  document.getElementById('hero-icon-el').textContent=HERO_ICON;
+  document.getElementById('start-h2').textContent=TITEL.replace(/^[^\s]+\s/,'');
+  document.getElementById('info-chips').innerHTML=INFO_CHIPS.map(c=>`<span class="info-chip">${c}</span>`).join('');
+  document.getElementById('mv-preview-start').innerHTML=Object.values(MV).map(m=>`<div class="mvp-item"><span class="mvp-code">${m.code}</span> ${m.title}</div>`).join('');
+  if(LINKS_VIDEOS.length||LINKS_UEBUNG.length){
+    document.getElementById('links-card').style.display='block';
+    document.getElementById('links-videos').innerHTML=LINKS_VIDEOS.map(l=>`<a class="link-card" href="${l.url}" target="_blank" rel="noopener"><span class="link-icon">${l.icon}</span><div><div>${l.title}</div><div class="link-desc">${l.desc}</div></div></a>`).join('');
+    document.getElementById('links-uebung').innerHTML=LINKS_UEBUNG.map(l=>`<a class="link-card" href="${l.url}" target="_blank" rel="noopener"><span class="link-icon">${l.icon}</span><div><div>${l.title}</div><div class="link-desc">${l.desc}</div></div></a>`).join('');
+  }
+});
+
+function getLevel(xp){return([...LEVELS].reverse().find(l=>xp>=l.min)||LEVELS[0]).n}
+function updateHdr(){
+  document.getElementById('hdr-xp').textContent=gs.xp+' XP';
+  document.getElementById('hdr-level').textContent=getLevel(gs.xp);
+  const sp=document.getElementById('hdr-streak');
+  if(gs.streak>=2){sp.textContent=`🔥 ${gs.streak}er-Serie`;sp.classList.add('show')}
+  else sp.classList.remove('show');
+}
+function showXpPop(n){const el=document.getElementById('xp-pop');el.textContent=`+${n} XP`;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1400);}
+let _tt;
+function toast(msg,cls='',dur=2400){const t=document.getElementById('toast');t.textContent=msg;t.className='show '+(cls||'');clearTimeout(_tt);_tt=setTimeout(()=>t.className='',dur);}
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+id).classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
+
+function shuffleArr(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a;}
+function startTest(){
+  gs={xp:0,current:0,streak:0,maxStreak:0,correct:0,answers:[],triggeredMVs:[],selected:null,checked:false,achievements:{},
+      klp:Object.fromEntries(Object.keys(KLP).map(k=>[k,{right:0,total:0}]))};
+  shuffleArr(Q);updateHdr();showScreen('test');renderQ();
+}
+
+function renderQ(){
+  const q=Q[gs.current],tot=Q.length;
+  gs.selected=null;gs.checked=false;
+  const pct=Math.round((gs.current/tot)*100);
+  document.getElementById('prog-label').textContent=`Frage ${gs.current+1} von ${tot}`;
+  document.getElementById('prog-pct').textContent=pct+' %';
+  document.getElementById('prog-fill').style.width=pct+'%';
+  const sb=document.getElementById('streak-badge');
+  if(gs.streak>=2){sb.textContent=`🔥 ${gs.streak}er-Serie`;sb.classList.add('show')}else sb.classList.remove('show');
+  const kInfo=KLP[q.klp];
+  let html=`<div class="q-top"><span class="q-category">${q.cat}</span><span class="klp-tag ${q.klp}" title="${q.klpDesc}">${q.klp} · ${kInfo.name.split(' ')[0]}</span></div><div class="q-text">${q.text}</div>`;
+  if(q.svg)html+=`<div class="q-graph">${q.svg}</div>`;
+  if(q.formula)html+=`<div class="q-formula">${q.formula}</div>`;
+  if(q.hint)html+=`<div class="q-hint">💡 ${q.hint}</div>`;
+  if(q.type==='mc'){const L=['A','B','C','D'];html+=`<div class="mc-grid">${q.opts.map((o,i)=>`<button class="mc-opt" id="opt-${i}" onclick="selMC(${i})"><span class="opt-letter">${L[i]}</span>${o}</button>`).join('')}</div>`;}
+  else if(q.type==='tf'){html+=`<div class="tf-row"><button class="tf-btn true-btn" id="tf-t" onclick="selTF(true)">✅ Wahr</button><button class="tf-btn false-btn" id="tf-f" onclick="selTF(false)">❌ Falsch</button></div>`;}
+  else{html+=`<div class="input-row"><input type="text" id="inp" placeholder="Ergebnis…" onkeydown="if(event.key==='Enter'&&!gs.checked)checkAnswer()">${q.unit?`<span class="unit-lbl">${q.unit}</span>`:''}</div>`;}
+  html+=`<div class="feedback" id="fb"></div>`;
+  document.getElementById('question-card').innerHTML=html;
+  document.getElementById('btn-check').style.display=q.type==='input'?'inline-block':'none';
+  document.getElementById('btn-next').style.display='none';
+  if(q.type==='input')setTimeout(()=>document.getElementById('inp')?.focus(),50);
+}
+
+function selMC(i){if(gs.checked)return;gs.selected=i;document.querySelectorAll('.mc-opt').forEach((e,j)=>e.classList.toggle('selected',j===i));checkAnswer();}
+function selTF(v){if(gs.checked)return;gs.selected=v;document.getElementById('tf-t').classList.toggle('selected',v===true);document.getElementById('tf-f').classList.toggle('selected',v===false);checkAnswer();}
+
+function checkAnswer(){
+  if(gs.checked)return;
+  const q=Q[gs.current];let ok=false;
+  if(q.type==='input'){
+    const v=parseFloat((document.getElementById('inp')?.value||'').replace(',','.'));
+    ok=!isNaN(v)&&Math.abs(v-q.answer)<=(q.tol||0.05);
+    document.getElementById('inp')?.classList.add(ok?'correct':'wrong');
+  }else{if(gs.selected===null)return;ok=gs.selected===q.answer;}
+  gs.checked=true;
+  let xpGain=0;
+  if(ok){const bonus=gs.streak>=4?5:gs.streak>=2?3:0;xpGain=q.xp+bonus;gs.xp+=xpGain;gs.streak++;gs.correct++;if(gs.streak>gs.maxStreak)gs.maxStreak=gs.streak;if(bonus>0)toast(`🔥 Streak-Bonus! +${bonus} XP`,'orange');else showXpPop(xpGain);}
+  else{gs.streak=0;if(q.mv_nok&&!gs.triggeredMVs.includes(q.mv_nok))gs.triggeredMVs.push(q.mv_nok);}
+  gs.klp[q.klp].total++;if(ok)gs.klp[q.klp].right++;
+  gs.answers.push({qId:q.id,correct:ok,mv:ok?null:q.mv_nok});
+  updateHdr();
+  if(q.type==='mc'){document.querySelectorAll('.mc-opt').forEach((e,i)=>{e.disabled=true;e.classList.remove('selected');if(i===q.answer)e.classList.add('correct');else if(i===gs.selected&&!ok)e.classList.add('wrong');});}
+  else if(q.type==='tf'){const bt=document.getElementById('tf-t'),bf=document.getElementById('tf-f');bt.disabled=bf.disabled=true;bt.classList.remove('selected');bf.classList.remove('selected');(q.answer?bt:bf).classList.add('correct');if(!ok)(gs.selected?bt:bf).classList.add('wrong');}
+  const kInfo=KLP[q.klp];const fb=document.getElementById('fb');fb.className='feedback show '+(ok?'correct':'wrong');
+  let fhtml=`<div class="fb-header">${ok?'✅ Richtig!':'❌ Falsch!'}</div><div class="fb-text">${ok?q.fb_ok:q.fb_nok}</div><div class="fb-solution">${q.sol}</div><div class="klp-feedback"><strong>${q.klp} – ${kInfo.name}:</strong> ${q.klpDesc}</div>`;
+  if(ok)fhtml+=`<div class="xp-gained">+${xpGain} XP${xpGain>q.xp?` (inkl. ${xpGain-q.xp} Streak-Bonus)`:''}</div>`;
+  if(!ok&&q.mv_nok&&MV[q.mv_nok]){const mv=MV[q.mv_nok];fhtml+=`<div class="mv-alert"><strong>⚠️ Fehlvorstellung ${mv.code}: ${mv.title}</strong>${mv.false_belief}</div>`;}
+  fb.innerHTML=fhtml;
+  document.getElementById('btn-check').style.display='none';
+  document.getElementById('btn-next').style.display='inline-block';
+  document.getElementById('btn-next').textContent=gs.current+1<Q.length?'Weiter →':'📊 Auswertung';
+  checkAchievements();
+}
+
+function nextQuestion(){if(gs.current+1<Q.length){gs.current++;renderQ();window.scrollTo({top:0,behavior:'smooth'});}else showResult();}
+function checkAchievements(){ACH.forEach(a=>{if(!gs.achievements[a.id]&&a.check(gs)){gs.achievements[a.id]=true;toast(`🏅 Errungenschaft: ${a.title}!`,'orange',3000);}});}
+
+function showResult(){
+  checkAchievements();showScreen('result');
+  const tot=Q.length,right=gs.correct,pct=Math.round((right/tot)*100),mvCount=gs.triggeredMVs.length;
+  const cls=pct>=80?'excellent':pct>=60?'good':pct>=40?'ok':'critical';
+  const msg=pct>=80?'Ausgezeichnet!':pct>=60?'Gut gemacht!':pct>=40?'Übung macht den Meister!':'Viel Potenzial – gezielt üben!';
+
+  // Sync result to hub
+  const hubData=JSON.parse(localStorage.getItem('zp10_hub_data')||'{"extras":{}}');
+  if(!hubData.extras)hubData.extras={};
+  hubData.extras['terme-vereinfachen']={lastScore:pct,lastDate:new Date().toISOString(),attempts:(hubData.extras['terme-vereinfachen']?.attempts||0)+1};
+  localStorage.setItem('zp10_hub_data',JSON.stringify(hubData));
+
+  document.getElementById('result-top').innerHTML=`<div class="score-circle ${cls}"><span>${pct}</span><span class="score-lbl">%</span></div><div class="result-heading">${msg}</div><div class="result-sub">${right}/${tot} richtig · ${mvCount} Fehlvorstellung${mvCount!==1?'en':''} · ${gs.xp} XP</div>`;
+  document.getElementById('stats-strip').innerHTML=`<div class="stat-item"><div class="stat-num">${right}</div><div class="stat-lbl">Richtig</div></div><div class="stat-item"><div class="stat-num">${tot-right}</div><div class="stat-lbl">Falsch</div></div><div class="stat-item"><div class="stat-num">${gs.xp}</div><div class="stat-lbl">XP</div></div><div class="stat-item"><div class="stat-num">${gs.maxStreak}</div><div class="stat-lbl">Max. Serie</div></div>`;
+  document.getElementById('ach-grid').innerHTML=ACH.map(a=>{const ul=!!gs.achievements[a.id];return`<div class="ach-card ${ul?'unlocked':'locked'}"><div class="ach-icon">${a.icon}</div><div><div class="ach-title">${a.title}${ul?' ✅':' 🔒'}</div><div class="ach-desc">${a.desc}</div></div></div>`;}).join('');
+  let klpHtml='';
+  Object.entries(gs.klp).forEach(([k,d])=>{if(!d.total)return;const p=Math.round((d.right/d.total)*100);const c=p>=70?'var(--green)':p>=40?'var(--yellow)':'var(--red)';klpHtml+=`<div class="klp-komp-row"><div class="klp-komp-label"><span><strong class="klp-tag ${k}" style="display:inline-block;margin-right:6px">${k}</strong>${KLP[k].name}</span><span style="color:${c};font-weight:700">${d.right}/${d.total} (${p}%)</span></div><div class="klp-bar-wrap"><div class="klp-bar-fill" style="width:${p}%;background:${c}"></div></div>${p<70?`<div style="font-size:.72rem;color:var(--text2);margin-top:3px">${klpHint(k)}</div>`:''}</div>`;});
+  document.getElementById('klp-profile').innerHTML=klpHtml;
+  const tested=Q.map(q=>q.mvTarget);
+  document.getElementById('mv-cards').innerHTML=Object.keys(MV).filter(k=>tested.includes(k)).map(k=>{const det=gs.triggeredMVs.includes(k),mv=MV[k];return`<div class="mv-card ${det?'detected':'ok'}"><div class="mv-header"><div class="mv-badge">${mv.code}</div><div><div class="mv-title">${det?'⚠️':'✅'} ${mv.title}</div><div class="mv-sub">${mv.code}</div></div></div>${det?`<div class="mv-false">${mv.false_belief}</div><div class="mv-correct">${mv.correct}</div><div class="mv-example">${mv.example}</div>`:`<div style="font-size:.83rem;color:var(--green)">Keine Fehlvorstellung erkennbar ✓</div>`}</div>`;}).join('');
+  const recs=buildRecs();
+  document.getElementById('recs').innerHTML=`<h3>📖 Persönliche Empfehlungen</h3><ul class="rec-list">${recs.map(r=>`<li><span>${r}</span></li>`).join('')}</ul>`;
+  const weakKlp=Object.entries(gs.klp).filter(([,d])=>d.total>0&&d.right/d.total<0.5);
+  if(gs.triggeredMVs.length>0||weakKlp.length>0)document.getElementById('btn-foerder').style.display='inline-block';
+}
+
+function buildRecs(){
+  const r=gs.triggeredMVs.map(k=>MV[k]?.rec).filter(Boolean);
+  const weakKlp=Object.entries(gs.klp).filter(([,d])=>d.total>0&&d.right/d.total<0.5).map(([k])=>k);
+  if(weakKlp.length)r.push(`Kompetenzbereich${weakKlp.length>1?'e':''} ${weakKlp.join(', ')} zeigen Lücken – gezielt üben.`);
+  if(!r.length)r.push('Ausgezeichnet! Keine Fehlvorstellungen erkannt – perfekte Vorbereitung!');
+  return r;
+}
+
+function klpHint(k){return{K1:'Übe Begründungen und Argumentationsketten schriftlich.',K2:'Problemlöse-Aufgaben mehrfach schriftlich durcharbeiten.',K3:'Modellierungsaufgaben aus realen Kontexten lösen.',K4:'Darstellungen lesen, skizzieren und korrekt beschriften üben.',K5:'Fachbegriffe klar und präzise unterscheiden und erklären.',K6:'Formeln und Werkzeuge systematisch und gezielt einsetzen.'}[k]||'';}
+
+function restartTest(){startTest();}
+function startFoerder(){showScreen('foerder');renderFoerder();}
+
+function renderFoerder(){
+  const triggered=gs.triggeredMVs;
+  const weakKlp=Object.entries(gs.klp).filter(([,d])=>d.total>0&&d.right/d.total<0.5).map(([k])=>k);
+  const container=document.getElementById('foerder-content');
+  if(!triggered.length&&!weakKlp.length){container.innerHTML=`<div class="card"><div style="text-align:center;padding:40px 20px;color:var(--text2)"><div style="font-size:2.5rem;margin-bottom:10px">🏆</div><p style="font-size:1rem;font-weight:700;color:var(--green)">Keine Lücken erkannt!</p><p style="margin-top:6px;font-size:.85rem">Alle Fehlvorstellungen vermieden – starke Leistung!</p></div></div>`;return;}
+  let html='';
+  if(triggered.length){
+    html+=`<div class="foerder-section-title">⚠️ Erkannte Fehlvorstellungen – Übungsaufgaben</div>`;
+    triggered.forEach(mvKey=>{const mv=MV[mvKey],tasks=FOERDER_DATA[mvKey];if(!mv||!tasks)return;html+=`<div class="foerder-card"><div style="margin-bottom:12px"><span class="foerder-mv-tag">${mv.code} · ${mv.title}</span></div>`;tasks.forEach((t,i)=>{const uid=`mv_${mvKey}_${i}`;fTaskMap[uid]=t;html+=buildFoerderTask(t,uid);});html+=`</div>`;});
+  }
+  if(weakKlp.length){
+    html+=`<div class="foerder-section-title" style="margin-top:20px">📉 Schwache Kompetenzbereiche – Extra-Aufgaben</div>`;
+    weakKlp.forEach(klpKey=>{const sources=[...new Set(Q.filter(q=>q.klp===klpKey&&gs.triggeredMVs.includes(q.mv_nok||'')).map(q=>q.mvTarget).filter(Boolean))];const fallback=gs.triggeredMVs.slice(0,2);const mvKeys=sources.length?sources:fallback;if(!mvKeys.length)return;html+=`<div class="foerder-card" style="border-top-color:var(--teal)"><div style="margin-bottom:12px"><span style="font-size:.72rem;font-weight:700;background:rgba(20,184,166,.15);color:var(--teal);border:1px solid rgba(20,184,166,.25);border-radius:20px;padding:3px 9px">${klpKey} · ${KLP[klpKey].name}</span></div>`;mvKeys.slice(0,2).forEach((mvKey,i)=>{const tasks=FOERDER_DATA[mvKey];if(!tasks)return;const t=tasks[Math.min(i+1,tasks.length-1)];const uid=`klp_${klpKey}_${mvKey}_${i}`;fTaskMap[uid]=t;html+=buildFoerderTask(t,uid);});html+=`</div>`;});
+  }
+  container.innerHTML=html;
+}
+
+function buildFoerderTask(t,uid){
+  const L=['A','B','C','D'];
+  const diffLabel=t.diff==='leicht'?'🟢 LEICHT':t.diff==='mittel'?'🟡 MITTEL':'🔴 SCHWER';
+  const diffCls=`diff-${t.diff}`;
+  let inputHtml='';
+  if(t.type==='tf'){inputHtml=`<div style="display:flex;gap:8px;margin-bottom:10px"><button class="tf-btn true-btn" id="${uid}_t" onclick="fSelTF('${uid}',true)">✅ Wahr</button><button class="tf-btn false-btn" id="${uid}_f" onclick="fSelTF('${uid}',false)">❌ Falsch</button></div>`;}
+  else if(t.type==='mc'){inputHtml=`<div class="mc-grid" style="margin-bottom:10px">${t.opts.map((o,i)=>`<button class="mc-opt" id="${uid}_mc_${i}" onclick="fSelMC('${uid}',${i})"><span class="opt-letter">${L[i]}</span>${o}</button>`).join('')}</div>`;}
+  else{inputHtml=`${t.formula?`<div class="q-formula" style="margin-bottom:10px">${t.formula}</div>`:''}<div class="input-row" style="margin-bottom:10px"><input type="text" id="${uid}_inp" placeholder="Ergebnis…" onkeydown="if(event.key==='Enter')fCheck('${uid}')">${t.unit?`<span class="unit-lbl">${t.unit}</span>`:''}</div><button class="btn btn-primary" style="max-width:180px" onclick="fCheck('${uid}')">Prüfen</button>`;}
+  return`<div style="border-top:1px solid var(--border);padding-top:14px;margin-top:12px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span class="diff-badge ${diffCls}">${diffLabel}</span></div><div class="foerder-q-text">${t.text}</div>${inputHtml}<details class="foerder-hint"><summary></summary><div class="foerder-hint-body">${t.hint}</div></details><div class="foerder-result" id="res_${uid}"></div></div>`;
+}
+
+const fState={};
+function fSelMC(uid,i){if(fState[uid]?.checked)return;if(!fState[uid])fState[uid]={checked:false,selected:null};fState[uid].selected=i;document.querySelectorAll(`[id^="${uid}_mc_"]`).forEach((e,j)=>e.classList.toggle('selected',j===i));fCheck(uid);}
+function fSelTF(uid,v){if(fState[uid]?.checked)return;if(!fState[uid])fState[uid]={checked:false,selected:null};fState[uid].selected=v;document.getElementById(uid+'_t')?.classList.toggle('selected',v===true);document.getElementById(uid+'_f')?.classList.toggle('selected',v===false);fCheck(uid);}
+
+function fCheck(uid){
+  if(fState[uid]?.checked)return;const t=fTaskMap[uid];if(!t)return;if(!fState[uid])fState[uid]={checked:false,selected:null};
+  let ok=false;
+  if(t.type==='input'){const v=parseFloat((document.getElementById(uid+'_inp')?.value||'').replace(',','.'));ok=!isNaN(v)&&Math.abs(v-t.answer)<=(t.tol||0.05);document.getElementById(uid+'_inp')?.classList.add(ok?'correct':'wrong');}
+  else{if(fState[uid].selected===null)return;ok=fState[uid].selected===t.answer;}
+  fState[uid].checked=true;
+  if(t.type==='mc'){document.querySelectorAll(`[id^="${uid}_mc_"]`).forEach((e,i)=>{e.disabled=true;e.classList.remove('selected');if(i===t.answer)e.classList.add('correct');else if(i===fState[uid].selected&&!ok)e.classList.add('wrong');});}
+  else if(t.type==='tf'){const bt=document.getElementById(uid+'_t'),bf=document.getElementById(uid+'_f');if(bt)bt.disabled=true;if(bf)bf.disabled=true;bt?.classList.remove('selected');bf?.classList.remove('selected');(t.answer?bt:bf)?.classList.add('correct');if(!ok)(fState[uid].selected?bt:bf)?.classList.add('wrong');}
+  const res=document.getElementById('res_'+uid);
+  if(res){res.className='foerder-result show '+(ok?'ok':'bad');res.innerHTML=`${ok?'✅':'❌'} ${ok?t.fb_ok:t.fb_nok}<br><span class="foerder-sol">${t.sol}</span>`;}
+}
+</script>
+</body>
+</html>

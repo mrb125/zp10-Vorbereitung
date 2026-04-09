@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZP10 Prüfungsangst-Modul</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="zp10-pruefungsangst.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Prüfungsangst-Modul</h1>
+            <button class="hub-btn" onclick="goToHub()">← Zurück zum Hub</button>
+        </header>
+
+        <!-- SELBSTTEST SECTION -->
+        <section class="section">
+            <h2>1️⃣ Selbsttest: Wie nervös bist du?</h2>
+            <p style="margin-bottom: 20px;">Beantworte diese 5 Fragen ehrlich. Deine Antworten sind privat und helfen dir zu verstehen, wo Unterstützung hilfreich ist.</p>
+
+            <div id="testsContainer"></div>
+            <button class="btn-primary" id="submitTestBtn" onclick="submitTest()" style="display: none; margin-top: 20px;">Ergebnis anzeigen</button>
+            <div id="testResult"></div>
+        </section>
+
+        <!-- ATEMÜBUNG SECTION -->
+        <section class="section">
+            <h2>2️⃣ Atemübung 4-7-8</h2>
+            <p style="margin-bottom: 15px;">Diese Atemtechnik beruhigt sofort. Folge dem Kreis:</p>
+            <div class="breathing-instruction">Klick auf "Start" und atme mit dem Kreis</div>
+            <div class="breathing-circle" id="breathingCircle">Einatmen</div>
+            <button class="btn-calm" id="breathingBtn" onclick="startBreathing()">▶ Start</button>
+            <div class="breathing-guide">
+                <div class="inhale">🫁 Einatmen (4 Sekunden)</div>
+                <div class="hold">⏸️ Halten (7 Sekunden)</div>
+                <div class="exhale">😌 Ausatmen (8 Sekunden)</div>
+            </div>
+        </section>
+
+        <!-- KOGNITIVE UMSTRUKTURIERUNG SECTION -->
+        <section class="section">
+            <h2>3️⃣ Kognitive Umstrukturierung</h2>
+            <p style="margin-bottom: 20px;">Negative Gedanken sabotieren dich. Klick auf die roten Karten um sie in positive umzuwandeln:</p>
+
+            <div id="thoughtsContainer"></div>
+        </section>
+
+        <!-- ZEITMANAGEMENT-SIMULATOR SECTION -->
+        <section class="section">
+            <h2>4️⃣ Zeitmanagement-Simulator</h2>
+            <p style="margin-bottom: 20px;">Trainiere, deine 120 Minuten Prüfungszeit richtig einzuteilen:</p>
+
+            <div class="timer-container">
+                <div class="time-section">
+                    <h4>Teil 1 (Ohne Taschenrechner)</h4>
+                    <p>Sollte ca. 30 Minuten dauern</p>
+                    <div class="time-display" id="timer1">30:00</div>
+                    <div class="time-bar">
+                        <div class="time-fill" id="fill1" style="width: 25%;"></div>
+                    </div>
+                </div>
+
+                <div class="time-section">
+                    <h4>Teil 2 (Mit Taschenrechner)</h4>
+                    <p>Sollte ca. 90 Minuten dauern</p>
+                    <div class="time-display" id="timer2">90:00</div>
+                    <div class="time-bar">
+                        <div class="time-fill" id="fill2" style="width: 75%;"></div>
+                    </div>
+                </div>
+
+                <div class="time-section">
+                    <h4>Gesamt: 120 Minuten</h4>
+                    <div class="time-display" id="timerTotal">120:00</div>
+                    <div class="time-bar">
+                        <div class="time-fill" id="fillTotal" style="width: 100%;"></div>
+                    </div>
+                </div>
+
+                <div class="timer-buttons">
+                    <button class="btn-primary" onclick="startTimerSimulation()">▶ Simulation starten</button>
+                    <button class="btn-secondary" onclick="resetTimer()">↻ Zurücksetzen</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- POWER POSE SECTION -->
+        <section class="section">
+            <h2>5️⃣ Power-Pose & Körper-Tipps</h2>
+            <p style="margin-bottom: 20px;">Deine Körperhaltung beeinflusst deine Psyche. Probiere diese Posen:</p>
+
+            <div class="pose-container">
+                <div class="pose-figure">
+                    <svg viewBox="0 0 100 150" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="50" cy="20" r="12" stroke="currentColor" fill="none" stroke-width="2"/>
+                        <line x1="50" y1="32" x2="50" y2="70" stroke="currentColor" stroke-width="2"/>
+                        <line x1="50" y1="45" x2="30" y2="35" stroke="currentColor" stroke-width="2"/>
+                        <line x1="50" y1="45" x2="70" y2="35" stroke="currentColor" stroke-width="2"/>
+                        <line x1="50" y1="70" x2="35" y2="130" stroke="currentColor" stroke-width="2"/>
+                        <line x1="50" y1="70" x2="65" y2="130" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    <div class="pose-info">
+                        <h4>Victory Pose</h4>
+                        <p>Arme in V-Form hochheben. 2 Minuten lang halten. Erhöht Vertrauen!</p>
+                    </div>
+                </div>
+
+                <div class="pose-figure">
+                    <svg viewBox="0 0 100 150" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="50" cy="20" r="12" stroke="currentColor" fill="none" stroke-width="2"/>
+                        <line x1="50" y1="32" x2="50" y2="70" stroke="currentColor" stroke-width="2"/>
+                        <line x1="50" y1="45" x2="20" y2="55" stroke="currentColor" stroke-width="2"/>
+                        <line x1="50" y1="45" x2="80" y2="55" stroke="currentColor" stroke-width="2"/>
+                        <line x1="50" y1="70" x2="35" y2="130" stroke="currentColor" stroke-width="2"/>
+                        <line x1="50" y1="70" x2="65" y2="130" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    <div class="pose-info">
+                        <h4>Superman Pose</h4>
+                        <p>Brust raus, Arme auf den Seiten. Macht dich stärker und selbstbewusster!</p>
+                    </div>
+                </div>
+            </div>
+
+            <div style="background: var(--bg); padding: 15px; border-radius: 12px; margin-top: 20px;">
+                <h4>Weitere Körper-Tipps am Prüfungstag:</h4>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li>Ausreichend Wasser trinken (hilft dem Gehirn)</li>
+                    <li>Tief durchatmen vor schwierigen Aufgaben</li>
+                    <li>Schultern lockern durch Kreisbewegungen</li>
+                    <li>Ein paar Mal auf der Stelle hüpfen vor der Prüfung (klingt komisch, hilft wirklich!)</li>
+                    <li>Leichte Dehnübungen in den Pausen machen</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- CHECKLISTE SECTION -->
+        <section class="section">
+            <h2>6️⃣ Prüfungstag-Checkliste</h2>
+            <p style="margin-bottom: 15px;">Am Morgen: Hake diese Dinge ab!</p>
+
+            <div class="checklist" id="checklist"></div>
+        </section>
+
+        <!-- MEDITATION SECTION -->
+        <section class="section">
+            <h2>7️⃣ Mini-Meditation (3 Minuten)</h2>
+            <p style="margin-bottom: 15px;">Vor der Prüfung: Stilles Sitzen, ruhig atmen. Klick "Start":</p>
+
+            <div class="meditation-container" id="meditationContainer" style="display: none;">
+                <div class="meditation-timer" id="meditationTimer">3:00</div>
+                <div class="meditation-text" id="meditationText">Schließe die Augen. Atme langsam. Du bist vorbereitet.</div>
+                <div class="dot-animation">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+            </div>
+
+            <button class="btn-calm" id="meditationBtn" onclick="startMeditation()">▶ Meditation starten</button>
+        </section>
+
+        <!-- CLOSING MESSAGE -->
+        <section class="section" style="text-align: center; background: linear-gradient(135deg, rgba(78, 205, 196, 0.1), rgba(107, 207, 127, 0.1)); border: 2px solid var(--calm-blue);">
+            <h3>Du schaffst das! 💪</h3>
+            <p style="margin: 15px 0; font-size: 1.05em;">Nerven vor einer Prüfung sind normal. Sie zeigen, dass du die Prüfung ernst nimmst. Nutze diese Energie, um gut zu performen!</p>
+            <p style="margin: 15px 0; color: var(--text-light);">Viel Erfolg bei deiner ZP10! 🎯</p>
+        </section>
+    </div>
+
+    <script>
+        // SELBSTTEST DATA
+        const testQuestions = [
+            {
+                id: 1,
+                question: "Wie sehr fürchtest du dich vor Mathprüfungen?",
+                scale: "Überhaupt nicht - Sehr stark"
+            },
+            {
+                id: 2,
+                question: "Wie oft treten bei dir körperliche Symptome auf (Kopfweh, Bauchschmerzen)?",
+                scale: "Nie - Sehr oft"
+            },
+            {
+                id: 3,
+                question: "Wie schwer fällt es dir, dich beim Lernen zu konzentrieren?",
+                scale: "Sehr leicht - Sehr schwer"
+            },
+            {
+                id: 4,
+                question: "Wie oft grübelst du über mögliche negative Outcomes?",
+                scale: "Nie - Ständig"
+            },
+            {
+                id: 5,
+                question: "Wie sicher fühlst du dich bei Mathaufgaben?",
+                scale: "Sehr unsicher - Sehr sicher"
+            }
+        ];
+
+        const cognitiveThoughts = [
+            {
+                negative: "Ich kann kein Mathe.",
+                positive: "Ich kann Schritt für Schritt besser werden."
+            },
+            {
+                negative: "Wenn ich durchfalle, ist alles vorbei.",
+                positive: "Eine Prüfung definiert nicht meinen Wert."
+            },
+            {
+                negative: "Ich bin zu doof für diese Aufgaben.",
+                positive: "Schwierige Aufgaben helfen mir zu wachsen."
+            },
+            {
+                negative: "Alle anderen sind besser als ich.",
+                positive: "Jeder hat Stärken und Schwächen, auch die anderen."
+            },
+            {
+                negative: "Ich werde garantiert durchfallen.",
+                positive: "Ich habe schon viel gelernt und vorbereitet."
+            }
+        ];
+
+        const checklistItems = [
+            { text: "Taschenrechner (mit Batterien!)", emoji: "🧮" },
+            { text: "Geodreieck & Lineal", emoji: "📐" },
+            { text: "Bleistifte und Spitzer", emoji: "✏️" },
+            { text: "Formelsammlung", emoji: "📊" },
+            { text: "Schreiber / Kugelschreiber", emoji: "🖊️" },
+            { text: "Gummi (Radiergummi)", emoji: "🧹" },
+            { text: "Schülerausweis / ID", emoji: "🪪" },
+            { text: "Ein paar Pausensnacks (Apfel, Nuss)", emoji: "🍎" },
+            { text: "Wasser zum Trinken", emoji: "💧" },
+            { text: "Genug Schlaf die Nacht davor", emoji: "😴" }
+        ];
+
+        let testAnswers = {};
+        let timerInterval = null;
+        let meditationInterval = null;
+
+        // INITIALIZE
+        function init() {
+            renderTest();
+            renderThoughts();
+            renderChecklist();
+        }
+
+        // SELBSTTEST RENDERING
+        function renderTest() {
+            const container = document.getElementById('testsContainer');
+            container.innerHTML = testQuestions.map((q, idx) => `
+                <div class="question-card">
+                    <p>${q.id}. ${q.question}</p>
+                    <div class="scale-options">
+                        ${[1, 2, 3, 4, 5].map(val => `
+                            <button class="scale-btn" onclick="selectAnswer(${q.id}, ${val}, this)" title="${val}/5">
+                                ${val}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('submitTestBtn').style.display = 'block';
+        }
+
+        function selectAnswer(qId, val, btn) {
+            testAnswers[qId] = val;
+            btn.parentElement.querySelectorAll('.scale-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+        }
+
+        function submitTest() {
+            if (Object.keys(testAnswers).length < 5) {
+                alert('Bitte beantworte alle 5 Fragen!');
+                return;
+            }
+
+            const score = Object.values(testAnswers).reduce((a, b) => a + b, 0);
+            const avg = score / 5;
+
+            let result, recommendation;
+
+            if (avg <= 1.5) {
+                result = "Sehr gering - Du bist entspannt!";
+                recommendation = "Super! Du brauchst weniger Unterstützung. Nutze die Module trotzdem, um vorbereiteter zu sein.";
+            } else if (avg <= 2.5) {
+                result = "Gering - Du bist insgesamt ruhig.";
+                recommendation = "Das ist positiv! Versuche die Atemübung vor der Prüfung, um noch entspannter zu sein.";
+            } else if (avg <= 3.5) {
+                result = "Mittel - Normale Prüfungsnerven.";
+                recommendation = "Das ist ganz normal! Nutze die Atemübung, die Power-Pose und die Checkliste regelmäßig.";
+            } else if (avg <= 4.5) {
+                result = "Hoch - Du bist nervös.";
+                recommendation = "Das ist okay! Arbeite täglich mit der Atemübung, der Meditation und der kognitiven Umstrukturierung.";
+            } else {
+                result = "Sehr hoch - Du leidest unter Prüfungsangst.";
+                recommendation = "Sprich mit deinen Eltern oder einem Schulberater! Die Module können helfen, aber professionelle Unterstützung ist wichtig.";
+            }
+
+            document.getElementById('testResult').innerHTML = `
+                <div class="result-badge">Dein Score: ${result}</div>
+                <div class="recommendation">
+                    <strong>💡 Empfehlung:</strong><br>${recommendation}
+                </div>
+            `;
+        }
+
+        // ATEMÜBUNG
+        function startBreathing() {
+            const circle = document.getElementById('breathingCircle');
+            const btn = document.getElementById('breathingBtn');
+            btn.disabled = true;
+            btn.textContent = 'Läuft...';
+
+            let phase = 0;
+            const phases = ['Einatmen (4s)', 'Halten (7s)', 'Ausatmen (8s)'];
+            const durations = [4000, 7000, 8000];
+
+            function nextPhase() {
+                circle.textContent = phases[phase];
+                phase = (phase + 1) % 3;
+            }
+
+            nextPhase();
+            let cycleCount = 0;
+
+            const cycleInterval = setInterval(() => {
+                nextPhase();
+                cycleCount++;
+                if (cycleCount >= 3) {
+                    clearInterval(cycleInterval);
+                    circle.textContent = 'Fertig! Du bist ruhiger.';
+                    btn.disabled = false;
+                    btn.textContent = '▶ Start';
+                }
+            }, 4000 + 7000 + 8000);
+        }
+
+        // KOGNITIVE UMSTRUKTURIERUNG
+        function renderThoughts() {
+            const container = document.getElementById('thoughtsContainer');
+            container.innerHTML = cognitiveThoughts.map((thought, idx) => `
+                <div class="flip-card" onclick="flipCard(this)">
+                    <div class="card-inner">
+                        <div class="card-front">${thought.negative}</div>
+                        <div class="card-back">${thought.positive}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function flipCard(card) {
+            card.classList.toggle('flipped');
+        }
+
+        // TIMER SIMULATION
+        let totalSeconds = 120 * 60;
+        let elapsed = 0;
+
+        function startTimerSimulation() {
+            if (timerInterval) return;
+
+            timerInterval = setInterval(() => {
+                elapsed++;
+                updateTimerDisplay();
+
+                if (elapsed >= totalSeconds) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    alert('Zeit ist vorbei! In der echten Prüfung musst du jetzt abgeben.');
+                }
+            }, 100); // 100ms für schnellere Animation (entspricht 1 Minute real)
+        }
+
+        function updateTimerDisplay() {
+            const part1Seconds = 30 * 60;
+            const part2Seconds = 90 * 60;
+
+            const remaining = totalSeconds - elapsed;
+            const remainingMin = Math.floor(remaining / 60);
+            const remainingSec = remaining % 60;
+
+            const part1Remaining = Math.max(0, part1Seconds - elapsed);
+            const part2Remaining = Math.max(0, part2Seconds - (elapsed - part1Seconds));
+
+            document.getElementById('timerTotal').textContent = `${remainingMin}:${String(remainingSec).padStart(2, '0')}`;
+            document.getElementById('fillTotal').style.width = ((totalSeconds - remaining) / totalSeconds * 100) + '%';
+
+            if (elapsed < part1Seconds) {
+                const p1Min = Math.floor(part1Remaining / 60);
+                const p1Sec = part1Remaining % 60;
+                document.getElementById('timer1').textContent = `${p1Min}:${String(p1Sec).padStart(2, '0')}`;
+                document.getElementById('fill1').style.width = ((elapsed / part1Seconds) * 100) + '%';
+
+                document.getElementById('timer2').textContent = '90:00';
+                document.getElementById('fill2').style.width = '0%';
+            } else {
+                document.getElementById('timer1').textContent = '00:00';
+                document.getElementById('fill1').style.width = '100%';
+
+                const p2Min = Math.floor(part2Remaining / 60);
+                const p2Sec = part2Remaining % 60;
+                document.getElementById('timer2').textContent = `${p2Min}:${String(p2Sec).padStart(2, '0')}`;
+                document.getElementById('fill2').style.width = (((elapsed - part1Seconds) / part2Seconds) * 100) + '%';
+            }
+        }
+
+        function resetTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            elapsed = 0;
+            document.getElementById('timer1').textContent = '30:00';
+            document.getElementById('timer2').textContent = '90:00';
+            document.getElementById('timerTotal').textContent = '120:00';
+            document.getElementById('fill1').style.width = '25%';
+            document.getElementById('fill2').style.width = '75%';
+            document.getElementById('fillTotal').style.width = '100%';
+        }
+
+        // CHECKLISTE
+        function renderChecklist() {
+            const container = document.getElementById('checklist');
+            container.innerHTML = checklistItems.map((item, idx) => `
+                <div class="checklist-item" onclick="toggleCheck(this)">
+                    <input type="checkbox" id="check-${idx}">
+                    <label for="check-${idx}">${item.emoji} ${item.text}</label>
+                </div>
+            `).join('');
+        }
+
+        function toggleCheck(item) {
+            const checkbox = item.querySelector('input[type="checkbox"]');
+            checkbox.checked = !checkbox.checked;
+            item.classList.toggle('checked');
+        }
+
+        // MEDITATION
+        function startMeditation() {
+            document.getElementById('meditationContainer').style.display = 'block';
+            const btn = document.getElementById('meditationBtn');
+            btn.disabled = true;
+            btn.textContent = 'Meditation läuft...';
+
+            let secondsLeft = 180; // 3 Minuten
+
+            const texts = [
+                "Schließe die Augen. Atme langsam ein und aus.",
+                "Mit jedem Atemzug wirst du ruhiger.",
+                "Du bist vorbereitet und bereit.",
+                "Dein Körper ist entspannt.",
+                "Dein Geist ist klar.",
+                "Du schaffst diese Prüfung.",
+                "Vertrau dir selbst.",
+                "Du bist intelligent und fähig.",
+                "Atme tief ein... Atme tief aus...",
+                "Du bist stark. Du bist bereit.",
+                "Die Meditation ist vorbei. Du bist ruhig und bereit! 🙏"
+            ];
+
+            let textIndex = 0;
+
+            meditationInterval = setInterval(() => {
+                secondsLeft--;
+                const min = Math.floor(secondsLeft / 60);
+                const sec = secondsLeft % 60;
+                document.getElementById('meditationTimer').textContent = `${min}:${String(sec).padStart(2, '0')}`;
+
+                if (textIndex < texts.length) {
+                    document.getElementById('meditationText').textContent = texts[textIndex];
+                    textIndex++;
+                }
+
+                if (secondsLeft <= 0) {
+                    clearInterval(meditationInterval);
+                    btn.disabled = false;
+                    btn.textContent = '▶ Meditation starten';
+                    document.getElementById('meditationContainer').style.display = 'none';
+                }
+            }, 1000);
+        }
+
+        function goToHub() {
+            window.location.href = '../index.html';
+        }
+
+        // START
+        init();
+    </script>
+</body>
+</html>

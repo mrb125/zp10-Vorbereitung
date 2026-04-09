@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mathe-Check ZP10 - Anmeldung</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <!-- MSAL -->
+  <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
+
+  <!-- Sync Module -->
+  <script src="zp10-azure-sync.js"></script>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #5B6CF0;
+      --accent: #FF6B8A;
+      --success: #34C759;
+      --warning: #FF9500;
+      --danger: #FF3B30;
+      --bg: #F0F4FF;
+      --bg-light: #FFFFFF;
+      --text-dark: #1A1A1A;
+      --text-light: #757575;
+      --border: #E5E7EB;
+      --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, var(--bg) 0%, #E8ECFF 100%);
+      color: var(--text-dark);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Decorative blobs */
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0.1;
+      animation: drift 20s ease-in-out infinite;
+    }
+
+    .blob-1 {
+      width: 400px;
+      height: 400px;
+      background: var(--primary);
+      top: -100px;
+      left: -100px;
+      animation-delay: 0s;
+    }
+
+    .blob-2 {
+      width: 300px;
+      height: 300px;
+      background: var(--accent);
+      bottom: -50px;
+      right: -50px;
+      animation-delay: 5s;
+    }
+
+    .blob-3 {
+      width: 250px;
+      height: 250px;
+      background: var(--primary);
+      bottom: 100px;
+      left: 50%;
+      animation-delay: 10s;
+    }
+
+    @keyframes drift {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(30px, 30px); }
+    }
+
+    .container {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .card {
+      background: var(--bg-light);
+      border-radius: 20px;
+      padding: 60px 40px;
+      box-shadow: var(--shadow-lg);
+      backdrop-filter: blur(10px);
+    }
+
+    .logo {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin: 0 auto 30px;
+      box-shadow: var(--shadow);
+    }
+
+    h1 {
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      text-align: center;
+      color: var(--text-dark);
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: var(--text-light);
+      text-align: center;
+      margin-bottom: 40px;
+      line-height: 1.6;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-light);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .config-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: 'Inter', monospace;
+      font-size: 13px;
+      background: #FAFBFC;
+      color: var(--text-dark);
+      transition: all 0.2s ease;
+    }
+
+    .config-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: white;
+      box-shadow: 0 0 0 3px rgba(91, 108, 240, 0.1);
+    }
+
+    .login-section {
+      margin-top: 40px;
+      padding-top: 40px;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 14px 20px;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.2);
+      transition: left 0.3s ease;
+    }
+
+    .btn:hover::before {
+      left: 100%;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), #7B8DFF);
+      color: white;
+      box-shadow: 0 4px 12px rgba(91, 108, 240, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(91, 108, 240, 0.4);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--primary);
+      border: 2px solid var(--primary);
+      margin-top: 12px;
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg);
+      transform: translateY(-1px);
+    }
+
+    .microsoft-icon {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .microsoft-icon::after {
+      content: '🔐';
+      font-size: 18px;
+    }
+
+    .user-section {
+      text-align: center;
+      margin-top: 30px;
+      padding-top: 30px;
+      border-top: 1px solid var(--border);
+      display: none;
+    }
+
+    .user-section.active {
+      display: block;
+    }
+
+    .user-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 32px;
+      margin: 0 auto 16px;
+      box-shadow: 0 4px 12px rgba(91, 108, 240, 0.2);
+      overflow: hidden;
+    }
+
+    .user-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .user-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 4px;
+    }
+
+    .user-email {
+      font-size: 13px;
+      color: var(--text-light);
+      margin-bottom: 4px;
+    }
+
+    .user-role {
+      display: inline-block;
+      background: var(--bg);
+      color: var(--primary);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+
+    .offline-section {
+      background: #FFF3CD;
+      border: 1px solid #FFE69C;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .offline-section p {
+      font-size: 13px;
+      color: #856404;
+      margin-bottom: 12px;
+    }
+
+    .config-section {
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 20px;
+      display: none;
+    }
+
+    .config-section.active {
+      display: block;
+    }
+
+    .config-section h3 {
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 12px;
+    }
+
+    .config-section p {
+      font-size: 12px;
+      color: var(--text-light);
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+
+    .btn-small {
+      padding: 10px 16px;
+      font-size: 13px;
+      border-radius: 8px;
+      display: inline-flex;
+      gap: 6px;
+    }
+
+    .loading {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: var(--text-light);
+      font-size: 14px;
+      margin-top: 10px;
+    }
+
+    .loading.active {
+      display: flex;
+    }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .alert {
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-top: 12px;
+      font-size: 13px;
+      display: none;
+    }
+
+    .alert.active {
+      display: block;
+    }
+
+    .alert.success {
+      background: #D4EDDA;
+      color: #155724;
+      border: 1px solid #C3E6CB;
+    }
+
+    .alert.error {
+      background: #F8D7DA;
+      color: #721C24;
+      border: 1px solid #F5C6CB;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      font-size: 12px;
+      color: var(--text-light);
+    }
+
+    .footer a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 600px) {
+      .card {
+        padding: 40px 24px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      .subtitle {
+        font-size: 13px;
+      }
+    }
+
+    /* Sync status indicator */
+    .zp10-sync-status {
+      margin-top: 20px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .zp10-sync-status.synced {
+      background: #D4EDDA;
+      color: #155724;
+    }
+
+    .zp10-sync-status.pending {
+      background: #FFF3CD;
+      color: #856404;
+    }
+
+    .zp10-sync-status.offline {
+      background: #F0F4FF;
+      color: #5B6CF0;
+    }
+
+    .zp10-sync-status .indicator {
+      font-size: 16px;
+    }
+
+    .zp10-sync-status .text {
+      flex: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+
+  <div class="container">
+    <div class="card">
+      <div class="logo">📊</div>
+      <h1>Mathe-Check ZP10</h1>
+      <p class="subtitle">Diagnose & Förderung für die Zentrale Prüfung</p>
+
+      <!-- Configuration Section (for teacher setup) -->
+      <div id="configSection" class="config-section">
+        <h3>Azure-Konfiguration</h3>
+        <p>Geben Sie Ihre Anwendungsdetails ein. Diese werden lokal gespeichert.</p>
+
+        <div class="form-group">
+          <label>Client ID</label>
+          <input type="text" id="clientId" class="config-input" placeholder="Azure App Registration Client ID">
+        </div>
+
+        <div class="form-group">
+          <label>Tenant ID</label>
+          <input type="text" id="tenantId" class="config-input" placeholder="Ihre Schul-Tenant-ID">
+        </div>
+
+        <div class="form-group">
+          <label>API Base URL</label>
+          <input type="text" id="apiBase" class="config-input" placeholder="https://api.beispiel.de">
+        </div>
+
+        <button class="btn btn-primary btn-small" onclick="saveConfig()">
+          ✓ Speichern
+        </button>
+        <button class="btn btn-secondary btn-small" onclick="toggleConfig()">
+          Abbrechen
+        </button>
+      </div>
+
+      <!-- Login Section -->
+      <div class="login-section">
+        <button id="loginBtn" class="btn btn-primary" onclick="loginWithMicrosoft()">
+          <span class="microsoft-icon"></span>
+          Mit Schulkonto anmelden
+        </button>
+
+        <div id="loading" class="loading">
+          <div class="spinner"></div>
+          <span>Wird angemeldet...</span>
+        </div>
+
+        <div id="alert" class="alert"></div>
+      </div>
+
+      <!-- User Section (after login) -->
+      <div id="userSection" class="user-section">
+        <div class="user-avatar" id="userAvatar">👤</div>
+        <div class="user-name" id="userName"></div>
+        <div class="user-email" id="userEmail"></div>
+        <div class="user-role" id="userRole">Schüler/in</div>
+
+        <div id="syncStatus" style="margin-top: 20px;"></div>
+
+        <button id="continueBtn" class="btn btn-primary" style="margin-top: 20px;">
+          Weiter zum Dashboard
+        </button>
+
+        <button class="btn btn-secondary" onclick="logoutUser()">
+          Abmelden
+        </button>
+      </div>
+
+      <!-- Offline Section -->
+      <div class="offline-section">
+        <p>🔗 Keine Internetverbindung?</p>
+        <button class="btn btn-secondary btn-small" onclick="continueOffline()">
+          Offline weiterarbeiten
+        </button>
+      </div>
+
+      <div class="footer">
+        <p>🔒 Ihre Daten werden sicher gespeichert und nicht an Dritte weitergegeben.</p>
+        <p style="margin-top: 12px;">
+          <a href="#" onclick="toggleConfig(); return false;">⚙️ Azure konfigurieren</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * Initialize page
+     */
+    function init() {
+      // Check if already logged in
+      checkExistingLogin();
+
+      // Setup event listeners
+      window.addEventListener('zp10-sync-status', (e) => {
+        updateSyncStatus(e.detail);
+      });
+    }
+
+    /**
+     * Check for existing Azure login
+     */
+    async function checkExistingLogin() {
+      if (!ZP10Sync.config.clientId) {
+        // Azure not configured, show offline option
+        return;
+      }
+
+      const lastUser = localStorage.getItem('zp10_last_user');
+      if (lastUser) {
+        try {
+          const user = JSON.parse(lastUser);
+          showUserInfo(user);
+        } catch (e) {
+          console.warn('Failed to restore user', e);
+        }
+      }
+    }
+
+    /**
+     * Login with Microsoft
+     */
+    async function loginWithMicrosoft() {
+      if (!ZP10Sync.config.clientId) {
+        showAlert('Azure ist nicht konfiguriert. Bitte konfigurieren Sie es zuerst.', 'error');
+        toggleConfig();
+        return;
+      }
+
+      showLoading(true);
+
+      try {
+        const user = await ZP10Sync.login();
+
+        if (user) {
+          // Check if teacher
+          const isTeacher = await ZP10Sync.isTeacher();
+          showUserInfo(user, isTeacher);
+          showAlert('Erfolgreich angemeldet!', 'success');
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        showAlert('Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.', 'error');
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    /**
+     * Show user info after login
+     */
+    function showUserInfo(user, isTeacher = false) {
+      document.getElementById('userName').textContent = user.displayName || user.name || 'Benutzer';
+      document.getElementById('userEmail').textContent = user.mail || user.userPrincipalName || '';
+      document.getElementById('userRole').textContent = isTeacher ? 'Lehrer/in' : 'Schüler/in';
+
+      document.getElementById('loginBtn').style.display = 'none';
+      document.getElementById('userSection').classList.add('active');
+
+      // Show sync status
+      ZP10Sync.showSyncStatus('syncStatus');
+
+      // Setup continue button
+      const continueBtn = document.getElementById('continueBtn');
+      if (isTeacher) {
+        continueBtn.textContent = 'Zum Lehrer-Dashboard';
+        continueBtn.onclick = () => {
+          window.location.href = 'zp10-lehrer-azure.html';
+        };
+      } else {
+        continueBtn.textContent = 'Zum Schüler-Hub';
+        continueBtn.onclick = () => {
+          window.location.href = '../index.html';
+        };
+      }
+    }
+
+    /**
+     * Logout
+     */
+    async function logoutUser() {
+      await ZP10Sync.logout();
+      document.getElementById('userSection').classList.remove('active');
+      document.getElementById('loginBtn').style.display = 'flex';
+      document.getElementById('alert').classList.remove('active');
+      showAlert('Abgemeldet.', 'success');
+    }
+
+    /**
+     * Continue without login (offline mode)
+     */
+    function continueOffline() {
+      window.location.href = '../index.html?offline=true';
+    }
+
+    /**
+     * Toggle config section
+     */
+    function toggleConfig() {
+      const section = document.getElementById('configSection');
+      section.classList.toggle('active');
+
+      if (section.classList.contains('active')) {
+        // Load existing config
+        document.getElementById('clientId').value = ZP10Sync.config.clientId || '';
+        document.getElementById('tenantId').value = ZP10Sync.config.tenantId || '';
+        document.getElementById('apiBase').value = ZP10Sync.config.apiBase || '';
+      }
+    }
+
+    /**
+     * Save Azure config
+     */
+    function saveConfig() {
+      const config = {
+        clientId: document.getElementById('clientId').value,
+        tenantId: document.getElementById('tenantId').value,
+        apiBase: document.getElementById('apiBase').value,
+        authority: `https://login.microsoftonline.com/${document.getElementById('tenantId').value}`
+      };
+
+      if (!config.clientId || !config.tenantId) {
+        showAlert('Bitte füllen Sie alle Felder aus.', 'error');
+        return;
+      }
+
+      ZP10Sync.config = config;
+      ZP10Sync.saveConfig();
+
+      // Re-initialize MSAL
+      ZP10Sync._initMSAL();
+
+      showAlert('Konfiguration gespeichert!', 'success');
+      toggleConfig();
+    }
+
+    /**
+     * Show/hide loading indicator
+     */
+    function showLoading(show) {
+      document.getElementById('loading').classList.toggle('active', show);
+    }
+
+    /**
+     * Show alert
+     */
+    function showAlert(message, type = 'info') {
+      const alert = document.getElementById('alert');
+      alert.textContent = message;
+      alert.className = `alert active ${type}`;
+    }
+
+    /**
+     * Update sync status from events
+     */
+    function updateSyncStatus(detail) {
+      // Sync status div will be updated by ZP10Sync.showSyncStatus
+    }
+
+    // Initialize when page loads
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZP10 Stationen-Diagnose</title>
+    <link rel="stylesheet" href="zp10-stationen.css">
+</head>
+<body>
+
+<!-- Landing Page -->
+<div id="landingPage" class="landing-container">
+    <div class="landing-header">
+        <h1>🎯 ZP10 Stationen-Diagnose</h1>
+        <p>Laufe durch die Stationen und diagnostiziere deine Stärken!</p>
+    </div>
+
+    <div class="student-name-input">
+        <input type="text" id="studentNameInput" placeholder="Dein Name hier...">
+    </div>
+
+    <div class="stations-grid" id="stationsGrid"></div>
+</div>
+
+<!-- Station Page -->
+<div id="stationPage" style="display: none;" class="station-container">
+    <div class="station-header">
+        <div class="station-header-top">
+            <div>
+                <h2>Station <span id="stationNum"></span></h2>
+                <div style="font-size: 1.1rem; color: var(--text-light); margin-top: 4px;">
+                    <span id="stationTitle"></span>
+                </div>
+            </div>
+            <div>
+                <div class="student-name-display" id="studentNameDisplay"></div>
+                <div class="timer" id="timer">00:00</div>
+            </div>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+    </div>
+
+    <div class="questions-container" id="questionsContainer"></div>
+
+    <div class="completion-screen" id="completionScreen">
+        <div class="completion-animation">✨</div>
+        <h3 id="completionTitle"></h3>
+        <p style="color: var(--text-light); margin-bottom: 20px;">Großartig! Du hast diese Station abgeschlossen!</p>
+        <div class="completion-summary">
+            <div class="summary-item">
+                <span class="summary-label">Fragen richtig:</span>
+                <span class="summary-value" id="summaryCorrect"></span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label">Punktzahl:</span>
+                <span class="summary-value" id="summaryScore"></span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label">Zeit:</span>
+                <span class="summary-value" id="summaryTime"></span>
+            </div>
+        </div>
+        <div class="button-group">
+            <button class="btn btn-primary" onclick="goToStation(0)">← Zurück zu Stationen</button>
+            <button class="btn btn-secondary" onclick="location.reload()">Neu laden</button>
+        </div>
+    </div>
+</div>
+
+<!-- Results Page -->
+<div id="resultsPage" style="display: none;" class="results-container">
+    <div class="results-header">
+        <h2>🏆 Deine Ergebnisse</h2>
+        <p style="color: var(--text-light);">Übersicht aller 8 Stationen</p>
+    </div>
+
+    <div class="results-grid" id="resultsGrid"></div>
+
+    <div class="results-analysis" id="resultsAnalysis"></div>
+
+    <div class="button-group">
+        <button class="btn btn-primary" onclick="goToStation(0)">← Zurück zur Übersicht</button>
+        <button class="btn btn-secondary" onclick="exportResults()">📊 Als CSV exportieren</button>
+    </div>
+</div>
+
+<canvas id="confetti"></canvas>
+
+<script>
+    // ===== STATION DATA =====
+    const stationData = [
+        {
+            id: 1,
+            title: 'Terme & Grundlagen',
+            questions: [
+                {
+                    id: 's1q1',
+                    topic: 'Terme vereinfachen',
+                    type: 'mc',
+                    text: 'Vereinfache: <span class="math-expr">3x + 2x - 5</span>',
+                    opts: ['5x - 5', '6x - 5', '3x + 2x - 5', 'x - 5'],
+                    answer: 0,
+                    fb_ok: '✓ Korrekt! Du hast die Terme richtig kombiniert.',
+                    fb_nok: '✗ Denk daran: Addiere nur die Terme mit der gleichen Variable zusammen.',
+                    denkfehler: 'Häufiger Fehler: Alle Zahlen addieren statt nur die x-Terme.',
+                    xp: 10
+                },
+                {
+                    id: 's1q2',
+                    topic: 'Vorzeichenregeln',
+                    type: 'mc',
+                    text: 'Was ist <span class="math-expr">(-3) × (-4)</span>?',
+                    opts: ['-12', '12', '-1', '7'],
+                    answer: 1,
+                    fb_ok: '✓ Richtig! Minus mal Minus ergibt Plus.',
+                    fb_nok: '✗ Merksatz: Gleiche Vorzeichen → Plus; unterschiedliche → Minus.',
+                    denkfehler: 'Oft wird übersehen, dass zwei Minusse ein Plus ergeben.',
+                    xp: 10
+                },
+                {
+                    id: 's1q3',
+                    topic: 'Ausklammern',
+                    type: 'mc',
+                    text: 'Klammere aus: <span class="math-expr">6a + 9b</span>',
+                    opts: ['3(2a + 3b)', '6(a + 3b)', '3a(2 + 3b)', '9(a + b)'],
+                    answer: 0,
+                    fb_ok: '✓ Sehr gut! Du hast den gemeinsamen Faktor erkannt.',
+                    fb_nok: '✗ Suche die größte Zahl, die beide Koeffizienten teilt.',
+                    denkfehler: 'Der ggT von 6 und 9 ist 3, nicht 6 oder 9.',
+                    xp: 10
+                },
+                {
+                    id: 's1q4',
+                    topic: 'Distributivgesetz',
+                    type: 'mc',
+                    text: 'Vereinfache: <span class="math-expr">2(x + 3) + 4</span>',
+                    opts: ['2x + 10', '2x + 7', '6x + 4', 'x + 7'],
+                    answer: 0,
+                    fb_ok: '✓ Exakt! Du hast korrekt ausmultipliziert.',
+                    fb_nok: '✗ Schritt 1: Klammer ausmultiplizieren → 2x + 6. Schritt 2: +4 addieren → 2x + 10.',
+                    denkfehler: 'Oft wird vergessen, die 3 auch mit der 2 zu multiplizieren.',
+                    xp: 10
+                },
+                {
+                    id: 's1q5',
+                    topic: 'Einfache Gleichung',
+                    type: 'input',
+                    text: 'Löse auf: <span class="math-expr">x + 5 = 12</span>. Wie heißt x?',
+                    opts: [],
+                    answer: '7',
+                    fb_ok: '✓ Genau! Die Lösung ist x = 7.',
+                    fb_nok: '✗ Subtrahiere 5 von beiden Seiten: x = 12 - 5 = 7.',
+                    denkfehler: 'Man muss auf beiden Seiten die gleiche Operation durchführen.',
+                    xp: 10
+                }
+            ]
+        },
+        {
+            id: 2,
+            title: 'Funktionen I',
+            questions: [
+                {
+                    id: 's2q1',
+                    topic: 'Steigung ablesen',
+                    type: 'mc',
+                    text: 'Lies die Steigung aus dem Graphen ab (Punkt 1→2: Rechts 1, Oben 2).',
+                    opts: ['m = 0,5', 'm = 2', 'm = 1', 'm = -2'],
+                    answer: 1,
+                    fb_ok: '✓ Richtig! Steigung = Steigungsdreieck = Δy/Δx = 2/1 = 2.',
+                    fb_nok: '✗ Steigung m = (Höhendifferenz) / (Horizontaldifferenz).',
+                    denkfehler: 'Oft wird Δy und Δx vertauscht oder das Dreieck falsch gezählt.',
+                    xp: 10
+                },
+                {
+                    id: 's2q2',
+                    topic: 'y-Achsenabschnitt',
+                    type: 'mc',
+                    text: 'Die Gerade y = 2x + 3 schneidet die y-Achse bei:',
+                    opts: ['x = 3', 'y = 3', 'y = 2', 'Punkt (2, 0)'],
+                    answer: 1,
+                    fb_ok: '✓ Ja! Der y-Achsenabschnitt ist b = 3, also Punkt (0, 3).',
+                    fb_nok: '✗ Bei Geradengleichung y = mx + b ist b der y-Achsenabschnitt (m = Steigung).',
+                    denkfehler: 'Der Koeffizient von x ist die Steigung, nicht der y-Achsenabschnitt.',
+                    xp: 10
+                },
+                {
+                    id: 's2q3',
+                    topic: 'Nullstelle',
+                    type: 'input',
+                    text: 'Finde die Nullstelle von y = x - 4 (wo schneidet die Gerade die x-Achse?)',
+                    opts: [],
+                    answer: '4',
+                    fb_ok: '✓ Richtig! Bei x = 4 ist y = 0.',
+                    fb_nok: '✗ Setze y = 0: 0 = x - 4 → x = 4.',
+                    denkfehler: 'Die Nullstelle ist der x-Wert, nicht der y-Wert.',
+                    xp: 10
+                },
+                {
+                    id: 's2q4',
+                    topic: 'Parabel Scheitelpunkt',
+                    type: 'mc',
+                    text: 'Wo liegt der Scheitelpunkt von y = (x - 3)² + 2?',
+                    opts: ['(3, 2)', '(-3, 2)', '(3, -2)', '(2, 3)'],
+                    answer: 0,
+                    fb_ok: '✓ Exakt! Die Scheitelpunktform ist y = (x - d)² + e mit Scheitel (d, e).',
+                    fb_nok: '✗ In der Form y = (x - d)² + e ist der Scheitel bei (d, e). Achte auf die Vorzeichen!',
+                    denkfehler: 'Das Minuszeichen vor 3 kann verwirren, aber (x - 3) bedeutet: Scheitel bei +3.',
+                    xp: 10
+                },
+                {
+                    id: 's2q5',
+                    topic: 'Geradengleichung',
+                    type: 'mc',
+                    text: 'Schreibe die Geradengleichung für m = -1 und y-Achsenabschnitt b = 5:',
+                    opts: ['y = -x + 5', 'y = x - 5', 'y = 5x - 1', 'y = -x - 5'],
+                    answer: 0,
+                    fb_ok: '✓ Perfekt! Geradengleichung: y = mx + b = -1·x + 5.',
+                    fb_nok: '✗ Formel: y = mx + b mit m = Steigung und b = y-Achsenabschnitt.',
+                    denkfehler: 'Die Vorzeichen von m und b müssen stimmen!',
+                    xp: 10
+                }
+            ]
+        },
+        {
+            id: 3,
+            title: 'Gleichungen & LGS',
+            questions: [
+                {
+                    id: 's3q1',
+                    topic: 'Lineare Gleichung',
+                    type: 'input',
+                    text: 'Löse: <span class="math-expr">2x - 3 = 9</span>',
+                    opts: [],
+                    answer: '6',
+                    fb_ok: '✓ Richtig! x = 6. Probe: 2·6 - 3 = 12 - 3 = 9. ✓',
+                    fb_nok: '✗ 2x - 3 = 9 → 2x = 12 → x = 6.',
+                    denkfehler: 'Achte darauf, dass du beide Seiten der Gleichung gleich behandelst.',
+                    xp: 10
+                },
+                {
+                    id: 's3q2',
+                    topic: 'Quadratische Gleichung (p-q)',
+                    type: 'mc',
+                    text: 'Wie viele Lösungen hat x² - 4x + 3 = 0?',
+                    opts: ['Keine', 'Eine', 'Zwei', 'Unendlich viele'],
+                    answer: 2,
+                    fb_ok: '✓ Genau! Diese Parabel schneidet die x-Achse zweimal (bei x=1 und x=3).',
+                    fb_nok: '✗ Nutze die p-q-Formel oder versuche zu faktorisieren: (x-1)(x-3)=0.',
+                    denkfehler: 'Nicht alle quadratischen Gleichungen haben 2 Lösungen (Diskriminante prüfen!)',
+                    xp: 10
+                },
+                {
+                    id: 's3q3',
+                    topic: 'Bruchgleichung',
+                    type: 'mc',
+                    text: 'Löse: <span class="math-expr">x/2 + 1 = 5</span>',
+                    opts: ['x = 2', 'x = 4', 'x = 8', 'x = 6'],
+                    answer: 2,
+                    fb_ok: '✓ Super! x/2 + 1 = 5 → x/2 = 4 → x = 8.',
+                    fb_nok: '✗ Subtrahiere 1 von beiden Seiten, dann multipliziere mit 2.',
+                    denkfehler: 'Vergiss nicht, alle Terme konsistent zu behandeln.',
+                    xp: 10
+                },
+                {
+                    id: 's3q4',
+                    topic: 'LGS Einsetzung',
+                    type: 'mc',
+                    text: 'LGS: y = x + 2 und y = 2x. Wie heißt x?',
+                    opts: ['x = 1', 'x = 2', 'x = 3', 'x = -2'],
+                    answer: 0,
+                    fb_ok: '✓ Korrekt! x + 2 = 2x → 2 = x.',
+                    fb_nok: '✗ Setze die erste in die zweite ein: x + 2 = 2x.',
+                    denkfehler: 'Die Einsetzungsmethode funktioniert, wenn eine Variable isoliert ist.',
+                    xp: 10
+                },
+                {
+                    id: 's3q5',
+                    topic: 'LGS Gleichsetzung',
+                    type: 'input',
+                    text: 'LGS: 2x + y = 5 und x + y = 3. Wie heißt x?',
+                    opts: [],
+                    answer: '2',
+                    fb_ok: '✓ Genau! Aus den beiden Gleichungen folgt x = 2 und y = 1.',
+                    fb_nok: '✗ Subtrahiere die zweite Gleichung von der ersten: (2x+y) - (x+y) = 5-3 → x = 2.',
+                    denkfehler: 'Mit der Subtraktionsmethode lassen sich viele LGS lösen.',
+                    xp: 10
+                }
+            ]
+        },
+        {
+            id: 4,
+            title: 'Potenzen & Wurzeln',
+            questions: [
+                {
+                    id: 's4q1',
+                    topic: 'Potenzgesetz',
+                    type: 'mc',
+                    text: 'Vereinfache: <span class="math-expr">a³ · a²</span>',
+                    opts: ['a⁵', 'a⁶', 'a¹', '2a⁵'],
+                    answer: 0,
+                    fb_ok: '✓ Richtig! Potenzen mit gleicher Basis addieren die Exponenten: a³⁺² = a⁵.',
+                    fb_nok: '✗ Regel: aᵐ · aⁿ = aᵐ⁺ⁿ (Exponenten addieren, nicht multiplizieren).',
+                    denkfehler: 'Viele verwechseln die Multiplikation und Addition der Exponenten.',
+                    xp: 10
+                },
+                {
+                    id: 's4q2',
+                    topic: 'Negative Exponenten',
+                    type: 'mc',
+                    text: 'Was ist <span class="math-expr">2⁻³</span>?',
+                    opts: ['-6', '-8', '1/8', '3/2'],
+                    answer: 2,
+                    fb_ok: '✓ Exakt! 2⁻³ = 1/2³ = 1/8.',
+                    fb_nok: '✗ Negative Exponenten bedeuten: a⁻ⁿ = 1/aⁿ.',
+                    denkfehler: 'a⁻ⁿ ist nicht negativ, es ist ein Bruch!',
+                    xp: 10
+                },
+                {
+                    id: 's4q3',
+                    topic: 'Wurzel vereinfachen',
+                    type: 'input',
+                    text: 'Vereinfache: <span class="math-expr">√16</span>',
+                    opts: [],
+                    answer: '4',
+                    fb_ok: '✓ Richtig! √16 = 4, weil 4² = 16.',
+                    fb_nok: '✗ Die Wurzel ist die Umkehrung der Potenz: √a = b, wenn b² = a.',
+                    denkfehler: 'Vergiss nicht, dass √16 nur die positive Lösung ist (nicht ±4).',
+                    xp: 10
+                },
+                {
+                    id: 's4q4',
+                    topic: 'Wissenschaftliche Notation',
+                    type: 'mc',
+                    text: 'Schreibe 5000 in wissenschaftlicher Notation:',
+                    opts: ['5 × 10³', '5 × 10⁴', '50 × 10²', '0,5 × 10⁴'],
+                    answer: 0,
+                    fb_ok: '✓ Perfekt! 5000 = 5 × 10³.',
+                    fb_nok: '✗ Wissenschaftliche Notation: a × 10ⁿ, wobei 1 ≤ a < 10.',
+                    denkfehler: 'Die Kommaverschiebung ist um 3 Stellen nach links (10³).',
+                    xp: 10
+                },
+                {
+                    id: 's4q5',
+                    topic: 'Potenz mit Bruch',
+                    type: 'mc',
+                    text: 'Was ist <span class="math-expr">8^(1/3)</span>?',
+                    opts: ['2', '3', '8/3', '24'],
+                    answer: 0,
+                    fb_ok: '✓ Genau! 8^(1/3) = ³√8 = 2, weil 2³ = 8.',
+                    fb_nok: '✗ a^(1/n) = ⁿ√a. Ein Drittel Exponent bedeutet: Kubikwurzel.',
+                    denkfehler: 'Bruch-Exponenten sind Wurzeln, nicht Divisionen.',
+                    xp: 10
+                }
+            ]
+        },
+        {
+            id: 5,
+            title: 'Geometrie',
+            questions: [
+                {
+                    id: 's5q1',
+                    topic: 'Pythagoras',
+                    type: 'mc',
+                    text: 'Rechtwinkliges Dreieck: a = 3 cm, b = 4 cm. Wie lang ist die Hypotenuse c?',
+                    opts: ['5 cm', '6 cm', '7 cm', '3,5 cm'],
+                    answer: 0,
+                    fb_ok: '✓ Richtig! c² = 3² + 4² = 9 + 16 = 25 → c = 5 cm.',
+                    fb_nok: '✗ Satz des Pythagoras: c² = a² + b² (c ist die längste Seite).',
+                    denkfehler: 'Achte darauf, c² zu nehmen und dann die Wurzel zu ziehen.',
+                    xp: 10
+                },
+                {
+                    id: 's5q2',
+                    topic: 'Trigonometrie (sin)',
+                    type: 'mc',
+                    text: 'In einem rechtwinkligen Dreieck: sin(α) = 0,6. Welche Seite ist gemeint?',
+                    opts: ['Hypotenuse / Ankathete', 'Gegenkathete / Hypotenuse', 'Gegenkathete / Ankathete', 'Ankathete / Hypotenuse'],
+                    answer: 1,
+                    fb_ok: '✓ Genau! sin(α) = Gegenkathete / Hypotenuse.',
+                    fb_nok: '✗ Merksatz: sin = Gegenkathete/Hypotenuse, cos = Ankathete/Hypotenuse, tan = Gegenkathete/Ankathete.',
+                    denkfehler: 'Die Reihenfolge ist wichtig: Gegenkathete oben, Hypotenuse unten.',
+                    xp: 10
+                },
+                {
+                    id: 's5q3',
+                    topic: 'Flächeninhalt Dreieck',
+                    type: 'input',
+                    text: 'Dreieck mit Grundseite 6 cm und Höhe 4 cm. Wie groß ist die Fläche?',
+                    opts: [],
+                    answer: '12',
+                    fb_ok: '✓ Korrekt! A = (g · h) / 2 = (6 · 4) / 2 = 12 cm².',
+                    fb_nok: '✗ Formel für Dreieck: A = (Grundseite × Höhe) / 2.',
+                    denkfehler: 'Vergiss nicht, durch 2 zu teilen! Ein Dreieck ist halb so groß wie ein Rechteck.',
+                    xp: 10
+                },
+                {
+                    id: 's5q4',
+                    topic: 'Volumen Zylinder',
+                    type: 'mc',
+                    text: 'Zylinder: Radius r = 2 cm, Höhe h = 5 cm. Wie groß ist das Volumen (π ≈ 3,14)?',
+                    opts: ['10 cm³', '20 cm³', '62,8 cm³', '31,4 cm³'],
+                    answer: 2,
+                    fb_ok: '✓ Perfekt! V = π · r² · h = 3,14 · 4 · 5 = 62,8 cm³.',
+                    fb_nok: '✗ Formel: V = π · r² · h. Erst r² berechnen, dann mit π und h multiplizieren.',
+                    denkfehler: 'Oft wird r mit 2r verwechselt oder π vergessen.',
+                    xp: 10
+                },
+                {
+                    id: 's5q5',
+                    topic: 'Oberflächeninhalt',
+                    type: 'mc',
+                    text: 'Würfel mit Kantenlänge a = 3 cm. Wie groß ist die Oberfläche?',
+                    opts: ['27 cm²', '54 cm²', '36 cm²', '18 cm²'],
+                    answer: 1,
+                    fb_ok: '✓ Ja! Ein Würfel hat 6 Flächen: O = 6 · a² = 6 · 9 = 54 cm².',
+                    fb_nok: '✗ Würfel: O = 6 · a². Das Volumen ist a³, nicht die Oberfläche!',
+                    denkfehler: 'Oberfläche = Summe aller äußeren Flächen, nicht Volumen.',
+                    xp: 10
+                }
+            ]
+        },
+        {
+            id: 6,
+            title: 'Stochastik & Prozent',
+            questions: [
+                {
+                    id: 's6q1',
+                    topic: 'Wahrscheinlichkeit',
+                    type: 'mc',
+                    text: 'Wie groß ist die Wahrscheinlichkeit, mit einem Würfel eine 6 zu würfeln?',
+                    opts: ['1/6', '1/3', '1/2', '6/1'],
+                    answer: 0,
+                    fb_ok: '✓ Richtig! P = (günstige Fälle) / (mögliche Fälle) = 1/6.',
+                    fb_nok: '✗ Ein Würfel hat 6 Flächen, davon ist 1 die Sechs.',
+                    denkfehler: 'Wahrscheinlichkeit = Anzahl der günstigen Ergebnisse / Gesamtzahl möglicher Ergebnisse.',
+                    xp: 10
+                },
+                {
+                    id: 's6q2',
+                    topic: 'Baumdiagramm',
+                    type: 'mc',
+                    text: 'Zweimal Münzwurf. Wie groß ist P(beide Male Kopf)?',
+                    opts: ['1/2', '1/4', '1/3', '2/4'],
+                    answer: 1,
+                    fb_ok: '✓ Exakt! P = 1/2 · 1/2 = 1/4 (unabhängige Ereignisse multiplizieren).',
+                    fb_nok: '✗ Bei unabhängigen Ereignissen multipliziert man die Wahrscheinlichkeiten.',
+                    denkfehler: 'Das ist nicht 1/2 + 1/2, sondern 1/2 × 1/2.',
+                    xp: 10
+                },
+                {
+                    id: 's6q3',
+                    topic: 'Prozentrechnung',
+                    type: 'input',
+                    text: 'Wie viel ist 20% von 80?',
+                    opts: [],
+                    answer: '16',
+                    fb_ok: '✓ Korrekt! 20% von 80 = 0,2 · 80 = 16.',
+                    fb_nok: '✗ Prozentrechnung: Prozentsatz · Grundwert = Prozentwert.',
+                    denkfehler: 'Prozente in Dezimalzahlen umwandeln: 20% = 0,2.',
+                    xp: 10
+                },
+                {
+                    id: 's6q4',
+                    topic: 'Zinseszins',
+                    type: 'mc',
+                    text: 'Kapital: 1000 €, Zinsatz: 5% pro Jahr. Wie viel nach 2 Jahren?',
+                    opts: ['1100 €', '1102,50 €', '1050 €', '1025 €'],
+                    answer: 1,
+                    fb_ok: '✓ Genau! K = 1000 · 1,05² = 1000 · 1,1025 = 1102,50 €.',
+                    fb_nok: '✗ Zinseszins: Jedes Jahr wird der neue Betrag mit dem Zinsatz multipliziert.',
+                    denkfehler: 'Das ist nicht einfach 1000 + 50 + 50 = 1100, sondern 1000 · 1,05 · 1,05.',
+                    xp: 10
+                },
+                {
+                    id: 's6q5',
+                    topic: 'Relative Häufigkeit',
+                    type: 'mc',
+                    text: 'In einer Klasse mit 25 Schülern mögen 10 Mathematik. Wie groß ist die relative Häufigkeit?',
+                    opts: ['10%', '25%', '40%', '60%'],
+                    answer: 2,
+                    fb_ok: '✓ Perfekt! Relative Häufigkeit = 10/25 = 0,4 = 40%.',
+                    fb_nok: '✗ Relative Häufigkeit = (Anzahl) / (Gesamtzahl) · 100%.',
+                    denkfehler: 'Vergiss nicht, in Prozent umzuwandeln, wenn gefordert.',
+                    xp: 10
+                }
+            ]
+        },
+        {
+            id: 7,
+            title: 'Wachstum & Expo',
+            questions: [
+                {
+                    id: 's7q1',
+                    topic: 'Wachstumsfaktor',
+                    type: 'mc',
+                    text: 'Eine Bakterienkolonie wächst um 30% pro Tag. Wie heißt der Wachstumsfaktor?',
+                    opts: ['0,3', '1,3', '30', '0,7'],
+                    answer: 1,
+                    fb_ok: '✓ Richtig! 100% + 30% = 130% = 1,3 (Wachstumsfaktor).',
+                    fb_nok: '✗ Wachstumsfaktor = 1 + Wachstumsrate. Bei +30% ist das 1,3.',
+                    denkfehler: 'Der Faktor ist größer als 1 bei Wachstum, nicht nur die Prozentzahl.',
+                    xp: 10
+                },
+                {
+                    id: 's7q2',
+                    topic: 'Halbwertszeit',
+                    type: 'mc',
+                    text: 'Ein Stoff hat eine Halbwertszeit von 10 Jahren. Nach 30 Jahren bleiben davon:',
+                    opts: ['25%', '12,5%', '1/8', '1/4'],
+                    answer: 2,
+                    fb_ok: '✓ Exakt! Nach 10 J: 50%, nach 20 J: 25%, nach 30 J: 12,5% = 1/8.',
+                    fb_nok: '✗ Halbwertszeit = Zeit, in der die Menge sich halbiert.',
+                    denkfehler: 'Nach n Halbwertszeiten bleibt (1/2)ⁿ des Ursprungs.',
+                    xp: 10
+                },
+                {
+                    id: 's7q3',
+                    topic: 'f(x) = a·b^x',
+                    type: 'input',
+                    text: 'Exponentialfunktion: f(0) = 5 und Wachstumsfaktor b = 2. Wie groß ist a?',
+                    opts: [],
+                    answer: '5',
+                    fb_ok: '✓ Korrekt! f(x) = a · b^x → f(0) = a · 1 = a = 5.',
+                    fb_nok: '✗ Bei x = 0 ist jede Basis hoch 0 gleich 1, also f(0) = a · 1 = a.',
+                    denkfehler: 'a ist der Anfangswert (der y-Achsenabschnitt bei x=0).',
+                    xp: 10
+                },
+                {
+                    id: 's7q4',
+                    topic: 'Verdopplungszeit',
+                    type: 'mc',
+                    text: 'Wachstum mit Faktor 1,2 pro Jahr. Ungefähr wie oft verdoppelt es sich pro 4 Jahre?',
+                    opts: ['0,5-mal', '1-mal', '2-mal', '4-mal'],
+                    answer: 1,
+                    fb_ok: '✓ Genau! 1,2⁴ ≈ 2,07 (verdoppelt sich ungefähr).',
+                    fb_nok: '✗ Verdopplungszeit: Wann ist f(t) = 2 · f(0)?',
+                    denkfehler: 'Exponentielles Wachstum ist nicht linear, sondern schneller.',
+                    xp: 10
+                },
+                {
+                    id: 's7q5',
+                    topic: 'Exponentieller Zerfall',
+                    type: 'mc',
+                    text: 'Funktion f(x) = 100 · 0,8^x. Was sagt der Faktor 0,8?',
+                    opts: ['Wächst um 80%', 'Sinkt um 20%', 'Sinkt um 80%', 'Wächst um 20%'],
+                    answer: 1,
+                    fb_ok: '✓ Super! Faktor 0,8 = 100% - 20% → Sinkt um 20% pro Periode.',
+                    fb_nok: '✗ Faktor < 1 bedeutet Zerfall. 0,8 = 1 - 0,2 → Verlust von 20%.',
+                    denkfehler: 'Faktor 0,8 ist nicht 80% Zerfall, sondern 20% Verlust pro Periode.',
+                    xp: 10
+                }
+            ]
+        },
+        {
+            id: 8,
+            title: 'Strahlensatz & Muster',
+            questions: [
+                {
+                    id: 's8q1',
+                    topic: '1. Strahlensatz',
+                    type: 'mc',
+                    text: 'Zwei Strahlen, parallel geschnitten. Wenn die erste Strecke 2 cm und die parallele Strecke 4 cm sind, wie heißt der Quotient?',
+                    opts: ['1/2', '2', '1/4', '4/2'],
+                    answer: 0,
+                    fb_ok: '✓ Richtig! Strahlensatz: Die Verhältnisse sind gleich.',
+                    fb_nok: '✗ 1. Strahlensatz: SA/SB = SA\'/SB\' (S = Scheitel).',
+                    denkfehler: 'Die Reihenfolge bei den Quotienten ist wichtig.',
+                    xp: 10
+                },
+                {
+                    id: 's8q2',
+                    topic: '2. Strahlensatz',
+                    type: 'input',
+                    text: 'Zwei Strahlen mit Parallelen. AB = 3 cm, A\'B\' = 6 cm, SA = 2 cm. Wie lang ist SA\'?',
+                    opts: [],
+                    answer: '4',
+                    fb_ok: '✓ Genau! 2. Strahlensatz: SA/AB = SA\'/A\'B\' → SA\' = SA · (A\'B\'/AB) = 2 · 2 = 4.',
+                    fb_nok: '✗ 2. Strahlensatz: SA/AB = SA\'/A\'B\'.',
+                    denkfehler: 'Achte auf die richtige Zuordnung der Strecken.',
+                    xp: 10
+                },
+                {
+                    id: 's8q3',
+                    topic: 'Zahlenfolge Regel',
+                    type: 'mc',
+                    text: 'Reihe: 2, 4, 8, 16, ... Wie heißt die nächste Zahl?',
+                    opts: ['24', '32', '20', '18'],
+                    answer: 1,
+                    fb_ok: '✓ Richtig! Jede Zahl ist doppelt so groß (Faktor 2).',
+                    fb_nok: '✗ Erkenne das Muster: Wie hängen die Zahlen zusammen?',
+                    denkfehler: 'Dies ist eine geometrische Reihe mit Faktor 2.',
+                    xp: 10
+                },
+                {
+                    id: 's8q4',
+                    topic: 'Bildmuster Anzahl',
+                    type: 'mc',
+                    text: 'Bildmuster: 1 Dreieck (Bild 1), 3 Dreiecke (Bild 2), 6 Dreiecke (Bild 3). Wie viele in Bild 4?',
+                    opts: ['9', '10', '12', '8'],
+                    answer: 1,
+                    fb_ok: '✓ Exakt! 1, 3, 6, 10... Dreieckszahlen n·(n+1)/2.',
+                    fb_nok: '✗ Unterschiede: +2, +3, +4... (dritte Zahl + 4 = 10).',
+                    denkfehler: 'Schau auf die Differenzen zwischen den Zahlen.',
+                    xp: 10
+                },
+                {
+                    id: 's8q5',
+                    topic: 'Ähnliche Dreiecke',
+                    type: 'mc',
+                    text: 'Zwei ähnliche Dreiecke: Seiten 3, 4, 5 und Seiten 6, 8, 10. Wie heißt der Skalierungsfaktor?',
+                    opts: ['2', '1/2', '3', '1/3'],
+                    answer: 0,
+                    fb_ok: '✓ Perfekt! 6/3 = 8/4 = 10/5 = 2 (Faktor 2).',
+                    fb_nok: '✗ Ähnliche Figuren: Alle Seitenlängen mit dem gleichen Faktor multipliziert.',
+                    denkfehler: 'Der Faktor ist der Quotient entsprechender Seitenlängen.',
+                    xp: 10
+                }
+            ]
+        }
+    ];
+
+    // ===== STATE =====
+    let currentStation = null;
+    let currentQuestion = null;
+    let studentName = '';
+    let startTime = null;
+    let stationStartTime = null;
+    let results = {};
+
+    // ===== INIT =====
+    document.addEventListener('DOMContentLoaded', () => {
+        loadStudent();
+        const params = new URLSearchParams(window.location.search);
+        const station = params.get('station');
+
+        if (station && !isNaN(station) && station >= 1 && station <= 8) {
+            goToStation(parseInt(station));
+        } else {
+            showLanding();
+        }
+    });
+
+    function loadStudent() {
+        studentName = localStorage.getItem('zp10_student_name') || '';
+        results = JSON.parse(localStorage.getItem('zp10_results') || '{}');
+        document.getElementById('studentNameInput').value = studentName;
+    }
+
+    function saveStudent() {
+        studentName = document.getElementById('studentNameInput').value.trim();
+        if (!studentName) studentName = 'Schüler';
+        localStorage.setItem('zp10_student_name', studentName);
+    }
+
+    // ===== LANDING PAGE =====
+    function showLanding() {
+        document.getElementById('landingPage').style.display = 'block';
+        document.getElementById('stationPage').style.display = 'none';
+        document.getElementById('resultsPage').style.display = 'none';
+
+        const grid = document.getElementById('stationsGrid');
+        grid.innerHTML = '';
+
+        stationData.forEach(station => {
+            const result = results[`station_${station.id}`];
+            const statusClass = !result ? 'not-started' :
+                              result.completed ? 'completed' : 'in-progress';
+            const statusText = !result ? 'nicht gestartet' :
+                              result.completed ? `abgeschlossen (${result.score}%)` : 'in Bearbeitung';
+
+            const card = document.createElement('a');
+            card.href = `?station=${station.id}`;
+            card.className = 'station-card';
+            card.innerHTML = `
+                <div>
+                    <div class="station-number">S${station.id}</div>
+                    <div class="station-title">${station.title}</div>
+                </div>
+                <div class="station-status status-${statusClass}">${statusText}</div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function goToStation(stationNum) {
+        if (stationNum === 0) {
+            saveStudent();
+            showLanding();
+            window.history.pushState({}, '', '?');
+            return;
+        }
+
+        saveStudent();
+        currentStation = stationData[stationNum - 1];
+        if (!currentStation) return;
+
+        stationStartTime = Date.now();
+        startTimer();
+
+        document.getElementById('landingPage').style.display = 'none';
+        document.getElementById('resultsPage').style.display = 'none';
+        document.getElementById('stationPage').style.display = 'block';
+
+        document.getElementById('stationNum').textContent = currentStation.id;
+        document.getElementById('stationTitle').textContent = currentStation.title;
+        document.getElementById('studentNameDisplay').textContent = `👤 ${studentName}`;
+
+        renderQuestions();
+        window.history.pushState({}, '', `?station=${currentStation.id}`);
+    }
+
+    function renderQuestions() {
+        const container = document.getElementById('questionsContainer');
+        container.innerHTML = '';
+
+        currentStation.questions.forEach((q, idx) => {
+            const card = document.createElement('div');
+            card.className = 'question-card';
+            card.id = `q-${q.id}`;
+
+            let content = `
+                <div class="question-number">Frage ${idx + 1} / 5 • ${q.topic}</div>
+                <div class="question-text">${q.text}</div>
+            `;
+
+            if (q.type === 'mc') {
+                content += '<div class="options">';
+                q.opts.forEach((opt, optIdx) => {
+                    content += `<button class="option" onclick="answerMC('${q.id}', ${optIdx})">${opt}</button>`;
+                });
+                content += '</div>';
+            } else if (q.type === 'input') {
+                content += `
+                    <div class="input-answer">
+                        <input type="text" id="inp-${q.id}" placeholder="Deine Antwort...">
+                        <button onclick="answerInput('${q.id}')">✓</button>
+                    </div>
+                `;
+            }
+
+            content += `<div class="feedback" id="fb-${q.id}"></div>`;
+
+            card.innerHTML = content;
+            container.appendChild(card);
+        });
+    }
+
+    function answerMC(qId, optIdx) {
+        const q = currentStation.questions.find(x => x.id === qId);
+        const card = document.getElementById(`q-${qId}`);
+        const buttons = card.querySelectorAll('.option');
+
+        buttons.forEach(b => b.disabled = true);
+
+        const isCorrect = optIdx === q.answer;
+        buttons[optIdx].classList.add(isCorrect ? 'correct' : 'incorrect');
+        if (isCorrect && q.answer !== undefined) {
+            buttons[q.answer].classList.add('correct');
+        }
+
+        showFeedback(qId, isCorrect);
+        saveAnswer(qId, optIdx, isCorrect);
+        updateProgress();
+    }
+
+    function answerInput(qId) {
+        const q = currentStation.questions.find(x => x.id === qId);
+        const input = document.getElementById(`inp-${qId}`);
+        const userAnswer = input.value.trim().toLowerCase();
+        const correctAnswer = q.answer.toString().toLowerCase();
+
+        const isCorrect = userAnswer === correctAnswer;
+        input.disabled = true;
+        showFeedback(qId, isCorrect);
+        saveAnswer(qId, userAnswer, isCorrect);
+        updateProgress();
+    }
+
+    function showFeedback(qId, isCorrect) {
+        const q = currentStation.questions.find(x => x.id === qId);
+        const card = document.getElementById(`q-${qId}`);
+        const fb = document.getElementById(`fb-${qId}`);
+
+        card.classList.add(isCorrect ? 'answered' : 'answered wrong');
+        fb.classList.add('show', isCorrect ? 'correct' : 'incorrect');
+        fb.innerHTML = `
+            <div class="feedback-title">${isCorrect ? '✓ Richtig!' : '✗ Nicht ganz...'}</div>
+            <div>${isCorrect ? q.fb_ok : q.fb_nok}</div>
+            ${!isCorrect ? `<div style="margin-top: 8px; font-size: 0.85rem; opacity: 0.8;">💡 ${q.denkfehler}</div>` : ''}
+        `;
+    }
+
+    function saveAnswer(qId, answer, isCorrect) {
+        const stationKey = `zp10_station_${currentStation.id}`;
+        let stationResult = JSON.parse(localStorage.getItem(stationKey) || '{}');
+        if (!stationResult.answers) stationResult.answers = {};
+        stationResult.answers[qId] = { answer, correct: isCorrect };
+        localStorage.setItem(stationKey, JSON.stringify(stationResult));
+    }
+
+    function updateProgress() {
+        const stationKey = `zp10_station_${currentStation.id}`;
+        let stationResult = JSON.parse(localStorage.getItem(stationKey) || '{}');
+        const answers = stationResult.answers || {};
+        const progress = (Object.keys(answers).length / currentStation.questions.length) * 100;
+        document.getElementById('progressFill').style.width = progress + '%';
+
+        if (progress === 100) {
+            completeStation();
+        }
+    }
+
+    function completeStation() {
+        const stationKey = `zp10_station_${currentStation.id}`;
+        let stationResult = JSON.parse(localStorage.getItem(stationKey) || '{}');
+        const answers = stationResult.answers || {};
+
+        const correct = Object.values(answers).filter(a => a.correct).length;
+        const score = Math.round((correct / currentStation.questions.length) * 100);
+
+        stationResult.completed = true;
+        stationResult.score = score;
+        stationResult.name = studentName;
+        stationResult.time = Math.round((Date.now() - stationStartTime) / 1000);
+        stationResult.timestamp = new Date().toISOString();
+
+        localStorage.setItem(stationKey, JSON.stringify(stationResult));
+
+        results[`station_${currentStation.id}`] = stationResult;
+        localStorage.setItem('zp10_results', JSON.stringify(results));
+
+        // ===== SYNC TO HUB DATA =====
+        syncToHub(stationResult, score);
+
+        playConfetti();
+        showCompletion(correct, score);
+    }
+
+    function syncToHub(stationResult, score) {
+        try {
+            const hubData = JSON.parse(localStorage.getItem('zp10_hub_data') || '{}');
+            if (!hubData.studentName && studentName) hubData.studentName = studentName;
+            if (!hubData.totalXP) hubData.totalXP = 0;
+            if (!hubData.stationResults) hubData.stationResults = {};
+
+            // Add XP from station
+            const xpEarned = stationResult.answers
+                ? Object.values(stationResult.answers).filter(a => a.correct).length * 10
+                : Math.round(score / 20) * 10;
+            hubData.totalXP += xpEarned;
+
+            // Save station result to hub
+            hubData.stationResults[`station_${currentStation.id}`] = {
+                title: currentStation.title,
+                score: score,
+                xp: xpEarned,
+                time: stationResult.time,
+                date: stationResult.timestamp,
+                answers: stationResult.answers
+            };
+
+            // Update rank based on total XP
+            const xp = hubData.totalXP;
+            if (xp >= 5000) hubData.rank = 'Mathe-Meister';
+            else if (xp >= 3000) hubData.rank = 'Profi';
+            else if (xp >= 1500) hubData.rank = 'Fortgeschritten';
+            else if (xp >= 500) hubData.rank = 'Aufsteiger';
+            else hubData.rank = 'Einsteiger';
+
+            localStorage.setItem('zp10_hub_data', JSON.stringify(hubData));
+        } catch (e) {
+            console.warn('Hub-Sync fehlgeschlagen:', e);
+        }
+    }
+
+    function showCompletion(correct, score) {
+        document.getElementById('questionsContainer').style.display = 'none';
+        document.getElementById('completionScreen').classList.add('show');
+        document.getElementById('completionTitle').textContent = `Station ${currentStation.id} geschafft! 🎉`;
+        document.getElementById('summaryCorrect').textContent = `${correct}/5`;
+        document.getElementById('summaryScore').textContent = `${score}%`;
+
+        const minutes = Math.floor(stationResult.time / 60);
+        const seconds = stationResult.time % 60;
+        document.getElementById('summaryTime').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    function startTimer() {
+        setInterval(() => {
+            if (stationStartTime) {
+                const elapsed = Math.floor((Date.now() - stationStartTime) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+                document.getElementById('timer').textContent =
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+        }, 1000);
+    }
+
+    function playConfetti() {
+        const canvas = document.getElementById('confetti');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const particles = [];
+        for (let i = 0; i < 100; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: -10,
+                vx: (Math.random() - 0.5) * 8,
+                vy: Math.random() * 4 + 3,
+                color: ['#5B6CF0', '#FF6B8A', '#10B981'][Math.floor(Math.random() * 3)]
+            });
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach((p, i) => {
+                p.y += p.vy;
+                p.vy += 0.1;
+                if (p.y > canvas.height) particles.splice(i, 1);
+                ctx.fillStyle = p.color;
+                ctx.fillRect(p.x, p.y, 6, 6);
+            });
+            if (particles.length > 0) requestAnimationFrame(animate);
+            else canvas.style.display = 'none';
+        }
+        animate();
+    }
+
+    function exportResults() {
+        let csv = 'Station,Punkte,Richtig,Zeit,Bearbeitet am\n';
+        for (let i = 1; i <= 8; i++) {
+            const r = results[`station_${i}`];
+            if (r) {
+                csv += `"Station ${i}","${r.score}%","${Object.values(r.answers || {}).filter(a => a.correct).length}/5","${r.time}s","${new Date(r.timestamp).toLocaleString()}"\n`;
+            }
+        }
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `ZP10_Diagnose_${studentName}.csv`;
+        a.click();
+    }
+</script>
+
+</body>
+</html>

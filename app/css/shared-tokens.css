@@ -1,0 +1,80 @@
+/* ZP10 Shared Design Tokens (P3)
+ * Einheitliches Token-System fuer alle ZP10-Apps
+ * Neue Features sollten diese Tokens referenzieren.
+ */
+:root {
+  /* Primary Palette */
+  --zp10-primary: #5B6CF0;
+  --zp10-primary-light: #EEF2FF;
+  --zp10-primary-dark: #4555d0;
+  --zp10-primary-hover: #4F46E5;
+
+  /* Semantic Colors */
+  --zp10-success: #10B981;
+  --zp10-success-light: #D1FAE5;
+  --zp10-warning: #F59E0B;
+  --zp10-warning-light: #FEF3C7;
+  --zp10-danger: #EF4444;
+  --zp10-danger-light: #FEE2E2;
+  --zp10-info: #60A5FA;
+
+  /* Accent */
+  --zp10-accent: #FF6B8A;
+  --zp10-accent-light: #FFE5EC;
+
+  /* Neutrals (Light Mode) */
+  --zp10-text: #1E293B;
+  --zp10-text-secondary: #64748B;
+  --zp10-text-tertiary: #6B7A8D;
+  --zp10-border: #E2E8F0;
+  --zp10-surface: #FFFFFF;
+  --zp10-bg: #F0F4FF;
+
+  /* Typography */
+  --zp10-font-heading: 'Nunito Sans', sans-serif;
+  --zp10-font-body: 'Inter', system-ui, sans-serif;
+  --zp10-font-mono: 'JetBrains Mono', monospace;
+
+  /* Spacing Scale */
+  --zp10-space-xs: 4px;
+  --zp10-space-sm: 8px;
+  --zp10-space-md: 16px;
+  --zp10-space-lg: 24px;
+  --zp10-space-xl: 32px;
+
+  /* Border Radius */
+  --zp10-radius-sm: 8px;
+  --zp10-radius-md: 12px;
+  --zp10-radius-lg: 16px;
+  --zp10-radius-xl: 20px;
+
+  /* Shadows */
+  --zp10-shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --zp10-shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --zp10-shadow-lg: 0 12px 24px rgba(0,0,0,0.12);
+
+  /* Transitions */
+  --zp10-transition: 0.3s ease-out;
+  --zp10-transition-fast: 0.15s ease-out;
+}
+
+/* Dark Mode Override */
+[data-theme="dark"] {
+  --zp10-text: #F9FAFB;
+  --zp10-text-secondary: #9CA3AF;
+  --zp10-text-tertiary: #94A3B8;
+  --zp10-border: #374151;
+  --zp10-surface: #1F2937;
+  --zp10-bg: #111827;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --zp10-text: #F9FAFB;
+    --zp10-text-secondary: #9CA3AF;
+    --zp10-text-tertiary: #94A3B8;
+    --zp10-border: #374151;
+    --zp10-surface: #1F2937;
+    --zp10-bg: #111827;
+  }
+}

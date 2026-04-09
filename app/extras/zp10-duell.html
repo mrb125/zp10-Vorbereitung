@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<!--
+╔═══════════════════════════════════════════════════════════════════╗
+║  ZP10 Duell-Modus v1.0                                           ║
+║  Peer-Challenge: Two students compete on same question set        ║
+║  • NO backend needed — all client-side                            ║
+║  • Player 1: select topic + difficulty → 6-char challenge code   ║
+║  • Code encodes: topic, difficulty, seed (base36)                ║
+║  • Player 2: enter code → same questions in same order           ║
+║  • 10 questions per duel, 5-minute timer                          ║
+║  • localStorage for results, manual comparison                    ║
+║  • "Gegen dich selbst" mode to beat own score                     ║
+╚═══════════════════════════════════════════════════════════════════╝
+-->
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Duell-Modus</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito+Sans:wght@700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="zp10-duell.css">
+</head>
+<body>
+<header>
+  <div class="hdr-inner">
+    <div class="hdr-title">
+      <h1>⚔️ Duell-Modus</h1>
+      <p>Wettkampf gegen einen Freund</p>
+    </div>
+    <div class="hdr-timer" id="hdr-timer"></div>
+  </div>
+</header>
+
+<div id="app">
+  <!-- Start Screen -->
+  <div id="screen-start" class="screen active">
+    <div class="card start-hero">
+      <div class="hero-icon">⚔️</div>
+      <h2>Mathematik-Duell</h2>
+      <p>Fordere einen Freund heraus oder tritt gegen deine alte Bestleistung an!</p>
+    </div>
+
+    <!-- Tages-Duell Highlight -->
+    <div class="card" id="dailyDuelCard" style="background: linear-gradient(135deg, #ff6b35, #f7c948); color: white; padding: 20px; margin-bottom: 20px; cursor: pointer;" onclick="startDailyDuel()">
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <div style="font-size: 2.2rem;">🏆</div>
+        <div style="flex:1;">
+          <div style="font-weight: 800; font-size: 1.15rem; font-family: 'Nunito Sans', sans-serif;">Tages-Duell</div>
+          <div style="font-size: 0.9rem; opacity: 0.9;">5 Fragen — gleiches Set für die ganze Klasse</div>
+          <div style="font-size: 0.8rem; opacity: 0.75; margin-top: 4px;" id="dailyDuelCode"></div>
+        </div>
+        <div style="font-size: 1.5rem;">→</div>
+      </div>
+    </div>
+
+    <!-- Klassen-Rangliste -->
+    <div class="card" id="rankingCard" style="margin-bottom: 20px; display: none;">
+      <h3 style="font-weight: 700; margin-bottom: 12px;">🏅 Klassen-Rangliste (heute)</h3>
+      <div id="rankingList" style="font-size: 0.9rem;"></div>
+      <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);">
+        <label style="font-size: 0.85rem; font-weight: 600;">Name eintragen:</label>
+        <div style="display: flex; gap: 8px; margin-top: 6px;">
+          <input type="text" id="rankingName" placeholder="Dein Name" style="flex:1; padding: 8px 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 0.9rem;">
+          <button class="btn btn-primary" onclick="saveToRanking()" style="padding: 8px 16px;">Speichern</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="mode-select">
+      <div class="mode-card" onclick="selectMode('create')">
+        <div class="mode-icon">➕</div>
+        <div class="mode-name">Eigenes Duell</div>
+        <p style="font-size:0.85rem;color:var(--text-secondary);margin-top:8px;">10 Fragen, eigenes Thema</p>
+      </div>
+      <div class="mode-card" onclick="selectMode('join')">
+        <div class="mode-icon">📲</div>
+        <div class="mode-name">Code eingeben</div>
+        <p style="font-size:0.85rem;color:var(--text-secondary);margin-top:8px;">Tritt einem Duell bei</p>
+      </div>
+      <div class="mode-card" onclick="selectMode('solo')">
+        <div class="mode-icon">🏃</div>
+        <div class="mode-name">Solo-Versuch</div>
+        <p style="font-size:0.85rem;color:var(--text-secondary);margin-top:8px;">Gegen deine Best-Zeit</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Duell Screen -->
+  <div id="screen-create" class="screen">
+    <div class="card">
+      <h2 style="font-weight:800;font-family:'Nunito Sans',sans-serif;margin-bottom:20px;">Duell konfigurieren</h2>
+
+      <div style="margin-bottom:20px;">
+        <label style="display:block;font-weight:600;margin-bottom:8px;">Thema:</label>
+        <select id="topic-select" style="width:100%;padding:10px;border:2px solid var(--border);border-radius:10px;font-size:0.95rem;">
+          <option value="random">🎲 Zufällig</option>
+          <option value="terme">Terme & Gleichungen</option>
+          <option value="funktionen">Funktionen</option>
+          <option value="geometrie">Geometrie</option>
+          <option value="stochastik">Stochastik</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom:20px;">
+        <label style="display:block;font-weight:600;margin-bottom:8px;">Schwierigkeit:</label>
+        <div style="display:flex;gap:10px;">
+          <button class="opt-btn difficulty-btn" style="flex:1;padding:12px;" onclick="selectDifficulty('easy')">🟢 Leicht</button>
+          <button class="opt-btn difficulty-btn" style="flex:1;padding:12px;" onclick="selectDifficulty('medium')">🟡 Mittel</button>
+          <button class="opt-btn difficulty-btn" style="flex:1;padding:12px;" onclick="selectDifficulty('hard')">🔴 Schwer</button>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-large" onclick="generateDuelCode()" style="width:100%;margin-bottom:20px;">Duell starten!</button>
+      <button class="btn btn-outline" onclick="selectMode('start')" style="width:100%;">Zurück</button>
+    </div>
+  </div>
+
+  <!-- Code Display Screen -->
+  <div id="screen-code" class="screen">
+    <div class="card">
+      <h2 style="font-weight:800;font-family:'Nunito Sans',sans-serif;margin-bottom:12px;text-align:center;">Dein Duell-Code</h2>
+      <p style="color:var(--text-secondary);text-align:center;margin-bottom:20px;">Teile diesen Code mit deinem Gegner:</p>
+
+      <div class="code-display">
+        <div class="code-text" id="code-display-value"></div>
+        <button class="code-copy-btn" onclick="copyCode()">📋 Kopieren</button>
+      </div>
+
+      <p style="text-align:center;margin:20px 0;color:var(--text-secondary);">oder teile den Link:</p>
+      <input type="text" id="code-link" readonly style="text-align:center;margin-bottom:20px;">
+      <button class="code-copy-btn" style="width:100%;margin-bottom:20px;" onclick="copyLink()">🔗 Link kopieren</button>
+
+      <button class="btn btn-primary btn-large" onclick="startDuelWithCode()" style="width:100%;margin-bottom:20px;">Los geht's!</button>
+      <button class="btn btn-outline" onclick="selectMode('start')" style="width:100%;">Abbrechen</button>
+    </div>
+  </div>
+
+  <!-- Join Duell Screen -->
+  <div id="screen-join" class="screen">
+    <div class="card">
+      <h2 style="font-weight:800;font-family:'Nunito Sans',sans-serif;margin-bottom:20px;">Code eingeben</h2>
+      <input type="text" id="join-code-input" placeholder="Gib den 6-stelligen Code ein..." maxlength="6" style="text-transform:uppercase;letter-spacing:2px;font-size:1.2rem;text-align:center;">
+      <button class="btn btn-primary btn-large" onclick="joinDuel()" style="width:100%;margin-top:20px;margin-bottom:20px;">Beitreten</button>
+      <button class="btn btn-outline" onclick="selectMode('start')" style="width:100%;">Zurück</button>
+    </div>
+  </div>
+
+  <!-- Question Screen -->
+  <div id="screen-question" class="screen">
+    <div class="prog-wrap">
+      <div class="prog-meta">
+        <span>Frage <span id="q-counter">0/10</span></span>
+        <span id="q-timer">5:00</span>
+      </div>
+      <div class="prog-track">
+        <div class="prog-fill" id="prog-fill"></div>
+      </div>
+    </div>
+
+    <div class="q-container">
+      <div class="q-text" id="q-text"></div>
+      <div id="q-options" class="options"></div>
+      <div id="q-input-group" style="display:none;">
+        <input type="number" id="user-input" placeholder="Antwort eingeben...">
+        <button class="btn btn-primary" onclick="submitAnswerInput()" style="width:100%;">✓ Antwort</button>
+      </div>
+      <div id="q-feedback" style="margin-top:12px;"></div>
+    </div>
+
+    <div style="text-align:center;margin-top:20px;display:none;" id="next-btn-container">
+      <button class="btn btn-primary" onclick="nextQuestion()">Nächste Frage →</button>
+    </div>
+  </div>
+
+  <!-- Result Screen -->
+  <div id="screen-result" class="screen">
+    <div class="result-top">
+      <div class="score-circle" id="result-circle"></div>
+      <h2 class="result-heading" id="result-heading"></h2>
+      <p class="result-sub" id="result-sub"></p>
+    </div>
+
+    <div class="card">
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-num" id="result-correct"></div>
+          <div class="stat-lbl">Richtig</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="result-incorrect"></div>
+          <div class="stat-lbl">Falsch</div>
+        </div>
+      </div>
+      <p style="text-align:center;color:var(--text-secondary);margin:20px 0;font-size:0.95rem;">
+        Dein Ergebnis: <strong id="result-text"></strong>
+      </p>
+      <p style="text-align:center;color:var(--text-secondary);font-size:0.85rem;padding:16px;background:var(--surface-alt);border-radius:10px;margin:20px 0;">
+        💡 <strong>Zeige dein Ergebnis deinem Gegner!</strong> Vergleicht eure Scores.
+      </p>
+
+      <!-- Ranking save for daily duel -->
+      <div id="result-ranking-save" style="display:none;margin-top:16px;padding:16px;background:linear-gradient(135deg,#ff6b35,#f7c948);border-radius:12px;color:white;">
+        <p style="font-weight:700;margin-bottom:8px;">🏆 In die Klassen-Rangliste eintragen:</p>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="resultRankingName" placeholder="Dein Name" style="flex:1;padding:8px 12px;border:none;border-radius:8px;font-size:0.9rem;color:#333;">
+          <button class="btn" onclick="saveToRankingFromResult()" style="background:white;color:#ff6b35;font-weight:700;padding:8px 16px;border:none;border-radius:8px;">Speichern</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:32px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="location.reload()">🔄 Neues Duell</button>
+      <button class="btn btn-outline" onclick="selectMode('start')">Zurück zum Start</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==================== SEEDED RNG ====================
+class SeededRandom {
+  constructor(seed) {
+    this.seed = seed % 2147483647;
+    if(this.seed <= 0) this.seed += 2147483646;
+  }
+  next() {
+    this.seed = (this.seed * 16807) % 2147483647;
+    return (this.seed - 1) / 2147483646;
+  }
+}
+
+// ==================== QUESTIONS ====================
+const DUEL_QUESTIONS = {
+  easy: [
+    {id:'d1',type:'mc',text:'2 + 3 = ?',opts:['4','5','6','7'],answer:1,fb_ok:'Richtig!',fb_nok:'Falsch.',xp:5},
+    {id:'d2',type:'input',text:'Berechne: 5 × 2',answer:10,fb_ok:'Richtig!',fb_nok:'Falsch.',xp:5},
+    {id:'d3',type:'mc',text:'10 ÷ 2 = ?',opts:['3','4','5','6'],answer:2,fb_ok:'Richtig!',fb_nok:'Falsch.',xp:5},
+    {id:'d4',type:'input',text:'x + 3 = 8, x = ?',answer:5,fb_ok:'Richtig!',fb_nok:'Falsch.',xp:5},
+    {id:'d5',type:'mc',text:'Größer: 0.5 oder 1/3?',opts:['0.5','1/3','gleich','?'],answer:0,fb_ok:'Richtig!',fb_nok:'Falsch.',xp:5},
+    {id:'d6',type:'input',text:'20% von 100?',answer:20,fb_ok:'Richtig!',fb_nok:'Falsch.',xp:5},
+    {id:'d7',type:'mc',text:'Quadratwurzel von 16?',opts:['2','3','4','5'],answer:2,fb_ok:'Richtig!',fb_nok:'Falsch.',xp:5},
+    {id:'d8',type:'input',text:'3² = ?',answer:9,fb_ok:'Richtig!',fb_nok:'Falsch.',xp:5},
+    {id:'d9',type:'mc',text:'Umfang Quadrat (s=5)?',opts:['10','15','20','25'],answer:2,fb_ok:'Richtig!',fb_nok:'Falsch.',xp:5},
+    {id:'d10',type:'input',text:'Löse: 2x = 10, x = ?',answer:5,fb_ok:'Richtig!',fb_nok:'Falsch.',xp:5},
+  ],
+  medium: [
+    {id:'dm1',type:'mc',text:'(x+2)(x-2) = ?',opts:['x²-4','x²+4','x²-2','2x-4'],answer:0,fb_ok:'Richtig! Differenz der Quadrate.',fb_nok:'Falsch.',xp:10},
+    {id:'dm2',type:'input',text:'Löse x²-4=0. Eine Lösung?',answer:2,fb_ok:'Richtig! x=±2',fb_nok:'Falsch.',xp:10},
+    {id:'dm3',type:'mc',text:'f(x)=2x+3, f(1)=?',opts:['2','3','5','7'],answer:2,fb_ok:'Richtig!',fb_nok:'Falsch.',xp:10},
+    {id:'dm4',type:'input',text:'Steigung von y=3x-5?',answer:3,fb_ok:'Richtig!',fb_nok:'Falsch.',xp:10},
+    {id:'dm5',type:'mc',text:'Löse: x/2 + 3 = 8',opts:['5','10','15','20'],answer:1,fb_ok:'Richtig!',fb_nok:'Falsch.',xp:10},
+    {id:'dm6',type:'input',text:'3x + 2 = 14, x = ?',answer:4,fb_ok:'Richtig!',fb_nok:'Falsch.',xp:10},
+    {id:'dm7',type:'mc',text:'Fläche Dreieck (g=6, h=4)?',opts:['10','12','24','48'],answer:1,fb_ok:'Richtig! A=(6×4)/2=12',fb_nok:'Falsch.',xp:10},
+    {id:'dm8',type:'input',text:'2(x+3)=16, x=?',answer:5,fb_ok:'Richtig!',fb_nok:'Falsch.',xp:10},
+    {id:'dm9',type:'mc',text:'Welcher Punkt auf y=2x+1?',opts:['(0,1)','(1,1)','(2,4)','(1,3)'],answer:3,fb_ok:'Richtig! f(1)=2·1+1=3',fb_nok:'Falsch.',xp:10},
+    {id:'dm10',type:'input',text:'(2³) / 2¹ = ?',answer:4,fb_ok:'Richtig! 8/2=4',fb_nok:'Falsch.',xp:10},
+  ],
+  hard: [
+    {id:'dh1',type:'mc',text:'Löse: x²-5x+6=0. Lösungen?',opts:['1,2','2,3','3,4','1,3'],answer:1,fb_ok:'Richtig! (x-2)(x-3)=0',fb_nok:'Falsch.',xp:15},
+    {id:'dh2',type:'input',text:'f(x)=x²+2x+1, f(2)=?',answer:9,fb_ok:'Richtig!',fb_nok:'Falsch.',xp:15},
+    {id:'dh3',type:'mc',text:'LGS: 2x+y=5, x-y=1. x=?',opts:['1','2','3','4'],answer:1,fb_ok:'Richtig!',fb_nok:'Falsch.',xp:15},
+    {id:'dh4',type:'input',text:'Scheitelpunkt von f(x)=(x-3)²+2. y-Wert?',answer:2,fb_ok:'Richtig! Scheitel bei (3,2)',fb_nok:'Falsch.',xp:15},
+    {id:'dh5',type:'mc',text:'Ableitung von f(x)=3x²?',opts:['3x','6x','3x²','6x²'],answer:1,fb_ok:'Richtig! f\'(x)=6x',fb_nok:'Falsch.',xp:15},
+    {id:'dh6',type:'input',text:'Löse: (x-2)²=25. Positive Lösung?',answer:7,fb_ok:'Richtig! x-2=5 → x=7',fb_nok:'Falsch.',xp:15},
+    {id:'dh7',type:'mc',text:'Wahrscheinlichkeit zwei Sechser?',opts:['1/6','1/12','1/36','2/36'],answer:2,fb_ok:'Richtig! (1/6)·(1/6)=1/36',fb_nok:'Falsch.',xp:15},
+    {id:'dh8',type:'input',text:'Volumen Würfel (a=2)?',answer:8,fb_ok:'Richtig! V=2³=8',fb_nok:'Falsch.',xp:15},
+    {id:'dh9',type:'mc',text:'Satz des Pythagoras: a=3, b=4, c=?',opts:['5','6','7','8'],answer:0,fb_ok:'Richtig! 3²+4²=9+16=25=5²',fb_nok:'Falsch.',xp:15},
+    {id:'dh10',type:'input',text:'ln(e)=?',answer:1,fb_ok:'Richtig!',fb_nok:'Falsch.',xp:15},
+  ],
+};
+
+// ==================== STATE ====================
+let currentMode = null;
+let currentTopic = 'random';
+let currentDifficulty = 'medium';
+let currentCode = null;
+let sessionQuestions = [];
+let currentQIndex = 0;
+let responses = {};
+let timeLeft = 300;
+let timerInterval = null;
+let totalCorrect = 0;
+let isDailyMode = false;
+
+// ==================== TAGES-DUELL ====================
+function getDailyDateString() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function getDailySeed() {
+  const ds = getDailyDateString();
+  let hash = 0;
+  for(let i = 0; i < ds.length; i++) {
+    hash = ((hash << 5) - hash) + ds.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+}
+
+function getDailyCode() {
+  const ds = getDailyDateString().replace(/-/g,'');
+  return 'T' + ds.slice(2); // e.g. T260331
+}
+
+function startDailyDuel() {
+  isDailyMode = true;
+  currentMode = 'daily';
+  currentDifficulty = 'medium';
+  currentCode = getDailyCode();
+
+  // Use daily seed for reproducible question set across all students
+  const seed = getDailySeed();
+  const rng = new SeededRandom(seed);
+
+  // Pick 5 questions from medium pool
+  const pool = DUEL_QUESTIONS.medium.map(q => ({...q}));
+  pool.sort(() => rng.next() - 0.5);
+  sessionQuestions = pool.slice(0, 5);
+
+  currentQIndex = 0;
+  responses = {};
+  timeLeft = 180; // 3 min for 5 questions
+  totalCorrect = 0;
+
+  startTimer();
+  showScreen('screen-question');
+  renderQuestion();
+}
+
+function saveToRanking() {
+  const nameInput = document.getElementById('rankingName');
+  const name = nameInput.value.trim();
+  if(!name) { alert('Bitte einen Namen eingeben.'); return; }
+
+  const today = getDailyDateString();
+  const key = 'zp10_daily_ranking';
+  let allRankings = {};
+  try { allRankings = JSON.parse(localStorage.getItem(key) || '{}'); } catch(e) {}
+
+  if(!allRankings[today]) allRankings[today] = [];
+
+  // Check if name already has entry today — update if better
+  const existing = allRankings[today].findIndex(r => r.name.toLowerCase() === name.toLowerCase());
+  const entry = { name, correct: totalCorrect, total: isDailyMode ? 5 : 10, pct: Math.round((totalCorrect / (isDailyMode ? 5 : 10)) * 100), time: new Date().toLocaleTimeString() };
+
+  if(existing >= 0) {
+    if(entry.pct > allRankings[today][existing].pct) {
+      allRankings[today][existing] = entry;
+    }
+  } else {
+    allRankings[today].push(entry);
+  }
+
+  // Clean up old entries (keep last 7 days)
+  const keys = Object.keys(allRankings).sort();
+  while(keys.length > 7) { delete allRankings[keys.shift()]; }
+
+  localStorage.setItem(key, JSON.stringify(allRankings));
+  nameInput.value = '';
+  renderRanking();
+  alert('Ergebnis gespeichert! 🏆');
+}
+
+function renderRanking() {
+  const today = getDailyDateString();
+  const key = 'zp10_daily_ranking';
+  let allRankings = {};
+  try { allRankings = JSON.parse(localStorage.getItem(key) || '{}'); } catch(e) {}
+
+  const todayRanking = allRankings[today] || [];
+  const card = document.getElementById('rankingCard');
+  const list = document.getElementById('rankingList');
+
+  if(todayRanking.length === 0) {
+    card.style.display = 'none';
+    return;
+  }
+
+  card.style.display = '';
+  todayRanking.sort((a,b) => b.pct - a.pct || a.time.localeCompare(b.time));
+
+  const medals = ['🥇','🥈','🥉'];
+  list.innerHTML = todayRanking.map((r, i) => {
+    const medal = medals[i] || `${i+1}.`;
+    return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;${i < todayRanking.length - 1 ? 'border-bottom:1px solid var(--border);' : ''}">
+      <span style="font-size:1.2rem;width:32px;text-align:center;">${medal}</span>
+      <span style="flex:1;font-weight:600;">${r.name}</span>
+      <span style="font-weight:700;color:var(--primary);">${r.correct}/${r.total}</span>
+      <span style="font-size:0.8rem;color:var(--text-secondary);">${r.pct}%</span>
+    </div>`;
+  }).join('');
+}
+
+function saveToRankingFromResult() {
+  const nameInput = document.getElementById('resultRankingName');
+  const name = nameInput.value.trim();
+  if(!name) { alert('Bitte einen Namen eingeben.'); return; }
+
+  // Temporarily set rankingName for saveToRanking compatibility
+  document.getElementById('rankingName').value = name;
+  saveToRanking();
+  nameInput.value = '';
+  document.getElementById('result-ranking-save').style.display = 'none';
+}
+
+function initDailyDuelCard() {
+  document.getElementById('dailyDuelCode').textContent = 'Tages-Code: ' + getDailyCode();
+  renderRanking();
+}
+
+// ==================== ENCODE/DECODE ====================
+function encodeCode(topic, difficulty) {
+  const topicMap = {random:0,terme:1,funktionen:2,geometrie:3,stochastik:4};
+  const diffMap = {easy:0,medium:1,hard:2};
+  const seed = Math.floor(Math.random() * 100000);
+
+  const t = topicMap[topic] || 0;
+  const d = diffMap[difficulty] || 1;
+
+  const combined = (t * 9) + (d * 3) + (seed % 3);
+  return combined.toString(36).toUpperCase().padStart(6, '0').substring(0, 6);
+}
+
+function decodeCode(code) {
+  const num = parseInt(code, 36);
+  const t = Math.floor(num / 9) % 5;
+  const d = Math.floor((num / 3) % 3);
+
+  const topicList = ['random','terme','funktionen','geometrie','stochastik'];
+  const diffList = ['easy','medium','hard'];
+
+  return { topic: topicList[t] || 'random', difficulty: diffList[d] || 'medium' };
+}
+
+// ==================== UI ====================
+function selectMode(mode) {
+  if(mode === 'create') {
+    showScreen('screen-create');
+  } else if(mode === 'join') {
+    showScreen('screen-join');
+  } else if(mode === 'solo') {
+    currentMode = 'solo';
+    currentTopic = 'random';
+    currentDifficulty = 'medium';
+    startDuelWithCode();
+  } else if(mode === 'start') {
+    showScreen('screen-start');
+  }
+}
+
+function selectDifficulty(diff) {
+  currentDifficulty = diff;
+  document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('selected'));
+  event.target.classList.add('selected');
+}
+
+function generateDuelCode() {
+  const topic = document.getElementById('topic-select').value;
+  currentTopic = topic;
+  currentCode = encodeCode(topic, currentDifficulty);
+
+  document.getElementById('code-display-value').textContent = currentCode;
+  document.getElementById('code-link').value = `${window.location.origin}${window.location.pathname}?code=${currentCode}`;
+
+  showScreen('screen-code');
+}
+
+function copyCode() {
+  navigator.clipboard.writeText(currentCode);
+  alert('Code kopiert!');
+}
+
+function copyLink() {
+  const link = document.getElementById('code-link').value;
+  navigator.clipboard.writeText(link);
+  alert('Link kopiert!');
+}
+
+function joinDuel() {
+  const code = document.getElementById('join-code-input').value.toUpperCase();
+  if(code.length !== 6) {
+    alert('Code muss 6 Zeichen haben.');
+    return;
+  }
+
+  const decoded = decodeCode(code);
+  currentCode = code;
+  currentTopic = decoded.topic;
+  currentDifficulty = decoded.difficulty;
+
+  startDuelWithCode();
+}
+
+function startDuelWithCode() {
+  isDailyMode = false;
+  const diffQuestions = DUEL_QUESTIONS[currentDifficulty] || DUEL_QUESTIONS.medium;
+
+  // Use seeded RNG for reproducible questions
+  const seed = parseInt(currentCode || 'ABC123', 36);
+  const rng = new SeededRandom(seed);
+
+  sessionQuestions = diffQuestions.map(q => ({...q}));
+  sessionQuestions.sort(() => rng.next() - 0.5);
+
+  currentQIndex = 0;
+  responses = {};
+  timeLeft = 300;
+  totalCorrect = 0;
+
+  startTimer();
+  showScreen('screen-question');
+  renderQuestion();
+}
+
+function startTimer() {
+  updateTimerDisplay();
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateTimerDisplay();
+    if(timeLeft <= 0) {
+      clearInterval(timerInterval);
+      submitDuel();
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(timeLeft / 60);
+  const s = timeLeft % 60;
+  document.getElementById('q-timer').textContent = `${m}:${s.toString().padStart(2, '0')}`;
+  document.getElementById('hdr-timer').textContent = `⏱️ ${m}:${s.toString().padStart(2, '0')}`;
+
+  if(timeLeft <= 60) {
+    document.getElementById('hdr-timer').classList.add('show');
+    if(timeLeft <= 10) document.getElementById('hdr-timer').style.color = 'var(--danger)';
+  }
+}
+
+function renderQuestion() {
+  const q = sessionQuestions[currentQIndex];
+  const total = sessionQuestions.length;
+  const percent = Math.round((currentQIndex / total) * 100);
+
+  document.getElementById('q-counter').textContent = `${currentQIndex + 1}/${total}`;
+  document.getElementById('prog-fill').style.width = percent + '%';
+  document.getElementById('q-text').textContent = q.text;
+  document.getElementById('q-feedback').innerHTML = '';
+  document.getElementById('next-btn-container').style.display = 'none';
+
+  if(q.type === 'mc') {
+    const optionsHtml = q.opts.map((opt, i) => `
+      <button class="opt-btn" onclick="selectMC(${i})">${opt}</button>
+    `).join('');
+    document.getElementById('q-options').innerHTML = optionsHtml;
+    document.getElementById('q-input-group').style.display = 'none';
+  } else if(q.type === 'input') {
+    document.getElementById('q-options').innerHTML = '';
+    document.getElementById('q-input-group').style.display = 'block';
+    document.getElementById('user-input').value = '';
+    document.getElementById('user-input').focus();
+  }
+}
+
+function selectMC(idx) {
+  const q = sessionQuestions[currentQIndex];
+  responses[q.id] = idx;
+
+  if(idx === q.answer) totalCorrect++;
+
+  document.querySelectorAll('.opt-btn').forEach((btn, i) => {
+    btn.disabled = true;
+    if(i === q.answer) btn.classList.add('correct');
+    if(i === idx && i !== q.answer) btn.classList.add('incorrect');
+  });
+
+  document.getElementById('next-btn-container').style.display = 'block';
+}
+
+function submitAnswerInput() {
+  const q = sessionQuestions[currentQIndex];
+  const input = parseFloat(document.getElementById('user-input').value);
+
+  if(isNaN(input)) {
+    alert('Bitte geben Sie eine Zahl ein.');
+    return;
+  }
+
+  responses[q.id] = input;
+  if(Math.abs(input - q.answer) <= 0.01) totalCorrect++;
+
+  document.getElementById('q-input-group').style.display = 'none';
+  document.getElementById('next-btn-container').style.display = 'block';
+}
+
+function nextQuestion() {
+  currentQIndex++;
+  if(currentQIndex >= sessionQuestions.length) {
+    submitDuel();
+  } else {
+    renderQuestion();
+  }
+}
+
+function submitDuel() {
+  clearInterval(timerInterval);
+
+  const correct = totalCorrect;
+  const total = isDailyMode ? 5 : 10;
+  const pct = Math.round((correct / total) * 100);
+
+  document.getElementById('result-correct').textContent = correct;
+  document.getElementById('result-incorrect').textContent = total - correct;
+  document.getElementById('result-text').textContent = `${correct}/${total} (${pct}%)`;
+
+  const circleClass = pct >= 70 ? 'win' : 'lose';
+  document.getElementById('result-circle').className = 'score-circle ' + circleClass;
+  document.getElementById('result-circle').textContent = pct + '%';
+
+  const heading = isDailyMode ? (pct >= 80 ? '🏆 Super Ergebnis!' : pct >= 60 ? '👏 Gut gemacht!' : '💪 Weiter üben!') : (pct >= 70 ? '🎉 Gewonnen!' : '💪 Weiter geht\'s!');
+  const sub = isDailyMode ? 'Trage deinen Namen ein, um auf die Klassen-Rangliste zu kommen!' : (pct >= 70 ? 'Tolle Leistung!' : 'Nächstes Mal schaffst du mehr!');
+  document.getElementById('result-heading').textContent = heading;
+  document.getElementById('result-sub').textContent = sub;
+
+  // Save result to localStorage
+  const resultKey = `duel_${currentCode}_${Date.now()}`;
+  localStorage.setItem(resultKey, JSON.stringify({code:currentCode,correct,total,pct,time:new Date().toLocaleTimeString(),daily:isDailyMode}));
+
+  // Show ranking save option for daily mode
+  const rankingSave = document.getElementById('result-ranking-save');
+  if(rankingSave) rankingSave.style.display = isDailyMode ? '' : 'none';
+
+  showScreen('screen-result');
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ==================== INIT ====================
+initDailyDuelCard();
+const urlParams = new URLSearchParams(window.location.search);
+if(urlParams.has('code')) {
+  const code = urlParams.get('code').toUpperCase();
+  document.getElementById('join-code-input').value = code;
+  selectMode('join');
+}
+</script>
+</body>
+</html>

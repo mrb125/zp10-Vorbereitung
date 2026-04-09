@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZP10 Lücken-Trainer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="zp10-lueckentrainer.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Theme Toggle -->
+        <div class="theme-toggle">
+            <button id="themeBtn" class="theme-btn" aria-label="Design wechseln">
+                <span class="theme-icon">🌙</span>
+            </button>
+        </div>
+
+        <!-- Start Screen -->
+        <div id="startScreen" class="screen screen-active">
+            <div class="container">
+                <header class="start-header">
+                    <h1 class="title">🎯 Lücken-Trainer</h1>
+                    <p class="subtitle">5 Minuten täglich — gezielt deine Schwächen trainieren</p>
+                </header>
+
+                <!-- Streak Card -->
+                <div class="streak-card">
+                    <div class="streak-content">
+                        <div class="streak-number" id="streakDisplay">0</div>
+                        <div class="streak-label">Tage in Folge</div>
+                        <div class="streak-badge" id="streakBadge"></div>
+                    </div>
+                    <div class="last-practiced" id="lastPracticed">Starten Sie noch heute!</div>
+                </div>
+
+                <!-- Today's Focus -->
+                <div class="focus-card">
+                    <h2 class="focus-title">🎲 Deine Fokusthemen heute</h2>
+                    <div class="topics-grid" id="focusTopics">
+                        <!-- Dynamically filled -->
+                    </div>
+                    <div class="focus-hint">
+                        <strong>💡 Info:</strong> Der Trainer wählt automatisch Aufgaben aus deinen schwächsten Bereichen.
+                    </div>
+                </div>
+
+                <!-- Start Button -->
+                <button id="startBtn" class="btn btn-primary btn-large">
+                    Los geht's 🚀
+                </button>
+
+                <!-- Stats Teaser -->
+                <div class="stats-teaser">
+                    <p id="statsText">Noch kein Training durchgeführt</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Practice Screen -->
+        <div id="practiceScreen" class="screen">
+            <div class="container">
+                <!-- Timer -->
+                <div class="practice-header">
+                    <div class="timer-display">
+                        <div class="timer-circle">
+                            <svg class="timer-svg" viewBox="0 0 100 100">
+                                <circle class="timer-bg" cx="50" cy="50" r="45"></circle>
+                                <circle class="timer-progress" cx="50" cy="50" r="45" id="timerCircle"></circle>
+                            </svg>
+                            <div class="timer-text" id="timerText">5:00</div>
+                        </div>
+                    </div>
+                    <div class="progress-info">
+                        <div class="progress-label" id="progressLabel">Frage 1/5</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill" style="width: 20%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Question Card -->
+                <div class="question-card">
+                    <div class="question-topic" id="questionTopic"></div>
+                    <h3 class="question-text" id="questionText"></h3>
+
+                    <!-- Answer Input Area -->
+                    <div class="answer-area" id="answerArea">
+                        <!-- Dynamically filled based on question type -->
+                    </div>
+
+                    <!-- Feedback -->
+                    <div class="feedback-box" id="feedbackBox" style="display: none;">
+                        <div class="feedback-icon" id="feedbackIcon"></div>
+                        <div class="feedback-text" id="feedbackText"></div>
+                    </div>
+
+                    <!-- Submit/Next Button -->
+                    <div class="button-group">
+                        <button id="submitBtn" class="btn btn-primary" style="display: none;">
+                            Antwort prüfen ✓
+                        </button>
+                        <button id="nextBtn" class="btn btn-primary" style="display: none;">
+                            Nächste Frage →
+                        </button>
+                        <button id="finishBtn" class="btn btn-secondary" style="display: none;">
+                            Training beenden
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="resultsScreen" class="screen">
+            <div class="container">
+                <header class="results-header">
+                    <h1 class="title">📊 Trainings-Ergebnis</h1>
+                </header>
+
+                <!-- Score Card -->
+                <div class="score-card">
+                    <div class="score-display">
+                        <div class="score-big" id="scoreBig">0</div>
+                        <div class="score-label">/ 5 Punkte</div>
+                    </div>
+                    <div class="score-percentage" id="scorePercentage">0%</div>
+                </div>
+
+                <!-- Performance Message -->
+                <div class="message-card" id="messageCard"></div>
+
+                <!-- Per-Topic Performance -->
+                <div class="topics-results">
+                    <h2>Deine Stärken und Schwächen</h2>
+                    <div id="topicResults" class="topic-results-list"></div>
+                </div>
+
+                <!-- Weekly Chart -->
+                <div class="weekly-chart-card">
+                    <h2>Deine letzte Woche</h2>
+                    <div class="weekly-chart" id="weeklyChart"></div>
+                </div>
+
+                <!-- Streak Update -->
+                <div class="streak-update" id="streakUpdate"></div>
+
+                <!-- Next Practice -->
+                <div class="next-practice-card">
+                    <h3>⏰ Dein nächster Train</h3>
+                    <p id="nextPracticeTime">Morgen um 07:00 Uhr</p>
+                    <p class="countdown" id="nextPracticeCountdown">In 22 Stunden</p>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="results-actions">
+                    <button id="retryBtn" class="btn btn-secondary">
+                        Nochmal trainieren 🔄
+                    </button>
+                    <button id="homeBtn" class="btn btn-primary">
+                        Zurück zum Start 🏠
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // CONSTANTS & CONFIG
+        // ============================================
+        const QUESTION_POOL = [
+            // Grundrechenarten (5 Fragen)
+            { id: 'lt_01', topic: 'grundrechenarten', type: 'input', question: 'Berechne: -12 + 8 - (-5) = ?', answer: '1', explanation: '-12 + 8 - (-5) = -12 + 8 + 5 = 1' },
+            { id: 'lt_02', topic: 'grundrechenarten', type: 'input', question: 'Berechne: 3 × 4 + 2 × 5 = ?', answer: '22', explanation: 'Multiplikation vor Addition: 12 + 10 = 22' },
+            { id: 'lt_03', topic: 'grundrechenarten', type: 'input', question: 'Berechne: 24 ÷ 6 - 2 × 1 = ?', answer: '2', explanation: '24 ÷ 6 = 4, dann 4 - 2 = 2' },
+            { id: 'lt_04', topic: 'grundrechenarten', type: 'mc', question: 'Welche Aussage ist richtig?', options: ['-5 < -8', '-3 > -1', '-6 < -4', '-2 = 2'], answer: 2, explanation: '-6 < -4 ist richtig, da -6 weiter links auf der Zahlengeraden liegt.' },
+            { id: 'lt_05', topic: 'grundrechenarten', type: 'input', question: 'Berechne: (-3)² + 2³ = ?', answer: '17', explanation: '(-3)² = 9 und 2³ = 8, also 9 + 8 = 17' },
+
+            // Brüche (5 Fragen)
+            { id: 'lt_06', topic: 'brueche', type: 'input', question: 'Berechne: 1/2 + 1/4 = ? (Schreib als Bruch: 3/4)', answer: '3/4', explanation: 'Gemeinsamer Nenner ist 4: 2/4 + 1/4 = 3/4' },
+            { id: 'lt_07', topic: 'brueche', type: 'input', question: 'Berechne: 3/5 × 2/3 = ? (Schreib als Bruch: 2/5)', answer: '2/5', explanation: 'Zähler × Zähler, Nenner × Nenner: (3×2)/(5×3) = 6/15 = 2/5' },
+            { id: 'lt_08', topic: 'brueche', type: 'input', question: 'Berechne: 5/6 - 1/3 = ? (Schreib als Bruch: 1/2)', answer: '1/2', explanation: '5/6 - 2/6 = 3/6 = 1/2' },
+            { id: 'lt_09', topic: 'brueche', type: 'mc', question: 'Welcher Bruch ist der größte?', options: ['2/3', '3/5', '7/12', '5/8'], answer: 0, explanation: '2/3 ≈ 0,667 ist größer als 3/5 = 0,6, 7/12 ≈ 0,583 und 5/8 = 0,625' },
+            { id: 'lt_10', topic: 'brueche', type: 'input', question: 'Schreib als Dezimalzahl: 7/8 = ?', answer: '0.875', explanation: '7 ÷ 8 = 0,875' },
+
+            // Geometrie (5 Fragen)
+            { id: 'lt_11', topic: 'geometrie', type: 'input', question: 'Ein Trapez hat die parallelen Seiten a=8cm und c=4cm und die Höhe h=5cm. Berechne die Fläche. (Antwort in cm²)', answer: '30', explanation: 'Fläche = (a+c)/2 × h = (8+4)/2 × 5 = 6 × 5 = 30 cm²' },
+            { id: 'lt_12', topic: 'geometrie', type: 'input', question: 'Ein Parallelogramm hat eine Grundseite g=10cm und Höhe h=6cm. Berechne die Fläche. (Antwort in cm²)', answer: '60', explanation: 'Fläche = g × h = 10 × 6 = 60 cm²' },
+            { id: 'lt_13', topic: 'geometrie', type: 'input', question: 'Ein Kreis hat den Radius r=5cm. Berechne den Umfang. (Antworte auf 1 Stelle: 31.4)', answer: '31.4', explanation: 'Umfang = 2πr = 2 × π × 5 ≈ 31,4 cm' },
+            { id: 'lt_14', topic: 'geometrie', type: 'mc', question: 'Wie groß ist die Winkelsumme in einem Viereck?', options: ['180°', '270°', '360°', '540°'], answer: 2, explanation: 'Die Winkelsumme in jedem Viereck beträgt 360°.' },
+            { id: 'lt_15', topic: 'geometrie', type: 'input', question: 'Ein Quader hat Länge 4cm, Breite 3cm und Höhe 5cm. Berechne die Oberfläche. (Antwort in cm²)', answer: '94', explanation: 'O = 2(4×3 + 4×5 + 3×5) = 2(12 + 20 + 15) = 2 × 47 = 94 cm²' },
+
+            // Pythagoras (5 Fragen)
+            { id: 'lt_16', topic: 'pythagoras', type: 'input', question: 'Berechne die Hypothenuse: a=3cm, b=4cm, c=? (Antwort in cm)', answer: '5', explanation: 'c² = a² + b² = 9 + 16 = 25, also c = 5cm' },
+            { id: 'lt_17', topic: 'pythagoras', type: 'input', question: 'Berechne die fehlende Seite: a=5cm, c=13cm, b=? (Antwort in cm)', answer: '12', explanation: 'b² = c² - a² = 169 - 25 = 144, also b = 12cm' },
+            { id: 'lt_18', topic: 'pythagoras', type: 'mc', question: 'Ist ein Dreieck mit den Seitenlängen 6, 8, 10 ein rechtwinkliges Dreieck?', options: ['Nein', 'Ja', 'Kann nicht bestimmt werden', 'Nur bei bestimmten Winkeln'], answer: 1, explanation: '6² + 8² = 36 + 64 = 100 = 10². Ja, es ist rechtwinklig.' },
+            { id: 'lt_19', topic: 'pythagoras', type: 'input', question: 'Die Diagonale eines Quadrats beträgt 10cm. Wie lang ist eine Seitenlänge? (Antwort auf 2 Stellen: 7.07)', answer: '7.07', explanation: 'd = s√2, also s = 10/√2 ≈ 7,07cm' },
+            { id: 'lt_20', topic: 'pythagoras', type: 'input', question: 'Ein Leiterwagen: Kathete a=2m, Kathete b=2.4m. Wie lang ist die Hypothenuse c? (Antwort auf 1 Stelle: 3.1)', answer: '3.1', explanation: 'c² = 2² + 2.4² = 4 + 5.76 = 9.76, also c ≈ 3,1m' },
+
+            // Lineare Gleichungen (5 Fragen)
+            { id: 'lt_21', topic: 'lineare_gleichungen', type: 'input', question: 'Löse die Gleichung: 2x + 5 = 13', answer: '4', explanation: '2x = 13 - 5 = 8, also x = 4' },
+            { id: 'lt_22', topic: 'lineare_gleichungen', type: 'input', question: 'Löse die Gleichung: 3x - 7 = 2x + 1', answer: '8', explanation: '3x - 2x = 1 + 7, also x = 8' },
+            { id: 'lt_23', topic: 'lineare_gleichungen', type: 'input', question: 'Löse die Gleichung: (x + 4)/2 = 5', answer: '6', explanation: 'x + 4 = 10, also x = 6' },
+            { id: 'lt_24', topic: 'lineare_gleichungen', type: 'mc', question: 'Löse die Ungleichung: 2x > 10', options: ['x > 5', 'x < 5', 'x = 5', 'x ≤ 5'], answer: 0, explanation: 'Teile beide Seiten durch 2: x > 5' },
+            { id: 'lt_25', topic: 'lineare_gleichungen', type: 'input', question: 'Ein Rechteck hat den Umfang 20cm. Eine Seite ist x cm lang, die andere 3cm. Finde x.', answer: '7', explanation: '2(x + 3) = 20, also x + 3 = 10, x = 7' },
+
+            // Quadratische Funktionen (5 Fragen)
+            { id: 'lt_26', topic: 'quadratische_funktionen', type: 'input', question: 'Gib die x-Koordinate des Scheitelpunkts von f(x)=x²-4x+3 an.', answer: '2', explanation: 'Scheitelpunkt: x = -b/(2a) = -(-4)/(2×1) = 2' },
+            { id: 'lt_27', topic: 'quadratische_funktionen', type: 'input', question: 'Berechne die Nullstellen von f(x)=x²-9. (Gib die größere Nullstelle an)', answer: '3', explanation: 'x² = 9, also x = ±3. Die größere ist x = 3' },
+            { id: 'lt_28', topic: 'quadratische_funktionen', type: 'mc', question: 'Welche Parabel öffnet sich nach unten?', options: ['f(x)=x²+2', 'f(x)=-x²+2', 'f(x)=2x²', 'f(x)=(x-1)²'], answer: 1, explanation: 'Eine Parabel öffnet sich nach unten, wenn der Koeffizient vor x² negativ ist.' },
+            { id: 'lt_29', topic: 'quadratische_funktionen', type: 'input', question: 'Gib den y-Wert des Scheitelpunkts von f(x)=(x-2)²+5 an.', answer: '5', explanation: 'Die Scheitelpunktform ist f(x)=(x-h)²+k mit Scheitelpunkt (h,k)=(2,5)' },
+            { id: 'lt_30', topic: 'quadratische_funktionen', type: 'input', question: 'Löse: x² + 4x + 3 = 0 (Gib die kleinere Lösung an)', answer: '-3', explanation: '(x+1)(x+3)=0, also x=-1 oder x=-3. Die kleinere ist -3' },
+
+            // Exponentialfunktionen (5 Fragen)
+            { id: 'lt_31', topic: 'exponentialfunktionen', type: 'input', question: 'Ein Geldanlage wächst jährlich um 5%. Nach wie vielen Jahren verdoppelt sich das Geld? (Antworte: 14)', answer: '14', explanation: 'Verdoppelungszeit: t = ln(2)/ln(1.05) ≈ 14,2 Jahre' },
+            { id: 'lt_32', topic: 'exponentialfunktionen', type: 'input', question: 'Ein Stoff zerfällt mit Halbwertszeit 10 Jahren. Nach 30 Jahren bleiben noch ? % übrig.', answer: '12.5', explanation: 'Nach 10 Jahren: 50%, nach 20 Jahren: 25%, nach 30 Jahren: 12,5%' },
+            { id: 'lt_33', topic: 'exponentialfunktionen', type: 'mc', question: 'Welche Aussage zu f(x)=2^x ist richtig?', options: ['f(0)=0', 'f(0)=1', 'f(1)=0', 'f(1)=0.5'], answer: 1, explanation: 'f(0) = 2⁰ = 1 ist richtig.' },
+            { id: 'lt_34', topic: 'exponentialfunktionen', type: 'input', question: 'Berechne: 3^4 = ?', answer: '81', explanation: '3^4 = 3×3×3×3 = 81' },
+            { id: 'lt_35', topic: 'exponentialfunktionen', type: 'input', question: 'Ein Virus verdoppelt sich stündlich. Nach 5 Stunden sind es 320 Viren. Wie viele waren es am Anfang?', answer: '10', explanation: '320 = a × 2^5 = a × 32, also a = 10' },
+
+            // Prozentrechnung (5 Fragen)
+            { id: 'lt_36', topic: 'prozentrechnung', type: 'input', question: 'Berechne: 20% von 150 = ?', answer: '30', explanation: '20% × 150 = 0,2 × 150 = 30' },
+            { id: 'lt_37', topic: 'prozentrechnung', type: 'input', question: 'Eine Jacke kostete 80 Euro und wird um 25% reduziert. Neuer Preis?', answer: '60', explanation: '80 - 25% von 80 = 80 - 20 = 60 Euro' },
+            { id: 'lt_38', topic: 'prozentrechnung', type: 'input', question: 'Ein Artikel kostet 50 Euro zzgl. 19% MwSt. Gesamtpreis?', answer: '59.5', explanation: '50 + 19% von 50 = 50 + 9,5 = 59,50 Euro' },
+            { id: 'lt_39', topic: 'prozentrechnung', type: 'mc', question: 'Das Gehalt steigt von 2000 auf 2200 Euro. Um wie viel Prozent?', options: ['10%', '11%', '20%', '22%'], answer: 0, explanation: 'Steigerung = 200/2000 = 0,1 = 10%' },
+            { id: 'lt_40', topic: 'prozentrechnung', type: 'input', question: 'Ein Produkt wird 3 Jahre hintereinander um 10% teurer. Ursprungspreis: 100 Euro. Endpreis?', answer: '133.1', explanation: '100 × 1,1 × 1,1 × 1,1 = 100 × 1,331 = 133,10 Euro' },
+
+            // Wahrscheinlichkeit (5 Fragen)
+            { id: 'lt_41', topic: 'wahrscheinlichkeit', type: 'input', question: 'Berechne die Wahrscheinlichkeit, beim Würfeln eine 6 zu werfen. (Antworte: 1/6)', answer: '1/6', explanation: 'Es gibt 1 günstige Ausgang (6) von 6 möglichen.' },
+            { id: 'lt_42', topic: 'wahrscheinlichkeit', type: 'input', question: 'In einer Urne sind 3 rote und 2 blaue Kugeln. Wahrscheinlichkeit für Rot? (Antworte: 3/5)', answer: '3/5', explanation: 'P(Rot) = 3/5 = 0,6' },
+            { id: 'lt_43', topic: 'wahrscheinlichkeit', type: 'mc', question: 'Zwei Würfel werden geworfen. Wie wahrscheinlich ist ein Pasch (gleiche Zahlen)?', options: ['1/6', '1/12', '1/36', '2/12'], answer: 0, explanation: 'Es gibt 6 Pasche (1-1, 2-2, ..., 6-6) von 36 möglichen Ergebnissen. 6/36 = 1/6' },
+            { id: 'lt_44', topic: 'wahrscheinlichkeit', type: 'input', question: 'Eine Münze wird 2-mal geworfen. Wie viele verschiedene Ergebnisse gibt es?', answer: '4', explanation: 'KK, KZ, ZK, ZZ = 4 Möglichkeiten' },
+            { id: 'lt_45', topic: 'wahrscheinlichkeit', type: 'input', question: 'Eine Lotterie hat 1000 Lose, davon 10 Gewinne. Gewinnwahrscheinlichkeit? (Antworte: 0.01)', answer: '0.01', explanation: 'P(Gewinn) = 10/1000 = 1/100 = 0,01 = 1%' },
+
+            // Terme & Muster (5 Fragen)
+            { id: 'lt_46', topic: 'terme_muster', type: 'input', question: 'Vereinfache: 3x + 2y + 5x - y = ?', answer: '8x+y', explanation: '(3x + 5x) + (2y - y) = 8x + y' },
+            { id: 'lt_47', topic: 'terme_muster', type: 'input', question: 'Multipliziere aus: (x + 3)(x + 2) = ?', answer: 'x²+5x+6', explanation: 'x² + 2x + 3x + 6 = x² + 5x + 6' },
+            { id: 'lt_48', topic: 'terme_muster', type: 'input', question: 'Faktorisiere: x² + 5x + 6 = ?', answer: '(x+2)(x+3)', explanation: 'Suche zwei Zahlen, die multipliziert 6 und addiert 5 ergeben: 2 und 3' },
+            { id: 'lt_49', topic: 'terme_muster', type: 'mc', question: 'Welche Figur ist die 5. in der Folge: 2, 4, 6, 8, ...?', options: ['10', '12', '16', '20'], answer: 0, explanation: 'Die Folge ist 2n (n=1,2,3,...). Für n=5: 2×5=10' },
+            { id: 'lt_50', topic: 'terme_muster', type: 'input', question: 'Vereinfache: (a + b)² - (a - b)² = ?', answer: '4ab', explanation: '(a² + 2ab + b²) - (a² - 2ab + b²) = 4ab' }
+        ];
+
+        const TOPIC_LABELS = {
+            'grundrechenarten': 'Grundrechenarten',
+            'brueche': 'Brüche',
+            'geometrie': 'Geometrie',
+            'pythagoras': 'Pythagoras',
+            'lineare_gleichungen': 'Lin. Gleichungen',
+            'quadratische_funktionen': 'Quadr. Funktionen',
+            'exponentialfunktionen': 'Exponentialfunktionen',
+            'prozentrechnung': 'Prozentrechnung',
+            'wahrscheinlichkeit': 'Wahrscheinlichkeit',
+            'terme_muster': 'Terme & Muster'
+        };
+
+        const ALL_TOPICS = Object.keys(TOPIC_LABELS);
+        const PRACTICE_TIME = 5 * 60; // 5 minutes in seconds
+        const QUESTIONS_PER_SESSION = 5;
+
+        // ============================================
+        // STATE MANAGEMENT
+        // ============================================
+        let appState = {
+            currentScreen: 'start',
+            sessionStartTime: null,
+            timeRemaining: PRACTICE_TIME,
+            currentQuestionIndex: 0,
+            sessionQuestions: [],
+            sessionAnswers: [],
+            sessionScores: [],
+            selectedTopics: [],
+            timerInterval: null,
+            answered: false
+        };
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        function initApp() {
+            setupTheme();
+            setupEventListeners();
+            loadStartScreen();
+        }
+
+        function setupTheme() {
+            const savedTheme = localStorage.getItem('zp10_theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeButton();
+        }
+
+        function updateThemeButton() {
+            const theme = document.documentElement.getAttribute('data-theme');
+            document.getElementById('themeBtn').querySelector('.theme-icon').textContent =
+                theme === 'dark' ? '☀️' : '🌙';
+        }
+
+        function setupEventListeners() {
+            document.getElementById('themeBtn').addEventListener('click', toggleTheme);
+            document.getElementById('startBtn').addEventListener('click', startSession);
+            document.getElementById('submitBtn').addEventListener('click', submitAnswer);
+            document.getElementById('nextBtn').addEventListener('click', nextQuestion);
+            document.getElementById('finishBtn').addEventListener('click', finishSession);
+            document.getElementById('retryBtn').addEventListener('click', retrySession);
+            document.getElementById('homeBtn').addEventListener('click', goHome);
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('zp10_theme', newTheme);
+            updateThemeButton();
+        }
+
+        // ============================================
+        // START SCREEN
+        // ============================================
+        function loadStartScreen() {
+            showScreen('start');
+            updateStreakDisplay();
+            updateFocusTopics();
+            updateStatsTeaser();
+        }
+
+        function updateStreakDisplay() {
+            const streakData = getStreakData();
+            document.getElementById('streakDisplay').textContent = streakData.currentStreak;
+            document.getElementById('streakBadge').textContent = getStreakBadge(streakData.currentStreak);
+
+            if (streakData.lastPracticedDate) {
+                const lastDate = new Date(streakData.lastPracticedDate);
+                const today = new Date();
+                const diffTime = today - lastDate;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                if (diffDays === 0) {
+                    document.getElementById('lastPracticed').textContent = 'Heute schon trainiert! ✨';
+                } else if (diffDays === 1) {
+                    document.getElementById('lastPracticed').textContent = 'Gestern trainiert';
+                } else {
+                    document.getElementById('lastPracticed').textContent = `Vor ${diffDays} Tagen trainiert`;
+                }
+            }
+        }
+
+        function getStreakBadge(streak) {
+            if (streak >= 30) return '💎';
+            if (streak >= 14) return '🏆';
+            if (streak >= 7) return '⚡';
+            if (streak >= 3) return '🔥';
+            return '';
+        }
+
+        function updateFocusTopics() {
+            const weakTopics = detectWeakTopics();
+            const topicsContainer = document.getElementById('focusTopics');
+            topicsContainer.innerHTML = '';
+
+            weakTopics.slice(0, 3).forEach(topic => {
+                const badge = document.createElement('div');
+                badge.className = 'topic-badge';
+                badge.textContent = TOPIC_LABELS[topic];
+                topicsContainer.appendChild(badge);
+            });
+        }
+
+        function updateStatsTeaser() {
+            const history = getTrainingHistory();
+            if (history.length === 0) {
+                document.getElementById('statsText').textContent = 'Noch kein Training durchgeführt';
+            } else {
+                const recentAvg = history.slice(-7).reduce((sum, h) => sum + h.score, 0) / Math.min(7, history.length);
+                document.getElementById('statsText').textContent = `Durchschnitt der letzten 7 Tage: ${recentAvg.toFixed(1)}/5`;
+            }
+        }
+
+        // ============================================
+        // WEAKNESS DETECTION
+        // ============================================
+        function detectWeakTopics() {
+            const topicScores = {};
+            ALL_TOPICS.forEach(t => topicScores[t] = { total: 0, count: 0 });
+
+            // Read from escape room data
+            try {
+                const escapeData = JSON.parse(localStorage.getItem('zp10_escape_state') || '{}');
+                if (escapeData.completedRooms) {
+                    escapeData.completedRooms.forEach(room => {
+                        const topic = room.topic;
+                        if (topic && topicScores[topic]) {
+                            topicScores[topic].total += room.score || 0;
+                            topicScores[topic].count += 1;
+                        }
+                    });
+                }
+            } catch (e) {}
+
+            // Read from training history
+            const history = getTrainingHistory();
+            history.forEach(entry => {
+                entry.details?.forEach(detail => {
+                    if (topicScores[detail.topic]) {
+                        topicScores[detail.topic].total += detail.score || 0;
+                        topicScores[detail.topic].count += 1;
+                    }
+                });
+            });
+
+            // Calculate weakness scores (lower is weaker)
+            const weaknessScores = {};
+            ALL_TOPICS.forEach(topic => {
+                const data = topicScores[topic];
+                if (data.count > 0) {
+                    weaknessScores[topic] = data.total / data.count;
+                } else {
+                    weaknessScores[topic] = 50; // neutral score for untested topics
+                }
+            });
+
+            // Sort by weakness (ascending)
+            return ALL_TOPICS.sort((a, b) => weaknessScores[a] - weaknessScores[b]);
+        }
+
+        // ============================================
+        // SESSION MANAGEMENT
+        // ============================================
+        function startSession() {
+            const weakTopics = detectWeakTopics().slice(0, 3);
+            appState.selectedTopics = weakTopics;
+
+            // Select questions: ~40% from weakest, ~35% from 2nd weakest, ~25% from 3rd weakest
+            appState.sessionQuestions = [];
+            const distribution = [2, 2, 1];
+
+            weakTopics.forEach((topic, idx) => {
+                const questionsForTopic = QUESTION_POOL.filter(q => q.topic === topic);
+                const count = distribution[idx] || 1;
+                for (let i = 0; i < count && appState.sessionQuestions.length < QUESTIONS_PER_SESSION; i++) {
+                    const q = questionsForTopic[Math.floor(Math.random() * questionsForTopic.length)];
+                    appState.sessionQuestions.push(q);
+                }
+            });
+
+            // Fill remaining with random questions
+            while (appState.sessionQuestions.length < QUESTIONS_PER_SESSION) {
+                const q = QUESTION_POOL[Math.floor(Math.random() * QUESTION_POOL.length)];
+                appState.sessionQuestions.push(q);
+            }
+
+            appState.currentQuestionIndex = 0;
+            appState.sessionAnswers = [];
+            appState.sessionScores = [];
+            appState.sessionStartTime = Date.now();
+            appState.timeRemaining = PRACTICE_TIME;
+            appState.answered = false;
+
+            showScreen('practice');
+            displayQuestion();
+            startTimer();
+        }
+
+        function startTimer() {
+            clearInterval(appState.timerInterval);
+            appState.timerInterval = setInterval(updateTimer, 1000);
+            updateTimer();
+        }
+
+        function updateTimer() {
+            appState.timeRemaining--;
+
+            const minutes = Math.floor(appState.timeRemaining / 60);
+            const seconds = appState.timeRemaining % 60;
+            document.getElementById('timerText').textContent =
+                `${minutes}:${String(seconds).padStart(2, '0')}`;
+
+            // Update circle progress
+            const progress = (PRACTICE_TIME - appState.timeRemaining) / PRACTICE_TIME * 100;
+            const circle = document.getElementById('timerCircle');
+            const circumference = 2 * Math.PI * 45;
+            circle.style.strokeDashoffset = circumference * (1 - progress / 100);
+
+            if (appState.timeRemaining <= 0) {
+                clearInterval(appState.timerInterval);
+                finishSession();
+            }
+        }
+
+        // ============================================
+        // QUESTION DISPLAY
+        // ============================================
+        function displayQuestion() {
+            const question = appState.sessionQuestions[appState.currentQuestionIndex];
+            appState.answered = false;
+
+            // Update progress
+            const progress = (appState.currentQuestionIndex + 1) / QUESTIONS_PER_SESSION * 100;
+            document.getElementById('progressLabel').textContent =
+                `Frage ${appState.currentQuestionIndex + 1}/${QUESTIONS_PER_SESSION}`;
+            document.getElementById('progressFill').style.width = progress + '%';
+
+            // Display question
+            document.getElementById('questionTopic').textContent = TOPIC_LABELS[question.topic];
+            document.getElementById('questionText').textContent = question.question;
+
+            // Display answer area
+            const answerArea = document.getElementById('answerArea');
+            answerArea.innerHTML = '';
+            document.getElementById('feedbackBox').style.display = 'none';
+
+            if (question.type === 'input') {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.id = 'answerInput';
+                input.className = 'answer-input';
+                input.placeholder = 'Gib deine Antwort ein...';
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') submitAnswer();
+                });
+                answerArea.appendChild(input);
+            } else if (question.type === 'mc') {
+                const optionsDiv = document.createElement('div');
+                optionsDiv.className = 'mc-options';
+                question.options.forEach((option, idx) => {
+                    const button = document.createElement('button');
+                    button.className = 'mc-option';
+                    button.textContent = option;
+                    button.addEventListener('click', () => selectOption(button, idx));
+                    optionsDiv.appendChild(button);
+                });
+                answerArea.appendChild(optionsDiv);
+            }
+
+            // Update buttons
+            document.getElementById('submitBtn').style.display = 'block';
+            document.getElementById('nextBtn').style.display = 'none';
+            document.getElementById('finishBtn').style.display = 'none';
+
+            if (question.type === 'input') {
+                setTimeout(() => document.getElementById('answerInput')?.focus(), 100);
+            }
+        }
+
+        function selectOption(button, idx) {
+            document.querySelectorAll('.mc-option').forEach(b => b.classList.remove('selected'));
+            button.classList.add('selected');
+            button.dataset.selected = idx;
+        }
+
+        function submitAnswer() {
+            if (appState.answered) return;
+
+            const question = appState.sessionQuestions[appState.currentQuestionIndex];
+            let userAnswer = '';
+            let isCorrect = false;
+
+            if (question.type === 'input') {
+                userAnswer = document.getElementById('answerInput').value.trim();
+                isCorrect = normalizeAnswer(userAnswer) === normalizeAnswer(String(question.answer));
+            } else if (question.type === 'mc') {
+                const selected = document.querySelector('.mc-option.selected');
+                if (!selected) {
+                    alert('Bitte wähle eine Antwort aus!');
+                    return;
+                }
+                userAnswer = selected.textContent;
+                isCorrect = parseInt(selected.dataset.selected) === question.answer;
+                document.querySelectorAll('.mc-option').forEach(b => {
+                    b.disabled = true;
+                    if (parseInt(b.dataset.selected) === question.answer) {
+                        b.classList.add('correct');
+                    } else if (b.classList.contains('selected')) {
+                        b.classList.add('incorrect');
+                    }
+                });
+            }
+
+            appState.answered = true;
+            appState.sessionAnswers.push(userAnswer);
+            appState.sessionScores.push(isCorrect ? 1 : 0);
+
+            // Show feedback
+            const feedbackBox = document.getElementById('feedbackBox');
+            const feedbackIcon = document.getElementById('feedbackIcon');
+            const feedbackText = document.getElementById('feedbackText');
+
+            feedbackIcon.textContent = isCorrect ? '✅' : '❌';
+            feedbackText.textContent = question.explanation;
+            feedbackBox.style.display = 'block';
+
+            // Update buttons
+            document.getElementById('submitBtn').style.display = 'none';
+
+            if (appState.currentQuestionIndex === QUESTIONS_PER_SESSION - 1) {
+                document.getElementById('finishBtn').style.display = 'block';
+            } else {
+                document.getElementById('nextBtn').style.display = 'block';
+            }
+        }
+
+        function normalizeAnswer(answer) {
+            return answer.toLowerCase().trim().replace(/\s+/g, '').replace(',', '.');
+        }
+
+        function nextQuestion() {
+            appState.currentQuestionIndex++;
+            displayQuestion();
+        }
+
+        // ============================================
+        // RESULTS & FINISH
+        // ============================================
+        function finishSession() {
+            clearInterval(appState.timerInterval);
+            showScreen('results');
+
+            const totalScore = appState.sessionScores.reduce((a, b) => a + b, 0);
+            const percentage = (totalScore / QUESTIONS_PER_SESSION) * 100;
+
+            // Update scores
+            document.getElementById('scoreBig').textContent = totalScore;
+            document.getElementById('scorePercentage').textContent = `${percentage.toFixed(0)}%`;
+
+            // Performance message
+            const messageCard = document.getElementById('messageCard');
+            let message = '';
+            let emoji = '';
+
+            if (percentage === 100) {
+                message = 'Perfekt! 🌟 Du hast heute alle Aufgaben gelöst!';
+                emoji = '🌟';
+            } else if (percentage >= 80) {
+                message = 'Sehr gut! 💪 Du machst gute Fortschritte!';
+                emoji = '💪';
+            } else if (percentage >= 60) {
+                message = 'Gute Arbeit! 👍 Du wirst immer besser!';
+                emoji = '👍';
+            } else if (percentage >= 40) {
+                message = 'Weitermachen! 🚀 Nicht aufgeben!';
+                emoji = '🚀';
+            } else {
+                message = 'Kopf hoch! 💪 Morgen wird\'s besser!';
+                emoji = '💪';
+            }
+            messageCard.innerHTML = `<div style="font-size: 48px; margin-bottom: 10px;">${emoji}</div><p>${message}</p>`;
+
+            // Topic results
+            updateTopicResults(totalScore);
+
+            // Weekly chart
+            updateWeeklyChart();
+
+            // Streak update
+            updateStreakAfterSession();
+
+            // Next practice time
+            updateNextPracticeInfo();
+
+            // Save history
+            saveTrainingSession(totalScore);
+        }
+
+        function updateTopicResults(totalScore) {
+            const topicPerformance = {};
+            appState.sessionQuestions.forEach((q, idx) => {
+                if (!topicPerformance[q.topic]) {
+                    topicPerformance[q.topic] = { correct: 0, total: 0 };
+                }
+                topicPerformance[q.topic].total++;
+                topicPerformance[q.topic].correct += appState.sessionScores[idx];
+            });
+
+            const topicResultsList = document.getElementById('topicResults');
+            topicResultsList.innerHTML = '';
+
+            const sorted = Object.entries(topicPerformance).sort((a, b) => {
+                const scoreA = a[1].correct / a[1].total;
+                const scoreB = b[1].correct / b[1].total;
+                return scoreB - scoreA;
+            });
+
+            let weakestTopic = '';
+            let weakestScore = 100;
+
+            sorted.forEach(([topic, perf]) => {
+                const percent = (perf.correct / perf.total) * 100;
+                if (percent < weakestScore) {
+                    weakestScore = percent;
+                    weakestTopic = topic;
+                }
+
+                const item = document.createElement('div');
+                item.className = 'topic-result-item';
+                item.innerHTML = `
+                    <div class="topic-result-name">${TOPIC_LABELS[topic]}</div>
+                    <div class="topic-result-bar">
+                        <div class="topic-result-fill" style="width: ${percent}%"></div>
+                    </div>
+                    <div class="topic-result-score">${perf.correct}/${perf.total}</div>
+                `;
+                topicResultsList.appendChild(item);
+            });
+
+            // Add weakest topic info
+            if (weakestTopic) {
+                const weakestDiv = document.createElement('div');
+                weakestDiv.className = 'weakest-topic';
+                weakestDiv.innerHTML = `<strong>⚠️ Schwächste Kompetenz heute:</strong> ${TOPIC_LABELS[weakestTopic]}`;
+                document.querySelector('.topics-results').insertBefore(weakestDiv, topicResultsList);
+            }
+        }
+
+        function updateWeeklyChart() {
+            const history = getTrainingHistory();
+            const last7 = history.slice(-7);
+
+            const chartHtml = last7.map((entry, idx) => {
+                const date = new Date(entry.date);
+                const dayLabel = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'][date.getDay()];
+                return `
+                    <div class="chart-bar-container">
+                        <div class="chart-bar" style="height: ${(entry.score / 5) * 100}%;" title="${entry.score}/5"></div>
+                        <div class="chart-label">${dayLabel}</div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('weeklyChart').innerHTML = chartHtml || '<p style="text-align: center; color: var(--text-secondary);">Keine Daten verfügbar</p>';
+        }
+
+        function updateStreakAfterSession() {
+            const streakData = getStreakData();
+            const today = new Date().toISOString().split('T')[0];
+            const lastDate = streakData.lastPracticedDate?.split('T')[0];
+
+            if (lastDate === today) {
+                // Already practiced today
+                return;
+            }
+
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+            let newStreak = 1;
+            if (lastDate === yesterdayStr) {
+                // Continue streak
+                newStreak = streakData.currentStreak + 1;
+            }
+
+            streakData.currentStreak = newStreak;
+            streakData.lastPracticedDate = new Date().toISOString();
+            streakData.totalDaysPracticed = (streakData.totalDaysPracticed || 0) + 1;
+
+            localStorage.setItem('zp10_luecken_streak', JSON.stringify(streakData));
+
+            const badgeEmoji = getStreakBadge(newStreak);
+            const streakUpdate = document.getElementById('streakUpdate');
+            streakUpdate.innerHTML = `
+                <div class="streak-milestone">
+                    <div class="milestone-text">
+                        <strong>${newStreak} Tage</strong> Trainings-Streak! ${badgeEmoji}
+                    </div>
+                    <p>Weiter so, um die nächste Stufe zu erreichen!</p>
+                </div>
+            `;
+        }
+
+        function updateNextPracticeInfo() {
+            const nextDay = new Date();
+            nextDay.setDate(nextDay.getDate() + 1);
+            nextDay.setHours(7, 0, 0, 0);
+
+            const now = new Date();
+            const diffMs = nextDay - now;
+            const diffHours = Math.ceil(diffMs / (1000 * 60 * 60));
+
+            document.getElementById('nextPracticeTime').textContent =
+                nextDay.toLocaleString('de-DE', { weekday: 'long', hour: '2-digit', minute: '2-digit' });
+            document.getElementById('nextPracticeCountdown').textContent =
+                `In ${diffHours} Stunde${diffHours !== 1 ? 'n' : ''}`;
+        }
+
+        function saveTrainingSession(score) {
+            let history = getTrainingHistory();
+
+            const details = appState.sessionQuestions.map((q, idx) => ({
+                topic: q.topic,
+                question: q.question,
+                score: appState.sessionScores[idx]
+            }));
+
+            const entry = {
+                date: new Date().toISOString(),
+                score: score,
+                topics: appState.selectedTopics,
+                details: details
+            };
+
+            history.push(entry);
+            localStorage.setItem('zp10_luecken_history', JSON.stringify(history));
+        }
+
+        function getTrainingHistory() {
+            try {
+                return JSON.parse(localStorage.getItem('zp10_luecken_history') || '[]');
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function getStreakData() {
+            try {
+                return JSON.parse(localStorage.getItem('zp10_luecken_streak') || '{"currentStreak": 0}');
+            } catch (e) {
+                return { currentStreak: 0 };
+            }
+        }
+
+        // ============================================
+        // SCREEN NAVIGATION
+        // ============================================
+        function showScreen(screenName) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('screen-active'));
+            document.getElementById(screenName + 'Screen').classList.add('screen-active');
+            appState.currentScreen = screenName;
+        }
+
+        function retrySession() {
+            startSession();
+        }
+
+        function goHome() {
+            clearInterval(appState.timerInterval);
+            loadStartScreen();
+        }
+
+        // ============================================
+        // START APP
+        // ============================================
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            initApp();
+        }
+    </script>
+</body>
+</html>

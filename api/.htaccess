@@ -1,0 +1,8 @@
+# Nur PHP-Dateien direkt erreichbar, config.php + db.php schützen
+<Files "config.php">
+    Require all denied
+</Files>
+<Files "db.php">
+    Require all denied
+</Files>
+Options -Indexes

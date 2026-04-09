@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZP10 Üben für Zuhause</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="zp10-ueben.css">
+</head>
+<body>
+
+<!-- ===== HOME SCREEN ===== -->
+<div id="homeScreen" class="practice-screen active">
+    <div class="header">
+        <a href="../index.html" class="back-btn">←</a>
+        <h1>Üben für Zuhause</h1>
+        <p>Dein persönliches Training für die ZP10</p>
+    </div>
+
+    <!-- Streak -->
+    <div class="streak-bar" id="streakBar">
+        <div class="streak-fire">🔥</div>
+        <div class="streak-text">
+            <div class="streak-count" id="streakCount">0</div>
+            <div class="streak-label">Tage in Folge</div>
+        </div>
+        <div class="streak-days" id="streakDots"></div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-bar">
+        <div class="stat-card">
+            <div class="stat-value" id="statSessions">0</div>
+            <div class="stat-label">Sessions</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="statQuestions">0</div>
+            <div class="stat-label">Aufgaben</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="statAccuracy">–</div>
+            <div class="stat-label">Trefferquote</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="statXP">0</div>
+            <div class="stat-label">XP</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Personalized Recommendations -->
+        <div class="section" id="recSection">
+            <h2 class="section-title">
+                <div class="icon" style="background: var(--accent-light);">🎯</div>
+                Empfohlenes Training
+            </h2>
+            <div id="recContainer"></div>
+        </div>
+
+        <!-- Kompetenz-Übersicht -->
+        <div class="section" id="compSection">
+            <h2 class="section-title">
+                <div class="icon" style="background: var(--success-light);">📊</div>
+                Kompetenz-Übersicht
+            </h2>
+            <div id="compDashboard" style="background: var(--surface); border-radius: var(--radius); padding: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06);"></div>
+        </div>
+
+        <!-- Quick Practice Modes -->
+        <div class="section">
+            <h2 class="section-title">
+                <div class="icon" style="background: var(--primary-light);">⚡</div>
+                Schnelles Training
+            </h2>
+            <div class="topic-grid">
+                <div class="topic-card" onclick="startQuickSession('weak')">
+                    <div class="topic-icon">🩺</div>
+                    <div class="topic-name">Schwächen trainieren</div>
+                    <div class="topic-score badge-danger" style="font-size: 0.6875rem;">10 Aufgaben</div>
+                </div>
+                <div class="topic-card" onclick="startQuickSession('mixed')">
+                    <div class="topic-icon">🔀</div>
+                    <div class="topic-name">Bunt gemischt</div>
+                    <div class="topic-score badge-primary" style="font-size: 0.6875rem;">15 Aufgaben</div>
+                </div>
+                <div class="topic-card" onclick="startQuickSession('exam')">
+                    <div class="topic-icon">📝</div>
+                    <div class="topic-name">Prüfungs-Simulation</div>
+                    <div class="topic-score badge-warning" style="font-size: 0.6875rem;">20 Aufgaben</div>
+                </div>
+                <div class="topic-card" onclick="startQuickSession('teil1')">
+                    <div class="topic-icon">🚫🧮</div>
+                    <div class="topic-name">Teil 1 (ohne TR)</div>
+                    <div class="topic-score badge-primary" style="font-size: 0.6875rem;">10 Aufgaben</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Topic Selection -->
+        <div class="section">
+            <h2 class="section-title">
+                <div class="icon" style="background: var(--success-light);">📚</div>
+                Nach Thema üben
+            </h2>
+            <div class="topic-grid" id="topicGrid"></div>
+        </div>
+
+        <!-- Settings -->
+        <div class="section" style="margin-bottom: 2rem;">
+            <h2 class="section-title">
+                <div class="icon" style="background: var(--warning-light);">⚙️</div>
+                Einstellungen
+            </h2>
+            <div style="background: var(--surface); border-radius: var(--radius); padding: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+                <div class="settings-row">
+                    <span class="settings-label">Aufgaben pro Session</span>
+                    <select class="settings-select" id="settingsCount" onchange="saveSettings()">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="15">15</option>
+                        <option value="20">20</option>
+                    </select>
+                </div>
+                <div class="settings-row">
+                    <span class="settings-label">Schwierigkeit</span>
+                    <select class="settings-select" id="settingsDiff" onchange="saveSettings()">
+                        <option value="all">Alle</option>
+                        <option value="1">AB I (leicht)</option>
+                        <option value="2">AB II (mittel)</option>
+                        <option value="3">AB III (schwer)</option>
+                    </select>
+                </div>
+                <div class="settings-row" style="border: none;">
+                    <span class="settings-label">Feedback-Modus</span>
+                    <select class="settings-select" id="settingsFeedback" onchange="saveSettings()">
+                        <option value="instant">Sofort</option>
+                        <option value="end">Am Ende</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== PRACTICE SCREEN ===== -->
+<div id="practiceScreen" class="practice-screen">
+    <div style="background: var(--surface); padding: 1rem; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <button onclick="exitPractice()" style="background: none; border: none; color: var(--text); cursor: pointer; font-size: 1rem; font-family: inherit;">← Zurück</button>
+            <span class="question-counter" id="practiceCounter">1/10</span>
+            <span id="practiceTimer" style="font-size: 0.875rem; color: var(--text-secondary);">00:00</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="practiceProgress" style="width: 0%;"></div>
+        </div>
+    </div>
+    <div class="container" style="margin-top: 1rem;">
+        <div class="question-card" id="questionCard"></div>
+    </div>
+</div>
+
+<!-- ===== RESULTS SCREEN ===== -->
+<div id="resultsScreen" class="practice-screen">
+    <div class="header" style="background: linear-gradient(135deg, var(--success), #059669);">
+        <h1>Session abgeschlossen!</h1>
+        <p id="resultsSessionType"></p>
+    </div>
+    <div class="container" style="margin-top: 1.5rem;">
+        <div class="results-card">
+            <div class="results-score" id="resultsScore">0%</div>
+            <div class="results-grade" id="resultsGrade"></div>
+            <div class="results-detail" id="resultsDetail"></div>
+            <div class="results-actions">
+                <button class="action-btn primary" onclick="retryWrong()">Fehler wiederholen</button>
+                <button class="action-btn" onclick="showHome()">Zurück</button>
+            </div>
+            <div class="weak-topics" id="weakTopics"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ===== QUESTION BANK =====
+// Organized by topic with metadata for smart selection
+const TOPICS = {
+    terme: {
+        name: 'Terme & Gleichungen', icon: '🔢', module: 'zp10-terme-gleichungen',
+        questions: [
+            {id:'u_t1',topic:'Terme',ab:1,teil:1,type:'mc',klp:'K5',l:'L1',text:'Vereinfache: <span class="math-expr">5a + 3a − 2a</span>',opts:['6a','8a','4a','10a'],answer:0,fb_ok:'Korrekt! 5+3−2 = 6.',fb_nok:'Addiere die Koeffizienten: 5+3−2 = 6a.',denkfehler:'Vorzeichen beachten.',video:'https://www.youtube.com/watch?v=ItxmwAAF3EI',xp:10},
+            {id:'u_t2',topic:'Terme',ab:1,teil:1,type:'mc',klp:'K5',l:'L1',text:'Klammere aus: <span class="math-expr">12x + 8y</span>',opts:['4(3x+2y)','2(6x+4y)','12(x+y)','8(x+y)'],answer:0,fb_ok:'Richtig! ggT(12,8) = 4.',fb_nok:'Der ggT von 12 und 8 ist 4.',denkfehler:'Den größten gemeinsamen Teiler finden.',xp:10},
+            {id:'u_t3',topic:'Distributivgesetz',ab:1,teil:1,type:'mc',klp:'K5',l:'L1',text:'Multipliziere aus: <span class="math-expr">−3(2x − 4)</span>',opts:['−6x + 12','−6x − 12','6x + 12','6x − 12'],answer:0,fb_ok:'Richtig! Minus mal Minus = Plus.',fb_nok:'Beachte: (−3)·(−4) = +12.',denkfehler:'Vorzeichen beim Ausmultiplizieren.',xp:10},
+            {id:'u_t4',topic:'Gleichungen',ab:2,teil:1,type:'input',klp:'K5',l:'L1',text:'Löse: <span class="math-expr">3x + 7 = 22</span>',opts:[],answer:'5',fb_ok:'Korrekt! x = 5.',fb_nok:'3x = 22 − 7 = 15, also x = 15/3 = 5.',denkfehler:'Äquivalenzumformung Schritt für Schritt.',xp:15},
+            {id:'u_t5',topic:'Binomische Formeln',ab:2,teil:1,type:'mc',klp:'K5',l:'L1',text:'Berechne: <span class="math-expr">(x + 3)²</span>',opts:['x² + 6x + 9','x² + 9','x² + 3x + 9','2x + 6'],answer:0,fb_ok:'1. binomische Formel korrekt angewendet!',fb_nok:'(a+b)² = a² + 2ab + b². Hier: x² + 2·x·3 + 9.',denkfehler:'Das Doppelprodukt 2ab vergessen.',video:'https://www.youtube.com/watch?v=GlsO7ATnfYo',xp:15},
+            {id:'u_t6',topic:'Binomische Formeln',ab:2,teil:2,type:'mc',klp:'K5',l:'L1',text:'Berechne: <span class="math-expr">(2x − 5)²</span>',opts:['4x² − 20x + 25','4x² + 25','2x² − 10x + 25','4x² − 10x + 25'],answer:0,fb_ok:'2. binomische Formel perfekt!',fb_nok:'(a−b)² = a² − 2ab + b². Hier: (2x)² − 2·2x·5 + 25.',denkfehler:'Doppelprodukt korrekt berechnen: 2·2x·5 = 20x.',xp:15},
+            {id:'u_t7',topic:'p-q-Formel',ab:3,teil:2,type:'mc',klp:'K5',l:'L1',text:'Löse mit der p-q-Formel: <span class="math-expr">x² − 6x + 8 = 0</span>',opts:['x₁=2, x₂=4','x₁=−2, x₂=−4','x₁=2, x₂=−4','x₁=3, x₂=8'],answer:0,fb_ok:'Richtig! p=−6, q=8 → x = 3 ± 1.',fb_nok:'p = −6, q = 8. x = 3 ± √(9−8) = 3 ± 1.',denkfehler:'p und q korrekt einsetzen.',video:'https://www.youtube.com/watch?v=RLhmYm2P30s',xp:20},
+            {id:'u_t8',topic:'Textaufgabe Terme',ab:2,teil:2,type:'input',klp:'K3',l:'L1',text:'Ein Handyvertrag kostet 12,99 € Grundgebühr plus 0,09 € pro SMS. Max verschickt x SMS. Stelle den Term für die monatlichen Kosten auf und berechne für x = 30 (in €, auf 2 Nachkommastellen).',opts:[],answer:'15.69',fb_ok:'K(x) = 12,99 + 0,09·x → K(30) = 12,99 + 2,70 = 15,69 €.',fb_nok:'Kosten = Grundgebühr + Preis·Anzahl = 12,99 + 0,09·30 = 15,69.',denkfehler:'Term aufstellen: fixe + variable Kosten.',xp:20}
+        ]
+    },
+    linFunc: {
+        name: 'Lineare Funktionen', icon: '📈', module: 'zp10-lineare-funktionen',
+        questions: [
+            {id:'u_lf1',topic:'Steigung',ab:1,teil:1,type:'mc',klp:'K6',l:'L4',text:'Eine Gerade geht durch P(0|2) und Q(3|8). Wie groß ist die Steigung?',opts:['2','3','6','1'],answer:0,fb_ok:'m = (8−2)/(3−0) = 6/3 = 2.',fb_nok:'Steigungsformel: m = Δy/Δx = (8−2)/(3−0) = 2.',denkfehler:'Differenzenquotient berechnen.',video:'https://www.youtube.com/watch?v=G1FN2iu9tRw',xp:10},
+            {id:'u_lf2',topic:'y-Achsenabschnitt',ab:1,teil:1,type:'input',klp:'K6',l:'L4',text:'<span class="math-expr">f(x) = −2x + 7</span>. Wo schneidet der Graph die y-Achse?',opts:[],answer:'7',fb_ok:'Der y-Achsenabschnitt ist b = 7.',fb_nok:'Bei f(x) = mx + b ist b der y-Achsenabschnitt. Hier b = 7.',denkfehler:'f(0) berechnen.',xp:10},
+            {id:'u_lf3',topic:'Nullstelle',ab:2,teil:1,type:'input',klp:'K6',l:'L4',text:'Bestimme die Nullstelle von <span class="math-expr">f(x) = 4x − 12</span>.',opts:[],answer:'3',fb_ok:'Richtig! 4x − 12 = 0 → x = 3.',fb_nok:'Setze f(x) = 0: 4x = 12, also x = 3.',denkfehler:'f(x) = 0 setzen und nach x auflösen.',xp:15},
+            {id:'u_lf4',topic:'Parallele Geraden',ab:2,teil:1,type:'mc',klp:'K6',l:'L4',text:'Welche Gerade ist parallel zu <span class="math-expr">y = 3x + 1</span>?',opts:['y = 3x − 5','y = −3x + 1','y = x + 3','y = 3'],answer:0,fb_ok:'Parallele Geraden haben die gleiche Steigung m = 3.',fb_nok:'Parallele Geraden → gleiche Steigung. Suche m = 3.',denkfehler:'Steigung muss übereinstimmen.',xp:15},
+            {id:'u_lf5',topic:'Funktionsgleichung aufstellen',ab:3,teil:2,type:'mc',klp:'K6',l:'L4',text:'Eine Gerade geht durch A(1|5) und B(4|14). Bestimme die Funktionsgleichung.',opts:['y = 3x + 2','y = 3x + 5','y = 9x − 4','y = 3x − 2'],answer:0,fb_ok:'m = 9/3 = 3, b = 5 − 3·1 = 2. Also y = 3x + 2.',fb_nok:'m = (14−5)/(4−1) = 3. Einsetzen: 5 = 3·1 + b → b = 2.',denkfehler:'Erst Steigung, dann y-Achsenabschnitt.',video:'https://www.youtube.com/watch?v=Ey0JFQvL_x0',xp:20},
+            {id:'u_lf6',topic:'Graph ablesen',ab:1,teil:1,type:'mc',klp:'K6',l:'L4',graph:'<svg viewBox="0 0 200 200" style="max-width:280px;margin:0 auto;display:block;background:#f8fafc;border-radius:12px;"><line x1="20" y1="180" x2="190" y2="180" stroke="#94a3b8" stroke-width="1.5"/><line x1="20" y1="10" x2="20" y2="180" stroke="#94a3b8" stroke-width="1.5"/><text x="15" y="195" font-size="10" fill="#64748b">0</text><text x="95" y="195" font-size="10" fill="#64748b">x</text><text x="5" y="100" font-size="10" fill="#64748b">y</text><line x1="20" y1="140" x2="180" y2="60" stroke="#5B6CF0" stroke-width="2.5"/><circle cx="20" cy="140" r="4" fill="#FF6B8A"/><circle cx="100" cy="100" r="4" fill="#FF6B8A"/><text x="25" y="138" font-size="9" fill="#FF6B8A">P(0|2)</text><text x="105" y="98" font-size="9" fill="#FF6B8A">Q(4|4)</text><text x="60" y="195" font-size="9" fill="#94a3b8">1 2 3 4 5</text><line x1="40" y1="178" x2="40" y2="182" stroke="#94a3b8"/><line x1="60" y1="178" x2="60" y2="182" stroke="#94a3b8"/><line x1="80" y1="178" x2="80" y2="182" stroke="#94a3b8"/><line x1="100" y1="178" x2="100" y2="182" stroke="#94a3b8"/></svg>',text:'Lies die Steigung der Geraden ab:',opts:['m = 0,5','m = 2','m = 1','m = −0,5'],answer:0,fb_ok:'Richtig! Von P nach Q: Δy=2, Δx=4 → m = 0,5.',fb_nok:'Steigung = Δy/Δx. Von (0|2) zu (4|4): (4-2)/(4-0) = 0,5.',denkfehler:'Δy und Δx nicht vertauschen.',xp:15},
+            {id:'u_lf7',topic:'Graph → Gleichung',ab:2,teil:1,type:'mc',klp:'K6',l:'L4',graph:'<svg viewBox="0 0 200 200" style="max-width:280px;margin:0 auto;display:block;background:#f8fafc;border-radius:12px;"><line x1="100" y1="10" x2="100" y2="190" stroke="#cbd5e1" stroke-width="0.5"/><line x1="10" y1="100" x2="190" y2="100" stroke="#cbd5e1" stroke-width="0.5"/><line x1="10" y1="190" x2="190" y2="190" stroke="#94a3b8" stroke-width="1.5"/><line x1="10" y1="10" x2="10" y2="190" stroke="#94a3b8" stroke-width="1.5"/><line x1="10" y1="150" x2="190" y2="30" stroke="#5B6CF0" stroke-width="2.5"/><circle cx="10" cy="150" r="4" fill="#FF6B8A"/><text x="15" y="148" font-size="9" fill="#FF6B8A">(0|−2)</text><circle cx="70" cy="110" r="4" fill="#FF6B8A"/><text x="55" y="108" font-size="9" fill="#FF6B8A">(3|0)</text></svg>',text:'Welche Funktionsgleichung gehört zum Graphen?',opts:['y = ⅔x − 2','y = −⅔x + 2','y = 2x − 3','y = ⅔x + 2'],answer:0,fb_ok:'Steigung: Δy/Δx = 2/3, y-Achsenabschnitt = −2.',fb_nok:'Ablesen: b = −2 (y-Achse), m = (0−(−2))/(3−0) = ⅔.',denkfehler:'y-Achsenabschnitt und Steigung getrennt ablesen.',xp:15},
+            {id:'u_lf8',topic:'Textaufgabe linear',ab:3,teil:2,type:'mc',klp:'K3',l:'L4',text:'Ein Taxi kostet 3,50 € Grundgebühr plus 1,80 € pro km. Ab welcher Strecke ist Taxi B (5 € Grundgebühr, 1,50 €/km) günstiger?',opts:['Ab 5 km','Ab 10 km','Ab 3 km','Ab 7 km'],answer:0,fb_ok:'3,50+1,80x = 5+1,50x → 0,30x = 1,50 → x = 5 km.',fb_nok:'Gleichsetzen: 3,50+1,80x = 5+1,50x → 0,30x = 1,50 → x = 5.',denkfehler:'Zwei lineare Funktionen gleichsetzen.',xp:20}
+        ]
+    },
+    quadFunc: {
+        name: 'Quadratische Funktionen', icon: '🎢', module: 'zp10-quadratische-funktionen',
+        questions: [
+            {id:'u_qf1',topic:'Scheitelpunkt',ab:1,teil:1,type:'mc',klp:'K6',l:'L4',text:'Wo liegt der Scheitelpunkt von <span class="math-expr">f(x) = (x − 3)² + 2</span>?',opts:['S(3|2)','S(−3|2)','S(3|−2)','S(2|3)'],answer:0,fb_ok:'Aus der Scheitelpunktform direkt ablesbar!',fb_nok:'Scheitelpunktform f(x) = (x−d)² + e → S(d|e).',denkfehler:'Vorzeichen beim Ablesen beachten.',video:'https://www.youtube.com/watch?v=Aig0kKM0wfo',xp:10},
+            {id:'u_qf2',topic:'Normalparabel',ab:1,teil:1,type:'mc',klp:'K6',l:'L4',text:'In welche Richtung ist die Parabel <span class="math-expr">f(x) = −x² + 4</span> geöffnet?',opts:['Nach unten','Nach oben','Nach rechts','Nach links'],answer:0,fb_ok:'Richtig! Negatives a → nach unten geöffnet.',fb_nok:'Das Vorzeichen vor x² bestimmt die Öffnungsrichtung.',denkfehler:'Vorzeichen von a beachten.',xp:10},
+            {id:'u_qf3',topic:'Nullstellen',ab:2,teil:2,type:'mc',klp:'K6',l:'L4',text:'Wie viele Nullstellen hat <span class="math-expr">f(x) = x² + 4</span>?',opts:['Keine','Eine','Zwei','Unendlich viele'],answer:0,fb_ok:'Die Parabel liegt komplett über der x-Achse.',fb_nok:'x² + 4 = 0 → x² = −4 hat keine reelle Lösung.',denkfehler:'Diskriminante prüfen.',xp:15},
+            {id:'u_qf4',topic:'Normalform → Scheitelpunkt',ab:2,teil:2,type:'mc',klp:'K6',l:'L4',text:'Bestimme den Scheitelpunkt von <span class="math-expr">f(x) = x² − 4x + 1</span>.',opts:['S(2|−3)','S(−2|−3)','S(4|1)','S(2|1)'],answer:0,fb_ok:'Quadratische Ergänzung: (x−2)² − 4 + 1 = (x−2)² − 3.',fb_nok:'Quadratische Ergänzung: x²−4x+4−4+1 = (x−2)² − 3.',denkfehler:'Bei quadratischer Ergänzung den Korrekturterm nicht vergessen.',video:'https://www.youtube.com/watch?v=RhvBICRASUU',xp:15},
+            {id:'u_qf5',topic:'Schnittpunkte',ab:3,teil:2,type:'input',klp:'K6',l:'L4',text:'Wo schneiden sich <span class="math-expr">f(x) = x²</span> und <span class="math-expr">g(x) = 4x − 4</span>? Gib den x-Wert an.',opts:[],answer:'2',fb_ok:'x² = 4x − 4 → x² − 4x + 4 = 0 → (x−2)² = 0 → x = 2.',fb_nok:'Gleichsetzen: x² = 4x − 4 → x² − 4x + 4 = 0 → x = 2 (Berührpunkt).',denkfehler:'Funktionen gleichsetzen und umformen.',xp:20},
+            {id:'u_qf6',topic:'Parabel ablesen',ab:1,teil:1,type:'mc',klp:'K6',l:'L4',graph:'<svg viewBox="0 0 200 200" style="max-width:280px;margin:0 auto;display:block;background:#f8fafc;border-radius:12px;"><line x1="10" y1="190" x2="190" y2="190" stroke="#94a3b8" stroke-width="1.5"/><line x1="100" y1="10" x2="100" y2="190" stroke="#94a3b8" stroke-width="1"/><path d="M20,30 Q100,190 180,30" fill="none" stroke="#5B6CF0" stroke-width="2.5"/><circle cx="100" cy="170" r="4" fill="#FF6B8A"/><text x="105" y="175" font-size="9" fill="#FF6B8A">S(0|−1)</text><text x="90" y="205" font-size="10" fill="#64748b">0</text></svg>',text:'Die Parabel hat den Scheitelpunkt S(0|−1). In welche Richtung ist sie geöffnet?',opts:['Nach oben','Nach unten','Nach links','Nach rechts'],answer:0,fb_ok:'Richtig! Die Parabel öffnet sich nach oben.',fb_nok:'Wenn der Scheitelpunkt der tiefste Punkt ist, öffnet die Parabel nach oben.',denkfehler:'Scheitelpunkt als Minimum → nach oben geöffnet.',xp:10}
+        ]
+    },
+    potenz: {
+        name: 'Potenzen & Wurzeln', icon: '🔬', module: 'zp10-potenzen-wurzeln',
+        questions: [
+            {id:'u_pw1',topic:'Potenzgesetze',ab:1,teil:1,type:'mc',klp:'K5',l:'L1',text:'Vereinfache: <span class="math-expr">x³ · x⁴</span>',opts:['x⁷','x¹²','x¹','7x'],answer:0,fb_ok:'Richtig! Gleiche Basis → Exponenten addieren.',fb_nok:'Potenzgesetz: aⁿ · aᵐ = aⁿ⁺ᵐ → x³⁺⁴ = x⁷.',denkfehler:'Exponenten addieren, nicht multiplizieren.',xp:10},
+            {id:'u_pw2',topic:'Potenzgesetze',ab:1,teil:1,type:'mc',klp:'K5',l:'L1',text:'Vereinfache: <span class="math-expr">(x²)³</span>',opts:['x⁶','x⁵','x⁸','x²³'],answer:0,fb_ok:'Potenz von Potenz: Exponenten multiplizieren.',fb_nok:'(aⁿ)ᵐ = aⁿ·ᵐ → (x²)³ = x⁶.',denkfehler:'Exponenten multiplizieren, nicht addieren.',xp:10},
+            {id:'u_pw3',topic:'Wurzeln',ab:1,teil:1,type:'input',klp:'K5',l:'L1',text:'Berechne: <span class="math-expr">√144</span>',opts:[],answer:'12',fb_ok:'12² = 144, also √144 = 12.',fb_nok:'Welche Zahl mal sich selbst ergibt 144? → 12.',denkfehler:'Quadratzahlen auswendig lernen.',xp:10},
+            {id:'u_pw4',topic:'Negative Exponenten',ab:2,teil:1,type:'mc',klp:'K5',l:'L1',text:'Was ist <span class="math-expr">5⁻²</span>?',opts:['1/25','−25','−10','25'],answer:0,fb_ok:'Negativer Exponent → Kehrwert: 1/5² = 1/25.',fb_nok:'a⁻ⁿ = 1/aⁿ → 5⁻² = 1/25.',denkfehler:'Negativer Exponent bedeutet Kehrwert.',video:'https://www.youtube.com/watch?v=FoHTrjMDFjM',xp:15},
+            {id:'u_pw5',topic:'Teilweises Wurzelziehen',ab:2,teil:2,type:'mc',klp:'K5',l:'L1',text:'Vereinfache: <span class="math-expr">√50</span>',opts:['5√2','√50','25√2','10√5'],answer:0,fb_ok:'√50 = √(25·2) = 5√2.',fb_nok:'Zerlege: 50 = 25 · 2, also √50 = √25 · √2 = 5√2.',denkfehler:'Quadratzahl als Faktor finden.',xp:15}
+        ]
+    },
+    lgs: {
+        name: 'Lineare Gleichungssysteme', icon: '⚖️', module: 'zp10-lgs',
+        questions: [
+            {id:'u_lg1',topic:'Einsetzungsverfahren',ab:2,teil:2,type:'mc',klp:'K5',l:'L1',text:'Löse das LGS: <span class="math-expr">y = 2x + 1</span> und <span class="math-expr">y = −x + 7</span>',opts:['x=2, y=5','x=3, y=4','x=1, y=3','x=4, y=3'],answer:0,fb_ok:'Gleichsetzen: 2x+1 = −x+7 → 3x = 6 → x = 2, y = 5.',fb_nok:'Beide Gleichungen haben y isoliert → Gleichsetzen!',denkfehler:'Gleichsetzen, dann nach x auflösen.',video:'https://www.youtube.com/watch?v=kxTIXm5lNBw',xp:15},
+            {id:'u_lg2',topic:'Additionsverfahren',ab:2,teil:2,type:'input',klp:'K5',l:'L1',text:'LGS: <span class="math-expr">x + y = 10</span>, <span class="math-expr">x − y = 4</span>. Berechne x.',opts:[],answer:'7',fb_ok:'Addition: 2x = 14 → x = 7.',fb_nok:'Addiere beide Gleichungen: 2x = 14, also x = 7.',denkfehler:'Gleichungen geschickt addieren/subtrahieren.',xp:15},
+            {id:'u_lg3',topic:'Grafische Lösung',ab:1,teil:1,type:'mc',klp:'K6',l:'L4',text:'Zwei Geraden schneiden sich in P(3|4). Was bedeutet das für das LGS?',opts:['x=3 und y=4 ist die Lösung','Es gibt keine Lösung','Es gibt unendlich viele Lösungen','Man braucht einen dritten Punkt'],answer:0,fb_ok:'Der Schnittpunkt ist die Lösung des LGS.',fb_nok:'Schnittpunkt zweier Geraden = Lösung des zugehörigen LGS.',denkfehler:'Grafische Interpretation verstehen.',xp:10},
+            {id:'u_lg4',topic:'Textaufgabe',ab:3,teil:2,type:'mc',klp:'K3',l:'L1',text:'Lisa und Tom haben zusammen 50 €. Lisa hat 10 € mehr als Tom. Wie viel hat Tom?',opts:['20 €','25 €','30 €','15 €'],answer:0,fb_ok:'L + T = 50, L = T + 10 → 2T + 10 = 50 → T = 20.',fb_nok:'Aufstellen: L + T = 50 und L = T + 10. Einsetzen!',denkfehler:'Text in Gleichungen übersetzen.',xp:20}
+        ]
+    },
+    geo: {
+        name: 'Geometrie', icon: '📐', module: 'zp10-geometrie',
+        questions: [
+            {id:'u_g1',topic:'Dreiecksfläche',ab:1,teil:1,type:'input',klp:'K5',l:'L3',text:'Berechne die Fläche eines Dreiecks mit g = 8 cm und h = 5 cm (in cm²).',opts:[],answer:'20',fb_ok:'A = ½ · g · h = ½ · 8 · 5 = 20 cm².',fb_nok:'Formel: A = ½ · g · h = ½ · 8 · 5 = 20.',denkfehler:'Durch 2 teilen nicht vergessen.',xp:10},
+            {id:'u_g2',topic:'Pythagoras',ab:2,teil:2,type:'input',klp:'K2',l:'L3',text:'Ein rechtwinkliges Dreieck hat a = 3 cm, b = 4 cm. Wie lang ist c?',opts:[],answer:'5',fb_ok:'c² = 3² + 4² = 9 + 16 = 25 → c = 5.',fb_nok:'Pythagoras: c² = a² + b² = 9 + 16 = 25, c = 5.',denkfehler:'a² + b² = c² nur bei rechtwinkligen Dreiecken.',video:'https://www.youtube.com/watch?v=SG2DCvs4rmk',xp:15},
+            {id:'u_g3',topic:'Kreisumfang',ab:1,teil:1,type:'mc',klp:'K5',l:'L2',text:'Ein Kreis hat den Radius r = 7 cm. Wie groß ist der Umfang (≈)?',opts:['≈ 44,0 cm','≈ 22,0 cm','≈ 154,0 cm','≈ 49,0 cm'],answer:0,fb_ok:'U = 2πr = 2·π·7 ≈ 44,0 cm.',fb_nok:'Kreisumfang: U = 2πr = 2 · 3,14 · 7 ≈ 44,0.',denkfehler:'U = 2πr, nicht πr².',xp:10},
+            {id:'u_g4',topic:'Kreisfläche',ab:2,teil:2,type:'mc',klp:'K5',l:'L2',text:'Berechne die Fläche eines Kreises mit r = 5 cm (≈).',opts:['≈ 78,5 cm²','≈ 31,4 cm²','≈ 25,0 cm²','≈ 157,1 cm²'],answer:0,fb_ok:'A = πr² = π·25 ≈ 78,5 cm².',fb_nok:'A = π · r² = π · 5² = 25π ≈ 78,5.',denkfehler:'Fläche = πr², nicht 2πr.',xp:15},
+            {id:'u_g5',topic:'Volumen Zylinder',ab:2,teil:2,type:'mc',klp:'K5',l:'L2',text:'Berechne das Volumen eines Zylinders mit r = 3 cm, h = 10 cm (≈).',opts:['≈ 282,7 cm³','≈ 94,2 cm³','≈ 188,5 cm³','≈ 90,0 cm³'],answer:0,fb_ok:'V = πr²h = π·9·10 ≈ 282,7 cm³.',fb_nok:'V = π · r² · h = π · 9 · 10 = 90π ≈ 282,7.',denkfehler:'Grundfläche mal Höhe.',xp:15},
+            {id:'u_g6',topic:'Textaufgabe Geometrie',ab:3,teil:2,type:'input',klp:'K3',l:'L2',text:'Ein Swimmingpool hat die Form eines Quaders: 8m lang, 4m breit, 1,5m tief. Wie viele Liter Wasser passen hinein? (1m³ = 1000 Liter)',opts:[],answer:'48000',fb_ok:'V = 8·4·1,5 = 48 m³ = 48.000 Liter.',fb_nok:'Volumen = l·b·h = 8·4·1,5 = 48 m³. Umrechnen: 48·1000 = 48000 L.',denkfehler:'Erst Volumen in m³, dann in Liter umrechnen.',xp:20}
+        ]
+    },
+    stoch: {
+        name: 'Stochastik', icon: '🎲', module: 'zp10-stochastik',
+        questions: [
+            {id:'u_s1',topic:'Wahrscheinlichkeit',ab:1,teil:1,type:'mc',klp:'K5',l:'L5',text:'Beim Würfeln: Wie groß ist P(gerade Zahl)?',opts:['1/2','1/3','1/6','2/3'],answer:0,fb_ok:'3 gerade Zahlen (2,4,6) von 6 → 3/6 = 1/2.',fb_nok:'Günstige: {2,4,6} = 3. Mögliche: 6. → P = 3/6 = 1/2.',denkfehler:'Günstige durch mögliche Ergebnisse.',xp:10},
+            {id:'u_s2',topic:'Baumdiagramm',ab:2,teil:2,type:'mc',klp:'K5',l:'L5',text:'Eine Urne enthält 3 rote und 2 blaue Kugeln. Du ziehst zweimal mit Zurücklegen. P(rot, rot) = ?',opts:['9/25','6/25','3/5','6/20'],answer:0,fb_ok:'P(r)·P(r) = 3/5 · 3/5 = 9/25.',fb_nok:'Mit Zurücklegen → Multiplikation: (3/5)·(3/5) = 9/25.',denkfehler:'Mit Zurücklegen: Wahrscheinlichkeiten multiplizieren.',video:'https://www.youtube.com/watch?v=E7wKMahHs9A',xp:15},
+            {id:'u_s3',topic:'Relative Häufigkeit',ab:1,teil:1,type:'mc',klp:'K5',l:'L5',text:'Bei 200 Würfen fiel 38-mal eine 6. Wie groß ist die relative Häufigkeit?',opts:['0,19','0,38','19','38/100'],answer:0,fb_ok:'h(6) = 38/200 = 0,19.',fb_nok:'Relative Häufigkeit = Anzahl/Gesamtzahl = 38/200 = 0,19.',denkfehler:'Absolute Häufigkeit durch Gesamtanzahl teilen.',xp:10},
+            {id:'u_s4',topic:'Erwartungswert',ab:3,teil:2,type:'input',klp:'K2',l:'L5',text:'Ein Glücksrad hat: 50% → 0€, 30% → 5€, 20% → 10€. Berechne den Erwartungswert (in €).',opts:[],answer:'3.5',fb_ok:'E = 0·0,5 + 5·0,3 + 10·0,2 = 0 + 1,5 + 2 = 3,5€.',fb_nok:'E(X) = Σ xᵢ·P(xᵢ) = 0·0,5 + 5·0,3 + 10·0,2 = 3,5.',denkfehler:'Jeden Wert mit seiner Wahrscheinlichkeit multiplizieren.',xp:20},
+            {id:'u_s5',topic:'Diagramm ablesen',ab:1,teil:1,type:'mc',klp:'K4',l:'L5',graph:'<svg viewBox="0 0 220 160" style="max-width:300px;margin:0 auto;display:block;background:#f8fafc;border-radius:12px;padding:8px;"><text x="10" y="15" font-size="10" font-weight="600" fill="#1f2937">Lieblingsfach der 10a</text><rect x="20" y="30" width="35" height="90" fill="#5B6CF0" rx="4"/><text x="27" y="135" font-size="8" fill="#64748b">Mathe</text><text x="32" y="27" font-size="9" fill="#5B6CF0" font-weight="600">9</text><rect x="65" y="60" width="35" height="60" fill="#FF6B8A" rx="4"/><text x="68" y="135" font-size="8" fill="#64748b">Deutsch</text><text x="77" y="57" font-size="9" fill="#FF6B8A" font-weight="600">6</text><rect x="110" y="45" width="35" height="75" fill="#10B981" rx="4"/><text x="115" y="135" font-size="8" fill="#64748b">Englisch</text><text x="122" y="42" font-size="9" fill="#10B981" font-weight="600">7.5</text><rect x="155" y="75" width="35" height="45" fill="#F59E0B" rx="4"/><text x="160" y="135" font-size="8" fill="#64748b">Sport</text><text x="167" y="72" font-size="9" fill="#F59E0B" font-weight="600">4.5</text></svg>',text:'Wie viele Schüler wurden insgesamt befragt?',opts:['27','22,5','9','30'],answer:0,fb_ok:'Alle Balken addieren: 9+6+7,5+4,5 = 27.',fb_nok:'Lies alle Balkenhöhen ab und addiere: 9+6+7,5+4,5.',denkfehler:'Alle Werte aus dem Diagramm zusammenzählen.',xp:10}
+        ]
+    },
+    strahl: {
+        name: 'Strahlensatz', icon: '🔺', module: 'zp10-strahlensatz',
+        questions: [
+            {id:'u_st1',topic:'1. Strahlensatz',ab:1,teil:1,type:'mc',klp:'K2',l:'L3',text:'Im Strahlensatz gilt: a/b = c/d. Wenn a=6, b=9, c=4, wie groß ist d?',opts:['6','3','8','12'],answer:0,fb_ok:'6/9 = 4/d → d = 4·9/6 = 6.',fb_nok:'Verhältnisgleichung: 6/9 = 4/d → d = 36/6 = 6.',denkfehler:'Kreuzweise multiplizieren.',video:'https://www.youtube.com/watch?v=tJABbJBLCIE',xp:10},
+            {id:'u_st2',topic:'Ähnlichkeit',ab:2,teil:2,type:'mc',klp:'K2',l:'L3',text:'Zwei ähnliche Dreiecke haben Seitenverhältnis 2:3. Wenn eine Seite des kleinen Dreiecks 8 cm ist, wie lang ist die entsprechende Seite des großen?',opts:['12 cm','16 cm','10 cm','6 cm'],answer:0,fb_ok:'8 · 3/2 = 12 cm.',fb_nok:'Verhältnis 2:3 → 8/x = 2/3 → x = 12.',denkfehler:'Das Verhältnis korrekt anwenden.',xp:15},
+            {id:'u_st3',topic:'Höhenmessung',ab:3,teil:2,type:'input',klp:'K3',l:'L3',text:'Ein 2m großer Mensch wirft einen 3m langen Schatten. Ein Baum wirft einen 12m Schatten. Wie hoch ist der Baum (in m)?',opts:[],answer:'8',fb_ok:'2/3 = x/12 → x = 24/3 = 8m.',fb_nok:'Strahlensatz: 2/3 = x/12, also x = 2·12/3 = 8.',denkfehler:'Verhältnisgleichung aufstellen.',xp:20}
+        ]
+    },
+    prozent: {
+        name: 'Prozent & Wachstum', icon: '📊', module: 'zp10-prozent-wachstum',
+        questions: [
+            {id:'u_pz1',topic:'Prozentwert',ab:1,teil:1,type:'input',klp:'K5',l:'L1',text:'Berechne 25% von 240.',opts:[],answer:'60',fb_ok:'240 · 0,25 = 60.',fb_nok:'25% = 25/100 = 0,25. Also 240 · 0,25 = 60.',denkfehler:'Prozent in Dezimalzahl umwandeln.',xp:10},
+            {id:'u_pz2',topic:'Grundwert',ab:2,teil:1,type:'input',klp:'K5',l:'L1',text:'15% einer Zahl sind 45. Wie groß ist die Zahl?',opts:[],answer:'300',fb_ok:'G = W/p = 45/0,15 = 300.',fb_nok:'Grundwert = Prozentwert / Prozentsatz = 45 / 0,15 = 300.',denkfehler:'Nach dem Grundwert umstellen.',xp:15},
+            {id:'u_pz3',topic:'Prozentsatz',ab:2,teil:1,type:'input',klp:'K5',l:'L1',text:'Von 80 Schülern haben 60 bestanden. Wie viel Prozent ist das?',opts:[],answer:'75',fb_ok:'60/80 = 0,75 = 75%.',fb_nok:'p = W/G = 60/80 = 0,75 = 75%.',denkfehler:'Teil durch Ganzes, dann mal 100.',xp:15},
+            {id:'u_pz4',topic:'Zinsrechnung',ab:2,teil:2,type:'mc',klp:'K5',l:'L1',text:'500€ werden zu 3% p.a. angelegt. Wie viel Zinsen gibt es nach 1 Jahr?',opts:['15 €','150 €','1,50 €','50 €'],answer:0,fb_ok:'Z = K · p/100 = 500 · 0,03 = 15€.',fb_nok:'Zinsen = Kapital · Zinssatz = 500 · 3/100 = 15€.',denkfehler:'Grundformel der Zinsrechnung.',xp:15},
+            {id:'u_pz5',topic:'Wachstum',ab:3,teil:2,type:'mc',klp:'K6',l:'L4',text:'Eine Stadt hat 20.000 Einwohner und wächst jährlich um 2%. Wie viele nach 3 Jahren (≈)?',opts:['≈ 21.224','≈ 21.200','≈ 22.000','≈ 20.600'],answer:0,fb_ok:'20000 · 1,02³ ≈ 20000 · 1,0612 ≈ 21.224.',fb_nok:'Wachstumsfaktor: 1,02. Nach 3 Jahren: 20000 · 1,02³.',denkfehler:'Exponentielles Wachstum: Faktor potenzieren.',video:'https://www.youtube.com/watch?v=LwH2qEV08bo',xp:20},
+            {id:'u_pz6',topic:'Textaufgabe Prozent',ab:2,teil:2,type:'input',klp:'K3',l:'L1',text:'Ein Sneaker kostet 120 €. Im Sale gibt es 30% Rabatt. Wie viel zahlst du (in €)?',opts:[],answer:'84',fb_ok:'120 · 0,70 = 84 € (oder: 120 − 36 = 84).',fb_nok:'Rabatt: 120 · 0,30 = 36 €. Endpreis: 120 − 36 = 84 €.',denkfehler:'30% Rabatt = 70% vom Originalpreis.',xp:15},
+            {id:'u_pz7',topic:'Textaufgabe Zinseszins',ab:3,teil:2,type:'mc',klp:'K6',l:'L4',text:'Du legst 1.000 € zu 5% Zinsen an. Nach wie vielen Jahren hast du mehr als 1.200 €?',opts:['Nach 4 Jahren','Nach 3 Jahren','Nach 5 Jahren','Nach 2 Jahren'],answer:0,fb_ok:'1000·1,05⁴ ≈ 1.215,51 > 1200. Nach 3: 1.157,63 < 1200.',fb_nok:'Probiere: 1000·1,05³ ≈ 1157, 1000·1,05⁴ ≈ 1215 > 1200.',denkfehler:'Zinseszins: Jedes Jahr wird der neue Betrag verzinst.',xp:20}
+        ]
+    },
+    expo: {
+        name: 'Exponentialfunktionen', icon: '🚀', module: 'zp10-exponentialfunktionen',
+        questions: [
+            {id:'u_ef1',topic:'Exponentielles Wachstum',ab:1,teil:1,type:'mc',klp:'K6',l:'L4',text:'Welche Funktion beschreibt exponentielles Wachstum mit Startwert 100 und Wachstumsfaktor 1,5?',opts:['f(x) = 100 · 1,5ˣ','f(x) = 100 + 1,5x','f(x) = 1,5 · 100ˣ','f(x) = 100 · x¹·⁵'],answer:0,fb_ok:'Exponentialfunktion: f(x) = a · bˣ.',fb_nok:'Exponentielles Wachstum: f(x) = Startwert · Faktorˣ.',denkfehler:'Lineares vs. exponentielles Wachstum unterscheiden.',xp:10},
+            {id:'u_ef2',topic:'Halbwertszeit',ab:2,teil:2,type:'mc',klp:'K6',l:'L4',text:'Ein Stoff hat 200g und eine Halbwertszeit von 3 Stunden. Wie viel nach 6 Stunden?',opts:['50 g','100 g','25 g','75 g'],answer:0,fb_ok:'Nach 6h = 2 Halbwertszeiten: 200/2/2 = 50g.',fb_nok:'6h = 2 Halbwertszeiten → 200 · (½)² = 200 · ¼ = 50g.',denkfehler:'Anzahl der Halbwertszeiten berechnen.',video:'https://www.youtube.com/watch?v=1sCxfpBNZrU',xp:15},
+            {id:'u_ef3',topic:'Graph erkennen',ab:2,teil:1,type:'mc',klp:'K6',l:'L4',text:'Welche Aussage über <span class="math-expr">f(x) = 0,5ˣ</span> stimmt?',opts:['Der Graph fällt (exponentielle Abnahme)','Der Graph steigt','Der Graph ist eine Gerade','Der Graph hat eine Nullstelle bei x=0'],answer:0,fb_ok:'Basis < 1 → fallend (exponentielle Abnahme).',fb_nok:'Basis b: b > 1 → Wachstum, 0 < b < 1 → Abnahme.',denkfehler:'Die Basis bestimmt Wachstum oder Zerfall.',xp:15},
+            {id:'u_ef4',topic:'Textaufgabe exponentiell',ab:3,teil:2,type:'mc',klp:'K3',l:'L4',text:'Eine Bakterienkultur verdoppelt sich alle 3 Stunden. Start: 500 Bakterien. Wie viele nach 12 Stunden?',opts:['8.000','4.000','16.000','2.000'],answer:0,fb_ok:'12h = 4 Verdopplungen: 500 · 2⁴ = 500 · 16 = 8.000.',fb_nok:'12/3 = 4 Verdopplungen. 500 · 2⁴ = 500 · 16 = 8000.',denkfehler:'Anzahl der Verdopplungen = Gesamtzeit / Verdopplungszeit.',xp:20}
+        ]
+    }
+};
+
+// ===== APP STATE =====
+let practiceState = {
+    mode: '',
+    topic: '',
+    questions: [],
+    current: 0,
+    answers: [],
+    startTime: 0,
+    answered: false
+};
+
+let userData = { sessions: 0, totalQuestions: 0, totalCorrect: 0, xp: 0, streak: 0, lastPractice: null, topicScores: {}, compScores: {}, history: [] };
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', () => {
+    loadUserData();
+    updateStreak();
+    renderHome();
+});
+
+function loadUserData() {
+    const saved = localStorage.getItem('zp10_ueben_data');
+    if (saved) {
+        const parsed = JSON.parse(saved);
+        userData = { ...userData, ...parsed };
+    }
+    loadSettings();
+}
+
+function saveUserData() {
+    localStorage.setItem('zp10_ueben_data', JSON.stringify(userData));
+    // Also sync XP to hub
+    try {
+        const hubData = JSON.parse(localStorage.getItem('zp10_hub_data') || '{}');
+        hubData.totalXP = (hubData.totalXP || 0) + 0; // don't double-add, just ensure key exists
+        if (!hubData.practiceStats) hubData.practiceStats = {};
+        hubData.practiceStats.sessions = userData.sessions;
+        hubData.practiceStats.accuracy = userData.totalQuestions > 0 ? Math.round(userData.totalCorrect / userData.totalQuestions * 100) : 0;
+        localStorage.setItem('zp10_hub_data', JSON.stringify(hubData));
+    } catch(e) {}
+}
+
+function loadSettings() {
+    const s = JSON.parse(localStorage.getItem('zp10_ueben_settings') || '{}');
+    if (s.count) document.getElementById('settingsCount').value = s.count;
+    if (s.diff) document.getElementById('settingsDiff').value = s.diff;
+    if (s.feedback) document.getElementById('settingsFeedback').value = s.feedback;
+}
+
+function saveSettings() {
+    const s = {
+        count: document.getElementById('settingsCount').value,
+        diff: document.getElementById('settingsDiff').value,
+        feedback: document.getElementById('settingsFeedback').value
+    };
+    localStorage.setItem('zp10_ueben_settings', JSON.stringify(s));
+}
+
+function getSettings() {
+    return {
+        count: parseInt(document.getElementById('settingsCount').value),
+        diff: document.getElementById('settingsDiff').value,
+        feedback: document.getElementById('settingsFeedback').value
+    };
+}
+
+// ===== STREAK =====
+function updateStreak() {
+    const today = new Date().toISOString().split('T')[0];
+    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+
+    if (userData.lastPractice === today) {
+        // Already practiced today, keep streak
+    } else if (userData.lastPractice === yesterday) {
+        // Streak continues but not yet practiced today
+    } else if (userData.lastPractice && userData.lastPractice !== today) {
+        // Streak broken
+        userData.streak = 0;
+    }
+
+    document.getElementById('streakCount').textContent = userData.streak;
+    renderStreakDots();
+}
+
+function renderStreakDots() {
+    const container = document.getElementById('streakDots');
+    container.innerHTML = '';
+    const days = ['Mo','Di','Mi','Do','Fr','Sa','So'];
+    const today = new Date().getDay();
+    const adjustedToday = today === 0 ? 6 : today - 1; // Monday = 0
+
+    for (let i = 0; i < 7; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'streak-dot' + (i <= adjustedToday && userData.streak > 0 && i >= adjustedToday - Math.min(userData.streak - 1, adjustedToday) ? ' done' : '');
+        dot.textContent = days[i];
+        container.appendChild(dot);
+    }
+}
+
+function recordPracticeDay() {
+    const today = new Date().toISOString().split('T')[0];
+    if (userData.lastPractice !== today) {
+        const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+        if (userData.lastPractice === yesterday) {
+            userData.streak++;
+        } else {
+            userData.streak = 1;
+        }
+        userData.lastPractice = today;
+    }
+}
+
+// ===== RENDER HOME =====
+function renderHome() {
+    // Stats
+    document.getElementById('statSessions').textContent = userData.sessions;
+    document.getElementById('statQuestions').textContent = userData.totalQuestions;
+    document.getElementById('statAccuracy').textContent = userData.totalQuestions > 0
+        ? Math.round(userData.totalCorrect / userData.totalQuestions * 100) + '%' : '–';
+    document.getElementById('statXP').textContent = userData.xp;
+
+    renderRecommendations();
+    renderTopicGrid();
+    renderCompetencyDashboard();
+}
+
+function renderRecommendations() {
+    const container = document.getElementById('recContainer');
+
+    // Analyze weak topics from module results and practice history
+    const weakTopics = [];
+    const moduleResults = {};
+
+    // Check zp10_hub_data for module results
+    try {
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith('zp10_result_')) {
+                const result = JSON.parse(localStorage.getItem(key));
+                if (result && result.percentage !== undefined) {
+                    moduleResults[key.replace('zp10_result_', '')] = result.percentage;
+                }
+            }
+        }
+    } catch(e) {}
+
+    // Check practice history for weak topics
+    const topicAccuracy = {};
+    for (const [tid, data] of Object.entries(userData.topicScores || {})) {
+        if (data.total > 0) {
+            topicAccuracy[tid] = Math.round(data.correct / data.total * 100);
+        }
+    }
+
+    // Build recommendations
+    const recs = [];
+
+    // Find topics with low accuracy
+    for (const [tid, topic] of Object.entries(TOPICS)) {
+        const acc = topicAccuracy[tid];
+        if (acc !== undefined && acc < 50) {
+            recs.push({ topic: tid, name: topic.name, icon: topic.icon, score: acc, priority: 'urgent', reason: `Nur ${acc}% richtig – hier solltest du dringend üben!` });
+        } else if (acc !== undefined && acc < 75) {
+            recs.push({ topic: tid, name: topic.name, icon: topic.icon, score: acc, priority: 'medium', reason: `${acc}% richtig – mit etwas Übung schaffst du mehr!` });
+        }
+    }
+
+    // Check for untouched topics
+    const practiced = Object.keys(topicAccuracy);
+    for (const [tid, topic] of Object.entries(TOPICS)) {
+        if (!practiced.includes(tid)) {
+            recs.push({ topic: tid, name: topic.name, icon: topic.icon, score: null, priority: 'medium', reason: 'Noch nicht geübt – probier es aus!' });
+        }
+    }
+
+    // Sort by priority
+    recs.sort((a, b) => {
+        const prio = { urgent: 0, medium: 1, good: 2 };
+        return (prio[a.priority] || 1) - (prio[b.priority] || 1);
+    });
+
+    if (recs.length === 0) {
+        // All good!
+        container.innerHTML = `
+            <div class="rec-card good">
+                <div class="rec-title">Alles im grünen Bereich! ✨</div>
+                <div class="rec-reason">Du hast alle Themen gut drauf. Mach weiter so!</div>
+            </div>`;
+        return;
+    }
+
+    container.innerHTML = recs.slice(0, 3).map(r => `
+        <div class="rec-card ${r.priority}" onclick="startTopicSession('${r.topic}')">
+            <div class="rec-title">${r.icon} ${r.name}</div>
+            <div class="rec-reason">${r.reason}</div>
+            <div class="rec-meta">
+                ${r.score !== null ? `<span class="rec-badge badge-${r.priority === 'urgent' ? 'danger' : 'warning'}">${r.score}%</span>` : '<span class="rec-badge badge-primary">Neu</span>'}
+                <span class="rec-badge badge-primary">${TOPICS[r.topic].questions.length} Aufgaben</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderTopicGrid() {
+    const grid = document.getElementById('topicGrid');
+    grid.innerHTML = Object.entries(TOPICS).map(([tid, topic]) => {
+        const acc = userData.topicScores[tid];
+        const scoreText = acc && acc.total > 0 ? Math.round(acc.correct / acc.total * 100) + '%' : 'Neu';
+        const scoreClass = !acc ? 'badge-primary' : (acc.correct / acc.total >= 0.75 ? 'badge-success' : acc.correct / acc.total >= 0.5 ? 'badge-warning' : 'badge-danger');
+        return `
+            <div class="topic-card" onclick="startTopicSession('${tid}')">
+                <div class="topic-icon">${topic.icon}</div>
+                <div class="topic-name">${topic.name}</div>
+                <div class="topic-score ${scoreClass}">${scoreText}</div>
+            </div>`;
+    }).join('');
+}
+
+function renderCompetencyDashboard() {
+    const container = document.getElementById('compDashboard');
+    const cs = userData.compScores || {};
+
+    const klpDefs = [
+        {key:'K1',name:'Argumentieren'},
+        {key:'K2',name:'Problemlösen'},
+        {key:'K3',name:'Modellieren'},
+        {key:'K4',name:'Werkzeuge'},
+        {key:'K5',name:'Arithmetik/Algebra'},
+        {key:'K6',name:'Funktionen'}
+    ];
+    const lDefs = [
+        {key:'L1',name:'Zahl & Operation'},
+        {key:'L2',name:'Messen & Größen'},
+        {key:'L3',name:'Raum & Form'},
+        {key:'L4',name:'Funktionaler Zusammenhang'},
+        {key:'L5',name:'Daten & Zufall'}
+    ];
+    const abDefs = [
+        {key:'AB1',name:'AB I – Reproduzieren'},
+        {key:'AB2',name:'AB II – Zusammenhänge'},
+        {key:'AB3',name:'AB III – Verallgemeinern'}
+    ];
+
+    function renderItem(def) {
+        const d = cs[def.key];
+        if (!d || d.total === 0) {
+            return `<div class="comp-item">
+                <div class="comp-dot none"></div>
+                <span class="comp-label">${def.key}: ${def.name}</span>
+                <span class="comp-count">–</span>
+            </div>`;
+        }
+        const pct = Math.round(d.correct / d.total * 100);
+        const cls = pct >= 75 ? 'high' : pct >= 50 ? 'mid' : 'low';
+        const color = pct >= 75 ? 'var(--success)' : pct >= 50 ? 'var(--warning)' : 'var(--danger)';
+        return `<div class="comp-item">
+            <div class="comp-dot ${cls}"></div>
+            <span class="comp-label">${def.key}: ${def.name}</span>
+            <div class="comp-bar-mini"><div class="comp-bar-fill" style="width:${pct}%;background:${color};"></div></div>
+            <span class="comp-count">${pct}% (${d.total})</span>
+        </div>`;
+    }
+
+    container.innerHTML = `
+        <div class="comp-grid">
+            <div class="comp-section-title">Prozessbezogene Kompetenzen (KLP)</div>
+            ${klpDefs.map(renderItem).join('')}
+            <div class="comp-section-title" style="margin-top: 0.5rem;">Inhaltsbezogene Kompetenzen</div>
+            ${lDefs.map(renderItem).join('')}
+            <div class="comp-section-title" style="margin-top: 0.5rem;">Anforderungsbereiche</div>
+            ${abDefs.map(renderItem).join('')}
+            <div class="comp-legend">
+                <span><span class="comp-legend-dot" style="background:var(--border);"></span> Nicht geübt</span>
+                <span><span class="comp-legend-dot" style="background:var(--danger);"></span> &lt;50%</span>
+                <span><span class="comp-legend-dot" style="background:var(--warning);"></span> 50–74%</span>
+                <span><span class="comp-legend-dot" style="background:var(--success);"></span> ≥75%</span>
+            </div>
+        </div>
+    `;
+}
+
+// ===== START SESSIONS =====
+function startTopicSession(topicId) {
+    const settings = getSettings();
+    const topic = TOPICS[topicId];
+    let questions = [...topic.questions];
+
+    // Filter by AB if set
+    if (settings.diff !== 'all') {
+        const ab = parseInt(settings.diff);
+        const filtered = questions.filter(q => q.ab === ab);
+        if (filtered.length >= 3) questions = filtered;
+    }
+
+    shuffle(questions);
+    questions = questions.slice(0, settings.count);
+
+    practiceState = {
+        mode: 'topic',
+        topic: topicId,
+        topicName: topic.name,
+        questions,
+        current: 0,
+        answers: [],
+        startTime: Date.now(),
+        answered: false
+    };
+
+    showPractice();
+}
+
+function startQuickSession(mode) {
+    const settings = getSettings();
+    let questions = [];
+    let label = '';
+
+    if (mode === 'weak') {
+        label = 'Schwächen trainieren';
+        // Prioritize topics with low accuracy
+        const sorted = Object.entries(TOPICS).sort((a, b) => {
+            const accA = userData.topicScores[a[0]]?.total > 0 ? userData.topicScores[a[0]].correct / userData.topicScores[a[0]].total : 0.5;
+            const accB = userData.topicScores[b[0]]?.total > 0 ? userData.topicScores[b[0]].correct / userData.topicScores[b[0]].total : 0.5;
+            return accA - accB;
+        });
+        for (const [tid, topic] of sorted) {
+            questions.push(...topic.questions.map(q => ({ ...q, _topic: tid, _topicName: topic.name })));
+            if (questions.length >= settings.count * 2) break;
+        }
+    } else if (mode === 'mixed') {
+        label = 'Bunt gemischt';
+        for (const [tid, topic] of Object.entries(TOPICS)) {
+            questions.push(...topic.questions.map(q => ({ ...q, _topic: tid, _topicName: topic.name })));
+        }
+    } else if (mode === 'exam') {
+        label = 'Prüfungs-Simulation';
+        // Mix AB I, II, III in roughly 30:50:20 ratio
+        const all = [];
+        for (const [tid, topic] of Object.entries(TOPICS)) {
+            all.push(...topic.questions.map(q => ({ ...q, _topic: tid, _topicName: topic.name })));
+        }
+        const ab1 = all.filter(q => q.ab === 1);
+        const ab2 = all.filter(q => q.ab === 2);
+        const ab3 = all.filter(q => q.ab === 3);
+        shuffle(ab1); shuffle(ab2); shuffle(ab3);
+        const n = settings.count;
+        questions = [
+            ...ab1.slice(0, Math.round(n * 0.3)),
+            ...ab2.slice(0, Math.round(n * 0.5)),
+            ...ab3.slice(0, Math.round(n * 0.2))
+        ];
+    } else if (mode === 'teil1') {
+        label = 'Teil 1 (ohne Taschenrechner)';
+        for (const [tid, topic] of Object.entries(TOPICS)) {
+            questions.push(...topic.questions.filter(q => q.teil === 1).map(q => ({ ...q, _topic: tid, _topicName: topic.name })));
+        }
+    }
+
+    shuffle(questions);
+    questions = questions.slice(0, mode === 'exam' ? 20 : settings.count);
+
+    if (questions.length === 0) {
+        alert('Nicht genug Aufgaben für diesen Modus. Übe zuerst einzelne Themen!');
+        return;
+    }
+
+    practiceState = {
+        mode,
+        topic: null,
+        topicName: label,
+        questions,
+        current: 0,
+        answers: [],
+        startTime: Date.now(),
+        answered: false
+    };
+
+    showPractice();
+}
+
+// ===== PRACTICE =====
+function showPractice() {
+    document.getElementById('homeScreen').classList.remove('active');
+    document.getElementById('resultsScreen').classList.remove('active');
+    document.getElementById('practiceScreen').classList.add('active');
+    practiceState.timerInterval = setInterval(updateTimer, 1000);
+    renderQuestion();
+}
+
+function exitPractice() {
+    if (practiceState.answers.length > 0 && !confirm('Wirklich abbrechen? Dein Fortschritt geht verloren.')) return;
+    clearInterval(practiceState.timerInterval);
+    showHome();
+}
+
+function showHome() {
+    document.getElementById('practiceScreen').classList.remove('active');
+    document.getElementById('resultsScreen').classList.remove('active');
+    document.getElementById('homeScreen').classList.add('active');
+    renderHome();
+    updateStreak();
+}
+
+function updateTimer() {
+    const elapsed = Math.floor((Date.now() - practiceState.startTime) / 1000);
+    const min = Math.floor(elapsed / 60);
+    const sec = elapsed % 60;
+    document.getElementById('practiceTimer').textContent = `${min.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
+}
+
+function renderQuestion() {
+    const q = practiceState.questions[practiceState.current];
+    const total = practiceState.questions.length;
+    const idx = practiceState.current + 1;
+    practiceState.answered = false;
+
+    document.getElementById('practiceCounter').textContent = `${idx}/${total}`;
+    document.getElementById('practiceProgress').style.width = `${(practiceState.current / total) * 100}%`;
+
+    const topicLabel = q._topicName || practiceState.topicName;
+
+    let html = `
+        <div class="question-header">
+            <span class="question-topic">${topicLabel}</span>
+            <span style="font-size: 0.75rem; color: var(--text-secondary);">
+                ${q.klp ? q.klp : ''} ${q.l ? q.l : ''} · ${q.ab ? 'AB ' + ['I','II','III'][q.ab-1] : ''} ${q.teil ? '· Teil ' + q.teil : ''} · ${q.xp} XP
+            </span>
+        </div>
+        ${q.graph ? `<div style="margin-bottom: 1rem;">${q.graph}</div>` : ''}
+        <div class="question-text">${q.text}</div>`;
+
+    if (q.type === 'mc') {
+        html += `<div class="opts-grid" id="optsGrid">`;
+        q.opts.forEach((opt, i) => {
+            html += `<button class="opt-btn" onclick="checkMC(${i})" id="opt_${i}">${opt}</button>`;
+        });
+        html += `</div>`;
+    } else if (q.type === 'input') {
+        html += `
+            <div class="input-row">
+                <input type="text" class="input-answer" id="inputAnswer" placeholder="Deine Antwort..." onkeydown="if(event.key==='Enter')checkInput()">
+                <button class="check-btn" onclick="checkInput()">Prüfen</button>
+            </div>`;
+    }
+
+    html += `<div class="feedback-box" id="feedbackBox"></div>`;
+    html += `<button class="next-btn" id="nextBtn" onclick="nextQuestion()">Weiter →</button>`;
+
+    document.getElementById('questionCard').innerHTML = html;
+}
+
+function checkMC(idx) {
+    if (practiceState.answered) return;
+    practiceState.answered = true;
+
+    const q = practiceState.questions[practiceState.current];
+    const correct = idx === q.answer;
+
+    // Disable all buttons
+    document.querySelectorAll('.opt-btn').forEach(btn => btn.disabled = true);
+
+    // Highlight
+    document.getElementById(`opt_${idx}`).classList.add(correct ? 'correct' : 'wrong');
+    if (!correct) document.getElementById(`opt_${q.answer}`).classList.add('reveal');
+
+    recordAnswer(correct, q);
+    showFeedback(correct, q);
+}
+
+function checkInput() {
+    if (practiceState.answered) return;
+
+    const q = practiceState.questions[practiceState.current];
+    const input = document.getElementById('inputAnswer').value.trim().replace(',', '.');
+    if (!input) return;
+
+    practiceState.answered = true;
+    document.getElementById('inputAnswer').disabled = true;
+    document.querySelector('.check-btn').disabled = true;
+
+    // Check answer - support numeric tolerance
+    let correct = false;
+    const expected = String(q.answer).replace(',', '.');
+    if (!isNaN(parseFloat(input)) && !isNaN(parseFloat(expected))) {
+        correct = Math.abs(parseFloat(input) - parseFloat(expected)) < 0.1;
+    } else {
+        correct = input.toLowerCase() === expected.toLowerCase();
+    }
+
+    const inputEl = document.getElementById('inputAnswer');
+    inputEl.style.borderColor = correct ? 'var(--success)' : 'var(--danger)';
+    inputEl.style.background = correct ? 'var(--success-light)' : 'var(--danger-light)';
+
+    recordAnswer(correct, q);
+    showFeedback(correct, q);
+}
+
+function recordAnswer(correct, q) {
+    practiceState.answers.push({
+        questionId: q.id,
+        correct,
+        topic: q._topic || practiceState.topic,
+        topicName: q._topicName || practiceState.topicName
+    });
+
+    // Track competency
+    if (q.klp) {
+        if (!userData.compScores) userData.compScores = {};
+        if (!userData.compScores[q.klp]) userData.compScores[q.klp] = {correct:0,total:0};
+        userData.compScores[q.klp].total++;
+        if (correct) userData.compScores[q.klp].correct++;
+    }
+    if (q.l) {
+        if (!userData.compScores) userData.compScores = {};
+        if (!userData.compScores[q.l]) userData.compScores[q.l] = {correct:0,total:0};
+        userData.compScores[q.l].total++;
+        if (correct) userData.compScores[q.l].correct++;
+    }
+    if (q.ab) {
+        if (!userData.compScores) userData.compScores = {};
+        const abKey = 'AB' + q.ab;
+        if (!userData.compScores[abKey]) userData.compScores[abKey] = {correct:0,total:0};
+        userData.compScores[abKey].total++;
+        if (correct) userData.compScores[abKey].correct++;
+    }
+}
+
+function showFeedback(correct, q) {
+    const settings = getSettings();
+    if (settings.feedback === 'end') {
+        document.getElementById('nextBtn').classList.add('show');
+        return;
+    }
+
+    const box = document.getElementById('feedbackBox');
+    box.className = `feedback-box show ${correct ? 'feedback-ok' : 'feedback-nok'}`;
+    box.innerHTML = `
+        <div>${correct ? q.fb_ok : q.fb_nok}</div>
+        ${!correct && q.denkfehler ? `<div class="feedback-hint">💡 Typischer Denkfehler: ${q.denkfehler}</div>` : ''}
+        ${!correct && q.video ? `<a href="${q.video}" target="_blank" class="feedback-video">📹 Erklärvideo ansehen</a>` : ''}
+    `;
+    document.getElementById('nextBtn').classList.add('show');
+}
+
+function nextQuestion() {
+    practiceState.current++;
+    if (practiceState.current >= practiceState.questions.length) {
+        finishSession();
+    } else {
+        renderQuestion();
+    }
+}
+
+// ===== FINISH =====
+function finishSession() {
+    clearInterval(practiceState.timerInterval);
+
+    const correct = practiceState.answers.filter(a => a.correct).length;
+    const total = practiceState.answers.length;
+    const pct = Math.round(correct / total * 100);
+    const elapsed = Math.floor((Date.now() - practiceState.startTime) / 1000);
+    const xpEarned = practiceState.answers.reduce((sum, a) => sum + (a.correct ? practiceState.questions[practiceState.answers.indexOf(a)]?.xp || 10 : 0), 0);
+
+    // NRW grading
+    let grade = '6';
+    if (pct >= 87) grade = '1';
+    else if (pct >= 73) grade = '2';
+    else if (pct >= 59) grade = '3';
+    else if (pct >= 45) grade = '4';
+    else if (pct >= 18) grade = '5';
+
+    // Update user data
+    userData.sessions++;
+    userData.totalQuestions += total;
+    userData.totalCorrect += correct;
+    userData.xp += xpEarned;
+    recordPracticeDay();
+
+    // Update topic scores
+    practiceState.answers.forEach(a => {
+        const t = a.topic;
+        if (t) {
+            if (!userData.topicScores[t]) userData.topicScores[t] = { correct: 0, total: 0 };
+            userData.topicScores[t].total++;
+            if (a.correct) userData.topicScores[t].correct++;
+        }
+    });
+
+    // Add to history
+    userData.history.push({
+        date: new Date().toISOString(),
+        mode: practiceState.mode,
+        topic: practiceState.topicName,
+        score: pct,
+        correct,
+        total,
+        xp: xpEarned,
+        time: elapsed
+    });
+    if (userData.history.length > 50) userData.history = userData.history.slice(-50);
+
+    // Sync XP to hub
+    try {
+        const hubData = JSON.parse(localStorage.getItem('zp10_hub_data') || '{}');
+        hubData.totalXP = (hubData.totalXP || 0) + xpEarned;
+        localStorage.setItem('zp10_hub_data', JSON.stringify(hubData));
+    } catch(e) {}
+
+    saveUserData();
+
+    // Show results
+    document.getElementById('practiceScreen').classList.remove('active');
+    document.getElementById('resultsScreen').classList.add('active');
+
+    document.getElementById('resultsSessionType').textContent = practiceState.topicName;
+    document.getElementById('resultsScore').textContent = pct + '%';
+    document.getElementById('resultsGrade').textContent = `Note: ${grade} — ${correct}/${total} richtig`;
+    document.getElementById('resultsDetail').textContent = `+${xpEarned} XP · ${Math.floor(elapsed/60)}:${(elapsed%60).toString().padStart(2,'0')} Min`;
+
+    // Show weak areas
+    const weakContainer = document.getElementById('weakTopics');
+    const topicResults = {};
+    practiceState.answers.forEach(a => {
+        const key = a.topicName || a.topic;
+        if (!topicResults[key]) topicResults[key] = { correct: 0, total: 0 };
+        topicResults[key].total++;
+        if (a.correct) topicResults[key].correct++;
+    });
+
+    const weakEntries = Object.entries(topicResults).filter(([, v]) => v.correct / v.total < 0.75);
+    if (weakEntries.length > 0) {
+        weakContainer.innerHTML = `<h4 style="margin-bottom: 0.75rem;">Hier solltest du nochmal üben:</h4>` +
+            weakEntries.map(([name, v]) => `
+                <div class="weak-topic-item">
+                    <span>${name}</span>
+                    <span class="rec-badge badge-${v.correct/v.total < 0.5 ? 'danger' : 'warning'}">${Math.round(v.correct/v.total*100)}%</span>
+                </div>
+            `).join('');
+    } else {
+        weakContainer.innerHTML = '<p style="text-align:center; color: var(--success); margin-top: 1rem;">Alles richtig – weiter so! 🎉</p>';
+    }
+}
+
+function retryWrong() {
+    const wrongQs = practiceState.answers
+        .map((a, i) => a.correct ? null : practiceState.questions[i])
+        .filter(q => q);
+
+    if (wrongQs.length === 0) {
+        showHome();
+        return;
+    }
+
+    practiceState = {
+        mode: 'retry',
+        topic: practiceState.topic,
+        topicName: 'Fehler wiederholen',
+        questions: wrongQs,
+        current: 0,
+        answers: [],
+        startTime: Date.now(),
+        answered: false
+    };
+
+    showPractice();
+}
+
+// ===== UTILS =====
+function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+</script>
+</body>
+</html>

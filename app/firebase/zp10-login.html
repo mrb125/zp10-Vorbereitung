@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mathe-Check ZP10 - Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #5B6CF0;
+      --primary-light: #EEF0FF;
+      --accent: #FF6B8A;
+      --bg: #F0F4FF;
+      --surface: #FFFFFF;
+      --text: #1A1D3B;
+      --text-secondary: #6B7199;
+      --border: #E4E8F7;
+      --success: #10B981;
+      --warning: #F59E0B;
+      --danger: #EF4444;
+
+      --bg-dark: #0D1117;
+      --surface-dark: #161B25;
+      --text-dark: #E4E8F7;
+      --border-dark: #30363D;
+
+      --radius-card: 20px;
+      --radius-button: 14px;
+      --gradient-cta: linear-gradient(135deg, var(--primary), var(--accent));
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, var(--bg) 0%, #E8EEFF 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Decorative blobs */
+    body::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -10%;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(91, 108, 240, 0.1) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    body::after {
+      content: '';
+      position: absolute;
+      bottom: -30%;
+      left: -5%;
+      width: 350px;
+      height: 350px;
+      background: radial-gradient(circle, rgba(255, 107, 138, 0.08) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        grid-template-columns: 1fr;
+        gap: 30px;
+      }
+    }
+
+    .hero-section {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      padding-right: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .hero-section {
+        padding-right: 0;
+        text-align: center;
+        order: 2;
+      }
+    }
+
+    .hero-icon {
+      font-size: 64px;
+      line-height: 1;
+    }
+
+    .hero-title {
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 42px;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.2;
+      background: var(--gradient-cta);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-subtitle {
+      font-size: 16px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      max-width: 400px;
+    }
+
+    .hero-features {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .hero-feature {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .hero-feature-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--primary-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .form-card {
+      background: var(--surface);
+      border-radius: var(--radius-card);
+      padding: 40px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+      border: 1px solid var(--border);
+      order: 1;
+    }
+
+    @media (max-width: 768px) {
+      .form-card {
+        order: 1;
+      }
+    }
+
+    .form-title {
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .form-subtitle {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 28px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 28px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 12px 16px;
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.3s;
+      position: relative;
+    }
+
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
+    .tab-btn:hover {
+      color: var(--primary);
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group.hidden {
+      display: none;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    input[type="email"],
+    input[type="password"],
+    input[type="text"],
+    select {
+      width: 100%;
+      padding: 12px 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.3s;
+    }
+
+    input[type="email"]:focus,
+    input[type="password"]:focus,
+    input[type="text"]:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: var(--surface);
+      box-shadow: 0 0 0 3px rgba(91, 108, 240, 0.1);
+    }
+
+    select {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235B6CF0' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 20px;
+      padding-right: 40px;
+    }
+
+    .form-helper {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 6px;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 12px 20px;
+      background: var(--gradient-cta);
+      border: none;
+      border-radius: var(--radius-button);
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-top: 10px;
+      box-shadow: 0 4px 15px rgba(91, 108, 240, 0.3);
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(91, 108, 240, 0.4);
+    }
+
+    .submit-btn:active {
+      transform: translateY(0);
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      margin: 24px 0;
+      gap: 12px;
+    }
+
+    .divider-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .divider-text {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .google-btn {
+      width: 100%;
+      padding: 12px 20px;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-button);
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.3s;
+    }
+
+    .google-btn:hover {
+      background: var(--bg);
+      border-color: var(--primary);
+    }
+
+    .google-icon {
+      font-size: 18px;
+    }
+
+    .footer-text {
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 20px;
+    }
+
+    .footer-link {
+      color: var(--primary);
+      text-decoration: none;
+      cursor: pointer;
+      font-weight: 600;
+      transition: color 0.3s;
+    }
+
+    .footer-link:hover {
+      color: var(--accent);
+    }
+
+    .error {
+      background: #FEE2E2;
+      color: #991B1B;
+      padding: 12px 16px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      display: none;
+      border: 1px solid #FECACA;
+    }
+
+    .error.show {
+      display: block;
+    }
+
+    .success {
+      background: #ECFDF5;
+      color: #065F46;
+      padding: 12px 16px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      display: none;
+      border: 1px solid #A7F3D0;
+    }
+
+    .success.show {
+      display: block;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      color: var(--primary);
+      font-size: 14px;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(91, 108, 240, 0.2);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 8px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading.show {
+      display: block;
+    }
+
+    .password-reset-section {
+      display: none;
+    }
+
+    .password-reset-section.show {
+      display: block;
+    }
+
+    .back-link {
+      color: var(--primary);
+      text-decoration: none;
+      cursor: pointer;
+      font-size: 14px;
+      margin-bottom: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+      transition: color 0.3s;
+    }
+
+    .back-link:hover {
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+      <div class="hero-icon">📊</div>
+      <h1 class="hero-title">Mathe-Check<br>ZP10</h1>
+      <p class="hero-subtitle">
+        Bereite dich auf die zentrale Prüfung vor mit interaktiven Modulen,
+        Echtzeit-Statistiken und personalisiertem Lernfeedback.
+      </p>
+
+      <div class="hero-features">
+        <div class="hero-feature">
+          <div class="hero-feature-icon">✓</div>
+          <span>Alle ZP10 Themen der Klassenarbeit</span>
+        </div>
+        <div class="hero-feature">
+          <div class="hero-feature-icon">📈</div>
+          <span>Fortschritt und Statistiken</span>
+        </div>
+        <div class="hero-feature">
+          <div class="hero-feature-icon">🎯</div>
+          <span>Personalisierte Förderempfehlungen</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Login Form Card -->
+    <div class="form-card">
+      <div id="loginSection">
+        <h2 class="form-title">Willkommen!</h2>
+        <p class="form-subtitle">Melde dich an oder registriere dich</p>
+
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="login" onclick="switchTab('login')">
+            Anmelden
+          </button>
+          <button class="tab-btn" data-tab="register" onclick="switchTab('register')">
+            Registrieren
+          </button>
+        </div>
+
+        <!-- Error & Success Messages -->
+        <div id="errorMsg" class="error"></div>
+        <div id="successMsg" class="success"></div>
+
+        <!-- Login Form -->
+        <form id="loginForm" style="margin-bottom: 0;">
+          <div class="form-group">
+            <label for="loginEmail">E-Mail</label>
+            <input type="email" id="loginEmail" required placeholder="deine@email.de">
+          </div>
+          <div class="form-group">
+            <label for="loginPassword">Passwort</label>
+            <input type="password" id="loginPassword" required placeholder="••••••••">
+            <div class="form-helper">
+              <a class="footer-link" onclick="showPasswordReset()" style="font-size: 12px;">
+                Passwort vergessen?
+              </a>
+            </div>
+          </div>
+          <button type="submit" class="submit-btn">Anmelden</button>
+        </form>
+
+        <!-- Register Form -->
+        <form id="registerForm" class="form-group hidden" style="margin-bottom: 0;">
+          <div class="form-group">
+            <label for="registerName">Name</label>
+            <input type="text" id="registerName" required placeholder="Dein Name">
+          </div>
+          <div class="form-group">
+            <label for="registerEmail">E-Mail</label>
+            <input type="email" id="registerEmail" required placeholder="deine@email.de">
+          </div>
+          <div class="form-group">
+            <label for="registerPassword">Passwort</label>
+            <input type="password" id="registerPassword" required placeholder="••••••••" minlength="6">
+            <div class="form-helper">Mindestens 6 Zeichen</div>
+          </div>
+          <div class="form-group">
+            <label for="registerRole">Ich bin...</label>
+            <select id="registerRole" required onchange="updateRoleFields()">
+              <option value="">-- Wähle deine Rolle --</option>
+              <option value="schueler">Schüler/in</option>
+              <option value="lehrer">Lehrer/in</option>
+            </select>
+          </div>
+
+          <!-- Student Fields -->
+          <div id="studentFields" class="form-group hidden">
+            <label for="classCode">Klassencode</label>
+            <input type="text" id="classCode" placeholder="Von deinem Lehrer erhalten">
+            <div class="form-helper">Optional: Gib deinen Klassencode ein</div>
+          </div>
+
+          <!-- Teacher Fields -->
+          <div id="teacherFields" class="form-group hidden">
+            <label for="schoolEmail">Schulische E-Mail</label>
+            <input type="email" id="schoolEmail" placeholder="name@schulname.de">
+            <div class="form-helper">Deine offizielle Schuladresse</div>
+          </div>
+
+          <button type="submit" class="submit-btn">Registrieren</button>
+        </form>
+
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" class="loading">
+          <span class="spinner"></span>Wird verarbeitet...
+        </div>
+
+        <div class="divider">
+          <div class="divider-line"></div>
+          <div class="divider-text">oder</div>
+          <div class="divider-line"></div>
+        </div>
+
+        <button id="googleSignInBtn" class="google-btn" onclick="signInWithGoogle()">
+          <span class="google-icon">🔵</span>
+          Mit Google anmelden
+        </button>
+
+        <div class="footer-text" id="registerPrompt">
+          Noch kein Konto? <a class="footer-link" onclick="switchTab('register')">Jetzt registrieren</a>
+        </div>
+
+        <div class="footer-text" id="loginPrompt" style="display: none;">
+          Du hast bereits ein Konto? <a class="footer-link" onclick="switchTab('login')">Jetzt anmelden</a>
+        </div>
+      </div>
+
+      <!-- Password Reset Section -->
+      <div id="passwordResetSection" class="password-reset-section">
+        <a class="back-link" onclick="showLoginForm()">← Zurück zum Login</a>
+
+        <h2 class="form-title">Passwort zurücksetzen</h2>
+        <p class="form-subtitle">Gib deine E-Mail-Adresse ein</p>
+
+        <div id="resetErrorMsg" class="error"></div>
+        <div id="resetSuccessMsg" class="success"></div>
+
+        <form id="resetForm" style="margin-bottom: 0;">
+          <div class="form-group">
+            <label for="resetEmail">E-Mail-Adresse</label>
+            <input type="email" id="resetEmail" required placeholder="deine@email.de">
+            <div class="form-helper">Wir senden dir einen Link zum Zurücksetzen</div>
+          </div>
+          <button type="submit" class="submit-btn">Passwort zurücksetzen</button>
+        </form>
+
+        <div id="resetLoadingIndicator" class="loading">
+          <span class="spinner"></span>Wird verarbeitet...
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import {
+      signInWithEmailPassword,
+      signUpWithEmail,
+      sendPasswordReset,
+      signInWithGoogle,
+      onAuthChange,
+      getUserProfile
+    } from './firebase-config.js';
+
+    // Tab switching
+    window.switchTab = function(tabName) {
+      const tabs = document.querySelectorAll('.tab-btn');
+      document.querySelectorAll('form').forEach(f => {
+        if (f.id !== 'resetForm') f.classList.add('hidden');
+      });
+      tabs.forEach(t => t.classList.remove('active'));
+
+      if (tabName === 'login') {
+        document.getElementById('loginForm').classList.remove('hidden');
+        document.querySelector('[data-tab="login"]').classList.add('active');
+        document.getElementById('registerPrompt').style.display = 'block';
+        document.getElementById('loginPrompt').style.display = 'none';
+      } else if (tabName === 'register') {
+        document.getElementById('registerForm').classList.remove('hidden');
+        document.querySelector('[data-tab="register"]').classList.add('active');
+        document.getElementById('registerPrompt').style.display = 'none';
+        document.getElementById('loginPrompt').style.display = 'block';
+      }
+
+      clearMessages();
+    };
+
+    // Update role-specific fields
+    window.updateRoleFields = function() {
+      const role = document.getElementById('registerRole').value;
+      document.getElementById('studentFields').classList.toggle('hidden', role !== 'schueler');
+      document.getElementById('teacherFields').classList.toggle('hidden', role !== 'lehrer');
+    };
+
+    // Show password reset form
+    window.showPasswordReset = function() {
+      document.getElementById('loginSection').style.display = 'none';
+      document.getElementById('passwordResetSection').classList.add('show');
+      clearMessages();
+    };
+
+    // Show login form
+    window.showLoginForm = function() {
+      document.getElementById('loginSection').style.display = 'block';
+      document.getElementById('passwordResetSection').classList.remove('show');
+      clearMessages();
+    };
+
+    // Show messages
+    function showError(message, section = 'main') {
+      const errorEl = section === 'reset'
+        ? document.getElementById('resetErrorMsg')
+        : document.getElementById('errorMsg');
+      errorEl.textContent = message;
+      errorEl.classList.add('show');
+    }
+
+    function showSuccess(message, section = 'main') {
+      const successEl = section === 'reset'
+        ? document.getElementById('resetSuccessMsg')
+        : document.getElementById('successMsg');
+      successEl.textContent = message;
+      successEl.classList.add('show');
+    }
+
+    function clearMessages() {
+      document.getElementById('errorMsg').classList.remove('show');
+      document.getElementById('successMsg').classList.remove('show');
+      document.getElementById('resetErrorMsg').classList.remove('show');
+      document.getElementById('resetSuccessMsg').classList.remove('show');
+    }
+
+    function setLoading(isLoading, formId = 'loginForm') {
+      const loader = formId === 'resetForm'
+        ? document.getElementById('resetLoadingIndicator')
+        : document.getElementById('loadingIndicator');
+      loader.classList.toggle('show', isLoading);
+
+      const form = document.getElementById(formId);
+      const buttons = form.querySelectorAll('button[type="submit"]');
+      buttons.forEach(btn => btn.disabled = isLoading);
+    }
+
+    // Login form submission
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearMessages();
+      setLoading(true, 'loginForm');
+
+      try {
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+
+        const user = await signInWithEmailPassword(email, password);
+        const profile = await getUserProfile(user.uid);
+
+        setTimeout(() => {
+          if (profile.role === 'lehrer') {
+            window.location.href = '../firebase/zp10-lehrer.html';
+          } else {
+            window.location.href = '../index.html';
+          }
+        }, 500);
+      } catch (error) {
+        showError(getErrorMessage(error.code));
+        setLoading(false, 'loginForm');
+      }
+    });
+
+    // Register form submission
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearMessages();
+      setLoading(true, 'registerForm');
+
+      try {
+        const name = document.getElementById('registerName').value;
+        const email = document.getElementById('registerEmail').value;
+        const password = document.getElementById('registerPassword').value;
+        const role = document.getElementById('registerRole').value;
+        const classCode = role === 'schueler' ? document.getElementById('classCode').value : null;
+
+        const user = await signUpWithEmail(email, password, role, name, classCode || null);
+        showSuccess('Registrierung erfolgreich! Wird weitergeleitet...');
+        const profile = await getUserProfile(user.uid);
+
+        setTimeout(() => {
+          if (profile.role === 'lehrer') {
+            window.location.href = '../firebase/zp10-lehrer.html';
+          } else {
+            window.location.href = '../index.html';
+          }
+        }, 1500);
+      } catch (error) {
+        showError(getErrorMessage(error.code, error.message));
+        setLoading(false, 'registerForm');
+      }
+    });
+
+    // Password reset form submission
+    document.getElementById('resetForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearMessages();
+      setLoading(true, 'resetForm');
+
+      try {
+        const email = document.getElementById('resetEmail').value;
+        await sendPasswordReset(email);
+
+        showSuccess('E-Mail zum Zurücksetzen wurde gesendet! Prüfe dein Postfach.', 'reset');
+        setTimeout(() => {
+          showLoginForm();
+        }, 2000);
+      } catch (error) {
+        showError(getErrorMessage(error.code, error.message), 'reset');
+        setLoading(false, 'resetForm');
+      }
+    });
+
+    // Google Sign-In
+    window.signInWithGoogle = async function() {
+      clearMessages();
+      setLoading(true, 'loginForm');
+
+      try {
+        const user = await signInWithGoogle();
+        const profile = await getUserProfile(user.uid);
+
+        setTimeout(() => {
+          if (profile.role === 'lehrer') {
+            window.location.href = '../firebase/zp10-lehrer.html';
+          } else {
+            window.location.href = '../index.html';
+          }
+        }, 500);
+      } catch (error) {
+        showError(getErrorMessage(error.code));
+        setLoading(false, 'loginForm');
+      }
+    };
+
+    // Error messages
+    function getErrorMessage(code, message = '') {
+      const errorMap = {
+        'auth/user-not-found': 'Benutzer nicht gefunden. Bitte registriere dich.',
+        'auth/wrong-password': 'Passwort ist falsch. Versuche es erneut.',
+        'auth/email-already-in-use': 'Diese E-Mail ist bereits registriert.',
+        'auth/weak-password': 'Passwort ist zu schwach. Wähle ein stärkeres Passwort.',
+        'auth/invalid-email': 'Ungültige E-Mail-Adresse.',
+        'auth/operation-not-allowed': 'Diese Authentifizierungsmethode ist nicht aktiviert.',
+        'auth/popup-closed-by-user': 'Google Sign-In wurde abgebrochen.',
+        'auth/network-request-failed': 'Netzwerkfehler. Prüfe deine Internetverbindung.',
+        'auth/user-cancelled': 'Anmeldung wurde abgebrochen.',
+        'default': message || 'Ein Fehler ist aufgetreten. Versuche es später erneut.'
+      };
+
+      return errorMap[code] || errorMap['default'];
+    }
+
+    // Check if user is already logged in
+    onAuthChange((user) => {
+      if (user) {
+        getUserProfile(user.uid).then(profile => {
+          if (profile.role === 'lehrer') {
+            window.location.href = '../firebase/zp10-lehrer.html';
+          } else {
+            window.location.href = '../index.html';
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZP10 Fehleranalyse-Tool</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="zp10-fehleranalyse.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Fehleranalyse-Tool</h1>
+            <button class="hub-btn" onclick="goToHub()">← Zurück zum Hub</button>
+        </header>
+
+        <div class="filters">
+            <div class="filter-group">
+                <label for="difficultyFilter">Schwierigkeit:</label>
+                <select id="difficultyFilter">
+                    <option value="">Alle</option>
+                    <option value="leicht">Leicht</option>
+                    <option value="mittel">Mittel</option>
+                    <option value="schwer">Schwer</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="topicFilter">Thema:</label>
+                <select id="topicFilter">
+                    <option value="">Alle Themen</option>
+                    <option value="Terme">Terme</option>
+                    <option value="Gleichungen">Gleichungen</option>
+                    <option value="Quadratische Funktionen">Quadratische Funktionen</option>
+                    <option value="Exponentialfunktionen">Exponentialfunktionen</option>
+                    <option value="Trigonometrie">Trigonometrie</option>
+                    <option value="Geometrie">Geometrie</option>
+                    <option value="Vektoren">Vektoren</option>
+                    <option value="Wahrscheinlichkeit">Wahrscheinlichkeit</option>
+                    <option value="Statistik">Statistik</option>
+                    <option value="Bruchrechnung">Bruchrechnung</option>
+                    <option value="Potenzen">Potenzen</option>
+                    <option value="Wurzeln">Wurzeln</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="tasksCompleted">0</div>
+                <div class="stat-label">Aufgaben gelöst</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalXP">0</div>
+                <div class="stat-label">XP verdient</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="correctRate">0%</div>
+                <div class="stat-label">Erfolgsquote</div>
+            </div>
+        </div>
+
+        <div id="taskContainer"></div>
+
+        <div id="completionContainer" style="display:none;">
+            <div class="completion-message">
+                <h2>🎉 Glückwunsch!</h2>
+                <p>Du hast alle Fehleranalyse-Aufgaben abgeschlossen.</p>
+                <div class="error-profile">
+                    <h3 style="font-family: 'Nunito Sans'; font-size: 1.1em; margin-bottom: 20px;">Dein Fehler-Profil:</h3>
+                    <div id="errorProfile"></div>
+                </div>
+                <button class="btn-primary" onclick="resetTasks()" style="margin-top: 20px;">Nochmal von vorne</button>
+                <button class="btn-secondary" onclick="goToHub()" style="margin-top: 20px;">Zum Hub</button>
+            </div>
+        </div>
+
+        <div class="navigation" id="navigation" style="display:none;">
+            <button class="btn-secondary" id="prevBtn" onclick="previousTask()">← Zurück</button>
+            <span class="task-counter"><span id="currentTask">1</span> / <span id="totalTasks">30</span></span>
+            <button class="btn-primary" id="nextBtn" onclick="nextTask()">Weiter →</button>
+        </div>
+    </div>
+
+    <script>
+        const tasks = [
+            {id:'e1', topic:'Terme', difficulty:'leicht', problem:'Vereinfache: 3(2x + 4) - 2x', wrongSolution:'= 6x + 4 - 2x\n= 4x + 4', errorLine: 0, errorType:'Distributivgesetz', correctAnswer:'4x + 12', explanation:'Der Fehler liegt beim Ausmultiplizieren: 3·4 = 12, nicht 4. Richtig: 3(2x + 4) = 6x + 12.', xp: 15},
+            {id:'e2', topic:'Gleichungen', difficulty:'leicht', problem:'Löse: 2x + 5 = 13', wrongSolution:'2x = 13 - 5\n2x = 8\nx = 4', errorLine: -1, errorType:'Keine', correctAnswer:'4', explanation:'Diese Lösung ist korrekt! Gut gemacht.', xp: 10},
+            {id:'e3', topic:'Bruchrechnung', difficulty:'leicht', problem:'Berechne: 1/2 + 1/3', wrongSolution:'= 2/5', errorLine: 0, errorType:'Bruchrechnung-Fehler', correctAnswer:'5/6', explanation:'Du kannst Zähler und Nenner nicht einfach addieren. Gemeinsamer Nenner ist 6: 3/6 + 2/6 = 5/6.', xp: 15},
+            {id:'e4', topic:'Potenzen', difficulty:'mittel', problem:'Vereinfache: x² · x³', wrongSolution:'= x⁶', errorLine: 0, errorType:'Potenzgesetz verwechselt', correctAnswer:'x⁵', explanation:'Bei gleichem Exponenten multiplizierst du die Basen, bei gleicher Basis addierst du die Exponenten: x² · x³ = x²⁺³ = x⁵.', xp: 18},
+            {id:'e5', topic:'Quadratische Funktionen', difficulty:'mittel', problem:'Berechne (x + 3)²', wrongSolution:'= x² + 9', errorLine: 0, errorType:'Binomische Formel ohne Mittelterm', correctAnswer:'x² + 6x + 9', explanation:'Bei binomischen Formeln (a + b)² = a² + 2ab + b². Der Mittelterm 2·x·3 = 6x darf nicht vergessen werden!', xp: 18},
+            {id:'e6', topic:'Geometrie', difficulty:'mittel', problem:'Berechne den Umfang eines Kreises mit r = 5 cm', wrongSolution:'U = πr = π · 5 = 5π cm', errorLine: 0, errorType:'Geometrie-Formelverwechslung', correctAnswer:'10π cm ≈ 31,4 cm', explanation:'Die Umfangsformel ist U = 2πr, nicht U = πr. Das ist die Formel für den Durchmesser im Radius-Zusammenhang.', xp: 18},
+            {id:'e7', topic:'Gleichungen', difficulty:'mittel', problem:'Löse: 3x - 2 = -8', wrongSolution:'3x = -8 - 2\n3x = -10\nx = -10/3', errorLine: 0, errorType:'Vorzeichenfehler', correctAnswer:'x = -2', explanation:'Fehler beim Vorzeichen: 3x = -8 + 2 = -6, also x = -6/3 = -2. Beim Verschieben von -2 wird das Vorzeichen zu +2.', xp: 18},
+            {id:'e8', topic:'Bruchrechnung', difficulty:'mittel', problem:'Berechne: (1/2) / (1/4)', wrongSolution:'= 1/8', errorLine: 0, errorType:'Bruchrechnung-Fehler', correctAnswer:'2', explanation:'Beim Dividieren von Brüchen multiplizierst du mit dem Kehrwert: 1/2 · 4/1 = 4/2 = 2.', xp: 18},
+            {id:'e9', topic:'Wurzeln', difficulty:'mittel', problem:'Vereinfache: √(4x²)', wrongSolution:'= 4x', errorLine: 0, errorType:'Potenzgesetz verwechselt', correctAnswer:'2|x|', explanation:'√(4x²) = √4 · √(x²) = 2 · |x| = 2|x|. Der Betrag ist wichtig, da x negativ sein könnte.', xp: 18},
+            {id:'e10', topic:'Terme', difficulty:'mittel', problem:'Vereinfache: 2(x + 3) - (x - 1)', wrongSolution:'= 2x + 6 - x - 1\n= x + 5', errorLine: 1, errorType:'Distributivgesetz', correctAnswer:'x + 7', explanation:'Beim Ausmultiplizieren von -(x - 1) ändert sich das Vorzeichen: -(x - 1) = -x + 1. Also: 2x + 6 - x + 1 = x + 7.', xp: 18},
+            {id:'e11', topic:'Exponentialfunktionen', difficulty:'schwer', problem:'Löse: 2^x = 8', wrongSolution:'x = 4', errorLine: 0, errorType:'Potenzgesetz verwechselt', correctAnswer:'x = 3', explanation:'2³ = 8, nicht 2⁴ = 16. Du kannst 8 als Potenz von 2 schreiben: 2^x = 2³, also x = 3.', xp: 20},
+            {id:'e12', topic:'Trigonometrie', difficulty:'schwer', problem:'Berechne sin(90°)', wrongSolution:'sin(90°) = 0', errorLine: 0, errorType:'Geometrie-Formelverwechslung', correctAnswer:'sin(90°) = 1', explanation:'sin(0°) = 0 und cos(0°) = 1. Aber sin(90°) = 1. Du scheinst sin und cos verwechselt zu haben.', xp: 20},
+            {id:'e13', topic:'Quadratische Funktionen', difficulty:'schwer', problem:'Bestimme den Scheitelpunkt: f(x) = x² - 4x + 3', wrongSolution:'S(2, -1)', errorLine: 0, errorType:'Funktionsgleichung falsch abgelesen', correctAnswer:'S(2, -1)', explanation:'Diese Antwort ist korrekt! Die x-Koordinate ist -b/(2a) = 4/2 = 2, f(2) = 4 - 8 + 3 = -1.', xp: 15},
+            {id:'e14', topic:'Wahrscheinlichkeit', difficulty:'schwer', problem:'Ein Würfel wird zweimal geworfen. Wahrscheinlichkeit für zwei 6er?', wrongSolution:'1/6 + 1/6 = 2/6 = 1/3', errorLine: 0, errorType:'Wahrscheinlichkeit nicht normiert', correctAnswer:'1/36', explanation:'Bei unabhängigen Ereignissen multiplizierst du: (1/6) · (1/6) = 1/36. Du hast addiert statt multipliziert.', xp: 20},
+            {id:'e15', topic:'Geometrie', difficulty:'schwer', problem:'Berechne die Fläche eines Trapezes mit a=5, b=3, h=4', wrongSolution:'A = (5 + 3) · 4 = 32', errorLine: 0, errorType:'Geometrie-Formelverwechslung', correctAnswer:'A = 16', explanation:'Die Trapezformel ist A = ((a + b)/2) · h, nicht (a + b) · h. Also: ((5+3)/2) · 4 = 4 · 4 = 16.', xp: 20},
+            {id:'e16', topic:'Potenzen', difficulty:'schwer', problem:'Vereinfache: (x²)³', wrongSolution:'= x⁵', errorLine: 0, errorType:'Potenzgesetz verwechselt', correctAnswer:'x⁶', explanation:'Bei Potenzen von Potenzen multiplizierst du die Exponenten: (x²)³ = x^(2·3) = x⁶.', xp: 20},
+            {id:'e17', topic:'Bruchrechnung', difficulty:'schwer', problem:'Berechne: (3/4) / (6/8)', wrongSolution:'= (3·8)/(4·6) = 24/24 = 1', errorLine: -1, errorType:'Keine', correctAnswer:'1', explanation:'Diese Lösung ist korrekt! 3/4 und 6/8 sind gleiche Brüche, also Ergebnis = 1.', xp: 15},
+            {id:'e18', topic:'Gleichungen', difficulty:'schwer', problem:'Löse: (x + 1)/2 = 5', wrongSolution:'x + 1 = 5\nx = 4', errorLine: 0, errorType:'Äquivalenzumformung falsch', correctAnswer:'x = 9', explanation:'Du musst zuerst mit 2 multiplizieren: x + 1 = 10, dann x = 9. Du hast vergessen zu multiplizieren.', xp: 20},
+            {id:'e19', topic:'Exponentialfunktionen', difficulty:'schwer', problem:'Vereinfache: (3²)^(-1)', wrongSolution:'= 3⁻¹ = 1/3', errorLine: 0, errorType:'Potenzgesetz verwechselt', correctAnswer:'1/9', explanation:'(3²)^(-1) = 3^(2·(-1)) = 3^(-2) = 1/9. Du hast die Exponenten nicht multipliziert.', xp: 20},
+            {id:'e20', topic:'Statistik', difficulty:'mittel', problem:'Berechne den Mittelwert: 2, 4, 6, 8', wrongSolution:'= (2+4+6+8)/3 = 20/3 ≈ 6,67', errorLine: 0, errorType:'Bruchrechnung-Fehler', correctAnswer:'5', explanation:'Der Mittelwert ist Summe/Anzahl. Du hast durch 3 statt durch 4 dividiert: 20/4 = 5.', xp: 18},
+            {id:'e21', topic:'Vektoren', difficulty:'mittel', problem:'Addiere: (1, 2) + (-3, 4)', wrongSolution:'= (1-3, 2+4) = (-2, 6)', errorLine: -1, errorType:'Keine', correctAnswer:'(-2, 6)', explanation:'Diese Lösung ist korrekt! Vektoren werden komponentenweise addiert.', xp: 15},
+            {id:'e22', topic:'Terme', difficulty:'schwer', problem:'Vereinfache: (2x + 3)² - (x + 1)²', wrongSolution:'= 4x² + 9 - (x² + 1)\n= 3x² + 8', errorLine: 1, errorType:'Binomische Formel ohne Mittelterm', correctAnswer:'3x² + 10x + 8', explanation:'(2x + 3)² = 4x² + 12x + 9 und (x + 1)² = x² + 2x + 1. Differenz: 3x² + 10x + 8.', xp: 20},
+            {id:'e23', topic:'Quadratische Funktionen', difficulty:'schwer', problem:'Faktorisiere: x² - 5x + 6', wrongSolution:'= (x - 2)(x - 3)', errorLine: -1, errorType:'Keine', correctAnswer:'(x - 2)(x - 3)', explanation:'Korrekt! (-2) · (-3) = 6 und (-2) + (-3) = -5.', xp: 15},
+            {id:'e24', topic:'Geometrie', difficulty:'mittel', problem:'Berechne die Diagonale eines Quadrats mit s = 4', wrongSolution:'d = 4 · √2', errorLine: -1, errorType:'Keine', correctAnswer:'4√2 ≈ 5,66', explanation:'Diese Lösung ist korrekt! Mit dem Satz des Pythagoras: d² = 4² + 4² = 32, d = √32 = 4√2.', xp: 15},
+            {id:'e25', topic:'Trigonometrie', difficulty:'mittel', problem:'Berechne cos(0°)', wrongSolution:'cos(0°) = 0', errorLine: 0, errorType:'Geometrie-Formelverwechslung', correctAnswer:'cos(0°) = 1', explanation:'cos(0°) = 1 und sin(0°) = 0. Du hast sin und cos verwechselt.', xp: 18},
+            {id:'e26', topic:'Exponentialfunktionen', difficulty:'mittel', problem:'Berechne: 2^(-2)', wrongSolution:'= -4', errorLine: 0, errorType:'Vorzeichenfehler', correctAnswer:'1/4', explanation:'Negative Exponenten bedeuten Kehrwert: 2^(-2) = 1/(2²) = 1/4. Das Minuszeichen macht den Wert nicht negativ!', xp: 18},
+            {id:'e27', topic:'Wahrscheinlichkeit', difficulty:'mittel', problem:'Wahrscheinlichkeit für Kopf beim Münzwurf?', wrongSolution:'50', errorLine: 0, errorType:'Wahrscheinlichkeit nicht normiert', correctAnswer:'0,5 oder 50%', explanation:'Du musst die Wahrscheinlichkeit als Dezimalzahl (0 bis 1) oder Prozent angeben. 50% = 0,5.', xp: 18},
+            {id:'e28', topic:'Potenzen', difficulty:'leicht', problem:'Vereinfache: x · x · x', wrongSolution:'= 3x', errorLine: 0, errorType:'Potenzgesetz verwechselt', correctAnswer:'x³', explanation:'Das Produkt von drei x-Faktoren ist x³ (x hoch 3), nicht 3x (3 mal x). 3x bedeutet etwas ganz anderes!', xp: 15},
+            {id:'e29', topic:'Bruchrechnung', difficulty:'leicht', problem:'Berechne: 2 · (1/2)', wrongSolution:'= 2/2 = 1', errorLine: -1, errorType:'Keine', correctAnswer:'1', explanation:'Korrekt! 2 · (1/2) = 2/2 = 1.', xp: 10},
+            {id:'e30', topic:'Gleichungen', difficulty:'leicht', problem:'Löse: x/2 = 3', wrongSolution:'x = 3 - 2 = 1', errorLine: 0, errorType:'Äquivalenzumformung falsch', correctAnswer:'x = 6', explanation:'Mit 2 multiplizieren auf beiden Seiten: x = 3 · 2 = 6. Du hast subtrahiert statt multipliziert.', xp: 15}
+        ];
+
+        let currentTaskIndex = 0;
+        let completed = {};
+        let xpEarned = {};
+        let errorCounts = {};
+
+        function initializeFilters() {
+            document.getElementById('difficultyFilter').addEventListener('change', filterTasks);
+            document.getElementById('topicFilter').addEventListener('change', filterTasks);
+        }
+
+        function filterTasks() {
+            const difficulty = document.getElementById('difficultyFilter').value;
+            const topic = document.getElementById('topicFilter').value;
+
+            const filtered = tasks.filter(task =>
+                (!difficulty || task.difficulty === difficulty) &&
+                (!topic || task.topic === topic)
+            );
+
+            currentTaskIndex = 0;
+            displayCurrentTask(filtered);
+        }
+
+        function displayCurrentTask(taskList = tasks) {
+            const container = document.getElementById('taskContainer');
+            container.innerHTML = '';
+
+            if (currentTaskIndex >= taskList.length) {
+                showCompletion();
+                return;
+            }
+
+            const task = taskList[currentTaskIndex];
+            const isCompleted = completed[task.id];
+
+            const html = `
+                <div class="task-card active">
+                    <div class="task-header">
+                        <div class="task-meta">
+                            <span class="badge badge-topic">${task.topic}</span>
+                            <span class="badge badge-difficulty">${task.difficulty}</span>
+                        </div>
+                        <span class="badge xp-badge">+${task.xp} XP</span>
+                    </div>
+
+                    <div class="problem-section">
+                        <h3>📋 Aufgabe</h3>
+                        <p style="font-size: 1.1em; font-weight: 600; margin: 10px 0;">${task.problem}</p>
+                    </div>
+
+                    <div class="problem-section">
+                        <h3>❌ Schülerlösung (mit Fehler)</h3>
+                        <div class="solution-box">
+                            ${task.wrongSolution.split('\n').map((line, idx) =>
+                                `<div class="solution-step ${idx === task.errorLine ? 'error-line' : ''}">${line}</div>`
+                            ).join('')}
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>1️⃣ Wo liegt der Fehler?</label>
+                        <input type="text" id="errorLocation" placeholder="z.B. Schritt 2, beim Ausmultiplizieren..." />
+                    </div>
+
+                    <div class="input-group">
+                        <label>2️⃣ Was ist der Fehlertyp?</label>
+                        <div class="error-type-options">
+                            ${['Vorzeichenfehler', 'Distributivgesetz', 'Binomische Formel', 'Äquivalenzumformung', 'Bruchrechnung-Fehler', 'Geometrie-Formel', 'Wahrscheinlichkeit', 'Funktionsgleichung', 'Potenzgesetz', 'Einheitenfehler'].map(type =>
+                                `<button class="option-btn" onclick="selectErrorType(this, '${type}')">${type}</button>`
+                            ).join('')}
+                        </div>
+                        <input type="hidden" id="selectedErrorType" />
+                    </div>
+
+                    <div class="input-group">
+                        <label>3️⃣ Richtige Lösung</label>
+                        <input type="text" id="correctAnswer" placeholder="z.B. x = 5" />
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn-primary" onclick="checkAnswer('${task.id}', ${JSON.stringify(task)})">Antwort prüfen</button>
+                        <button class="btn-secondary" onclick="showHint('${task.id}', ${JSON.stringify(task)})">Hinweis</button>
+                    </div>
+
+                    <div id="feedback-${task.id}" class="feedback"></div>
+                </div>
+            `;
+
+            container.innerHTML = html;
+
+            document.getElementById('navigation').style.display = 'flex';
+            document.getElementById('currentTask').textContent = currentTaskIndex + 1;
+            document.getElementById('totalTasks').textContent = taskList.length;
+            updateStats();
+        }
+
+        function selectErrorType(btn, type) {
+            document.querySelectorAll('.error-type-options .option-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            document.getElementById('selectedErrorType').value = type;
+        }
+
+        function checkAnswer(taskId, task) {
+            const errorLocation = document.getElementById('errorLocation').value.trim();
+            const errorType = document.getElementById('selectedErrorType').value;
+            const correctAnswer = document.getElementById('correctAnswer').value.trim();
+            const feedback = document.getElementById(`feedback-${taskId}`);
+
+            if (!errorLocation || !errorType || !correctAnswer) {
+                feedback.innerHTML = '<h4>⚠️ Alle Felder ausfüllen!</h4><p>Bitte beantworte alle drei Fragen.</p>';
+                feedback.classList.add('incorrect', 'show');
+                return;
+            }
+
+            const isCorrect = correctAnswer.toLowerCase().replace(/\s/g, '') === task.correctAnswer.toLowerCase().replace(/\s/g, '');
+
+            if (isCorrect) {
+                feedback.innerHTML = `<h4>✅ Richtig!</h4><p>${task.explanation}</p>`;
+                feedback.classList.remove('incorrect');
+                feedback.classList.add('correct', 'show');
+                completed[taskId] = true;
+                xpEarned[taskId] = task.xp;
+                errorCounts[errorType] = (errorCounts[errorType] || 0) + 1;
+            } else {
+                feedback.innerHTML = `<h4>❌ Nicht ganz richtig.</h4><p>Richtige Antwort: <strong>${task.correctAnswer}</strong></p><p>${task.explanation}</p>`;
+                feedback.classList.remove('correct');
+                feedback.classList.add('incorrect', 'show');
+            }
+        }
+
+        function showHint(taskId, task) {
+            alert(`Hinweis: Der Fehler liegt bei "${task.errorType}". Die richtige Antwort ist: ${task.correctAnswer}`);
+        }
+
+        function nextTask() {
+            currentTaskIndex++;
+            displayCurrentTask();
+        }
+
+        function previousTask() {
+            if (currentTaskIndex > 0) {
+                currentTaskIndex--;
+                displayCurrentTask();
+            }
+        }
+
+        function updateStats() {
+            const totalCompleted = Object.keys(completed).length;
+            const totalXP = Object.values(xpEarned).reduce((a, b) => a + b, 0);
+            const correctRate = tasks.length > 0 ? Math.round((totalCompleted / tasks.length) * 100) : 0;
+
+            document.getElementById('tasksCompleted').textContent = totalCompleted;
+            document.getElementById('totalXP').textContent = totalXP;
+            document.getElementById('correctRate').textContent = correctRate + '%';
+            document.getElementById('progressFill').style.width = correctRate + '%';
+        }
+
+        function showCompletion() {
+            document.getElementById('taskContainer').innerHTML = '';
+            document.getElementById('navigation').style.display = 'none';
+            document.getElementById('completionContainer').style.display = 'block';
+
+            const errorProfile = document.getElementById('errorProfile');
+            const errorTypes = ['Vorzeichenfehler', 'Distributivgesetz', 'Binomische Formel', 'Äquivalenzumformung', 'Bruchrechnung-Fehler', 'Geometrie-Formel', 'Wahrscheinlichkeit', 'Funktionsgleichung', 'Potenzgesetz', 'Einheitenfehler'];
+            const maxCount = Math.max(...errorTypes.map(type => errorCounts[type] || 0), 1);
+
+            errorProfile.innerHTML = errorTypes.map(type => {
+                const count = errorCounts[type] || 0;
+                const percentage = (count / maxCount) * 100;
+                return `
+                    <div class="profile-category">
+                        <h3>${type}</h3>
+                        <div class="profile-bar">
+                            <div class="profile-fill" style="width: ${percentage}%">${count > 0 ? count : ''}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            updateStats();
+        }
+
+        function resetTasks() {
+            currentTaskIndex = 0;
+            completed = {};
+            xpEarned = {};
+            errorCounts = {};
+            document.getElementById('completionContainer').style.display = 'none';
+            document.getElementById('taskContainer').innerHTML = '';
+            displayCurrentTask();
+        }
+
+        function goToHub() {
+            window.location.href = '../index.html';
+        }
+
+        initializeFilters();
+        displayCurrentTask();
+    </script>
+</body>
+</html>

@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aufgabengenerator · Exponentialfunktionen</title>
+<style>
+  :root {
+    --blue: #2563eb; --blue-light: #dbeafe; --blue-dark: #1e40af;
+    --green: #16a34a; --green-light: #dcfce7;
+    --red: #dc2626; --red-light: #fee2e2;
+    --yellow: #ca8a04; --yellow-light: #fef9c3;
+    --purple: #6d28d9; --purple-light: #ede9fe;
+    --gray: #6b7280; --gray-light: #f3f4f6; --gray-dark: #1f2937;
+    --orange: #ea580c; --orange-light: #fff7ed;
+    --radius: 10px; --shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f0f4f8; color: var(--gray-dark); min-height: 100vh; }
+
+  header { background: linear-gradient(135deg, var(--blue-dark), var(--blue)); color: white; padding: 18px 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.2); }
+  header h1 { font-size: 1.3rem; }
+  header h1 span { font-size: 0.85rem; opacity: 0.8; display: block; margin-top: 2px; }
+
+  main { max-width: 900px; margin: 0 auto; padding: 20px 16px 60px; }
+
+  .card { background: white; border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; margin-bottom: 16px; }
+  .card h2 { font-size: 1.1rem; color: var(--blue-dark); margin-bottom: 14px; padding-bottom: 8px; border-bottom: 2px solid var(--blue-light); }
+
+  /* ===== MMS SLIDER PANEL ===== */
+  .mms-panel { border: 2px solid var(--purple-light); }
+  .mms-panel h2 { color: var(--purple); border-bottom-color: var(--purple-light); }
+  .mms-slider-group { margin-bottom: 20px; }
+  .mms-slider-group:last-child { margin-bottom: 0; }
+  .mms-principle { font-style: italic; font-size: 0.8rem; color: var(--gray); margin-bottom: 6px; text-align: center; line-height: 1.4; }
+  .mms-slider-row { display: flex; align-items: center; gap: 0; }
+  .mms-label { background: var(--purple); color: white; padding: 8px 16px; font-size: 0.85rem; font-weight: 700; min-width: 110px; text-align: center; white-space: nowrap; flex-shrink: 0; }
+  .mms-label.left { border-radius: 8px 0 0 8px; }
+  .mms-label.right { border-radius: 0 8px 8px 0; }
+  .mms-track { flex: 1; background: #d1d5db; height: 40px; display: flex; align-items: center; padding: 0 10px; position: relative; }
+  .mms-track input[type=range] { width: 100%; accent-color: var(--purple); cursor: pointer; height: 8px; -webkit-appearance: none; appearance: none; background: transparent; }
+  .mms-track input[type=range]::-webkit-slider-runnable-track { height: 8px; background: #9ca3af; border-radius: 4px; }
+  .mms-track input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; border-radius: 4px; background: var(--purple); border: 3px solid white; box-shadow: 0 1px 4px rgba(0,0,0,0.3); margin-top: -8px; cursor: grab; }
+  .mms-track input[type=range]::-moz-range-track { height: 8px; background: #9ca3af; border-radius: 4px; border: none; }
+  .mms-track input[type=range]::-moz-range-thumb { width: 24px; height: 24px; border-radius: 4px; background: var(--purple); border: 3px solid white; box-shadow: 0 1px 4px rgba(0,0,0,0.3); cursor: grab; }
+
+  /* ===== SETTINGS PANEL ===== */
+  .topic-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 6px; margin-bottom: 14px; }
+  .topic-grid label { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; padding: 6px 10px; border-radius: 6px; cursor: pointer; transition: background 0.15s; }
+  .topic-grid label:hover { background: var(--blue-light); }
+  .topic-grid input[type=checkbox] { accent-color: var(--blue); width: 16px; height: 16px; }
+  .settings-row { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; flex-wrap: wrap; }
+  .settings-row label { font-weight: 600; font-size: 0.9rem; min-width: 140px; }
+  .settings-row input[type=range] { flex: 1; max-width: 300px; accent-color: var(--blue); }
+  .settings-row .val { min-width: 40px; text-align: center; font-weight: 700; background: var(--blue-light); border-radius: 6px; padding: 3px 10px; font-size: 0.9rem; color: var(--blue-dark); }
+  .settings-row select { border: 2px solid #d1d5db; border-radius: 8px; padding: 6px 12px; font-size: 0.9rem; }
+
+  /* ===== ACTION BUTTONS ===== */
+  .action-bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+  .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.2s; }
+  .btn-primary { background: var(--blue); color: white; font-size: 1rem; padding: 12px 28px; }
+  .btn-primary:hover { background: var(--blue-dark); }
+  .btn-secondary { background: var(--gray-light); color: var(--gray-dark); }
+  .btn-secondary:hover { background: #e5e7eb; }
+  .btn-purple { background: var(--purple); color: white; }
+  .btn-purple:hover { background: #5b21b6; }
+  .print-opt { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--gray); margin-left: auto; }
+  .print-opt input { accent-color: var(--blue); }
+
+  /* ===== PRESET BUTTONS ===== */
+  .preset-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid var(--purple-light); }
+  .preset-bar .label { font-size: 0.82rem; font-weight: 600; color: var(--purple); align-self: center; margin-right: 4px; }
+  .btn-preset { padding: 5px 14px; font-size: 0.78rem; border: 2px solid var(--purple-light); background: white; color: var(--purple); border-radius: 20px; cursor: pointer; font-weight: 600; transition: all 0.15s; white-space: nowrap; }
+  .btn-preset:hover { background: var(--purple-light); }
+  .btn-preset.active { background: var(--purple); color: white; border-color: var(--purple); }
+
+  /* ===== POOL INFO ===== */
+  .pool-info { font-size: 0.82rem; color: var(--gray); text-align: right; margin-top: 8px; }
+  .pool-info strong { color: var(--blue-dark); }
+
+  /* ===== EXERCISE CARDS ===== */
+  .exercise-card { background: white; border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; margin-bottom: 14px; border-left: 4px solid var(--blue); }
+  .exercise-card.leicht { border-left-color: var(--green); }
+  .exercise-card.mittel { border-left-color: var(--yellow); }
+  .exercise-card.schwer { border-left-color: var(--red); }
+  .ex-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; gap: 8px; flex-wrap: wrap; }
+  .ex-title { font-weight: 700; font-size: 1rem; color: var(--gray-dark); }
+  .ex-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag { font-size: 0.72rem; padding: 2px 9px; border-radius: 12px; font-weight: 600; }
+  .tag-topic { background: var(--blue-light); color: var(--blue-dark); }
+  .tag-diff.leicht { background: var(--green-light); color: var(--green); }
+  .tag-diff.mittel { background: var(--yellow-light); color: var(--yellow); }
+  .tag-diff.schwer { background: var(--red-light); color: var(--red); }
+  .ex-text { font-size: 0.95rem; line-height: 1.65; margin-bottom: 12px; color: var(--gray-dark); }
+  .ex-text .fm { font-family: Georgia, serif; background: var(--purple-light); border-radius: 6px; padding: 2px 8px; font-weight: 600; color: var(--purple); display: inline-block; margin: 2px 0; }
+  .ex-text .step-box { background: var(--gray-light); border-left: 3px solid var(--blue); border-radius: 0 8px 8px 0; padding: 8px 14px; margin: 8px 0; font-size: 0.9rem; }
+  .ex-text .step-box strong { color: var(--blue-dark); }
+
+  .solution-toggle { display: flex; gap: 8px; align-items: center; }
+  .btn-sol { padding: 5px 14px; font-size: 0.82rem; border: 2px solid var(--purple-light); background: white; color: var(--purple); border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.15s; }
+  .btn-sol:hover { background: var(--purple-light); }
+  .sol-content { display: none; margin-top: 10px; background: #faf5ff; border: 1px solid #e9d5ff; border-radius: 8px; padding: 14px 16px; }
+  .sol-content.show { display: block; }
+  .sol-content h4 { font-size: 0.88rem; color: var(--purple); margin-bottom: 8px; }
+  .sol-content ol { margin: 0 0 8px 20px; font-family: Georgia, serif; font-size: 0.92rem; line-height: 1.7; }
+  .sol-content .sol-answer { background: var(--green-light); border: 1px solid var(--green); border-radius: 6px; padding: 8px 12px; font-weight: 700; color: #14532d; font-size: 0.92rem; }
+
+  /* ===== EMPTY STATE ===== */
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--gray); }
+  .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+  .empty-state p { font-size: 0.95rem; }
+
+  /* ===== PRINT ===== */
+  .print-header { display: none; }
+  @media print {
+    body { background: white; }
+    header { background: none !important; color: black !important; box-shadow: none; border-bottom: 2px solid #333; padding: 10px 16px; }
+    header h1 { color: black; font-size: 14pt; }
+    header h1 span { color: #555; }
+    .print-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8pt; padding: 6pt 0; border-bottom: 1px solid #ccc; font-size: 9pt; color: #666; }
+    .print-header .print-date { font-weight: 600; }
+    .print-header .print-name { border-bottom: 1px solid #999; min-width: 200px; padding: 2px 0; }
+    .mms-panel, .settings-card, .action-bar, .btn-sol, .no-print { display: none !important; }
+    main { padding: 0 10px; max-width: 100%; }
+    .card { box-shadow: none; }
+    .exercise-card { box-shadow: none; border: 1px solid #ccc; page-break-inside: avoid; margin-bottom: 10pt; }
+    .sol-content { display: none !important; }
+    .sol-content.print-show { display: block !important; border: 1px solid #aaa; }
+    .ex-text .fm { background: #eee; }
+    .ex-text .step-box { background: #f5f5f5; }
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 600px) {
+    header { padding: 12px 14px; }
+    header h1 { font-size: 1.1rem; }
+    .mms-label { min-width: 80px; font-size: 0.75rem; padding: 6px 8px; }
+    main { padding: 12px 8px 40px; }
+    .topic-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Aufgabengenerator · Exponentialfunktionen
+    <span>NRW Gymnasium Klasse 10 · MMS-Didaktikregler</span>
+  </h1>
+</header>
+
+<main>
+
+<!-- ===== MMS SLIDER PANEL ===== -->
+<div class="card mms-panel">
+  <h2>Didaktische Regler (MMS)</h2>
+
+  <div class="preset-bar">
+    <span class="label">Schnellauswahl:</span>
+    <button class="btn-preset" onclick="applyPreset('einstieg',this)" title="Verständnisorientiert, offen, prozessbetont">Einstieg</button>
+    <button class="btn-preset" onclick="applyPreset('uebung',this)" title="Ausgewogen, kalkülorientiert">Übung</button>
+    <button class="btn-preset" onclick="applyPreset('vertiefung',this)" title="Offen, verständnisorientiert, prozessbetont">Vertiefung</button>
+    <button class="btn-preset" onclick="applyPreset('klausur',this)" title="Kalkül, produktorientiert, geführt">Klausurvorbereitung</button>
+    <button class="btn-preset" onclick="applyPreset('digital',this)" title="Werkzeug/Knöpfchen-orientiert, GeoGebra">Digitales Arbeiten</button>
+  </div>
+
+  <div class="mms-slider-group">
+    <div class="mms-principle">So viel Werkzeuggebrauch wie möglich, so viel Einsatz von fertigen Applets wie nötig.</div>
+    <div class="mms-slider-row">
+      <div class="mms-label left">Werkzeug</div>
+      <div class="mms-track"><input type="range" id="sl-werkzeug" min="0" max="100" value="50"></div>
+      <div class="mms-label right">Applet</div>
+    </div>
+  </div>
+
+  <div class="mms-slider-group">
+    <div class="mms-principle">So viel Verständnis wie möglich, so viel Kalkül wie nötig.</div>
+    <div class="mms-slider-row">
+      <div class="mms-label left">Verständnis</div>
+      <div class="mms-track"><input type="range" id="sl-verstaendnis" min="0" max="100" value="50"></div>
+      <div class="mms-label right">Kalkül</div>
+    </div>
+  </div>
+
+  <div class="mms-slider-group">
+    <div class="mms-principle">So viel Mathematik wie möglich, so viel Bedienkunde wie nötig.</div>
+    <div class="mms-slider-row">
+      <div class="mms-label left">Mathe</div>
+      <div class="mms-track"><input type="range" id="sl-mathe" min="0" max="100" value="50"></div>
+      <div class="mms-label right">Knöpfchen</div>
+    </div>
+  </div>
+
+  <div class="mms-slider-group">
+    <div class="mms-principle">So viel Erkunden und Reflexion wie möglich, so viel Fokus auf Ergebnisse wie nötig.</div>
+    <div class="mms-slider-row">
+      <div class="mms-label left">Prozess</div>
+      <div class="mms-track"><input type="range" id="sl-prozess" min="0" max="100" value="50"></div>
+      <div class="mms-label right">Produkt</div>
+    </div>
+  </div>
+
+  <div class="mms-slider-group">
+    <div class="mms-principle">So offen wie möglich, so geführt und geschlossen wie nötig.</div>
+    <div class="mms-slider-row">
+      <div class="mms-label left">offen</div>
+      <div class="mms-track"><input type="range" id="sl-offen" min="0" max="100" value="50"></div>
+      <div class="mms-label right">geführt</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SETTINGS ===== -->
+<div class="card settings-card">
+  <h2>Einstellungen</h2>
+  <div class="topic-grid">
+    <label><input type="checkbox" checked value="grundform"> Grundform f(x) = a·b<sup>x</sup></label>
+    <label><input type="checkbox" checked value="wachstumsrate"> Wachstumsfaktor &amp; -rate</label>
+    <label><input type="checkbox" checked value="wachstum_zerfall"> Wachstum &amp; Zerfall</label>
+    <label><input type="checkbox" checked value="funktionswerte"> Funktionswerte berechnen</label>
+    <label><input type="checkbox" checked value="zwei_punkte"> Zwei-Punkte-Methode</label>
+    <label><input type="checkbox" checked value="halbwertszeit"> Halbwertszeit &amp; Verdopplungszeit</label>
+    <label><input type="checkbox" checked value="graph"> Graph zeichnen &amp; ablesen</label>
+    <label><input type="checkbox" checked value="sachkontext"> Sachkontexte</label>
+  </div>
+  <div class="settings-row">
+    <label>Anzahl Aufgaben:</label>
+    <input type="range" id="count-slider" min="3" max="15" value="8" oninput="document.getElementById('count-val').textContent=this.value">
+    <span class="val" id="count-val">8</span>
+  </div>
+  <div class="settings-row">
+    <label>Schwierigkeit:</label>
+    <select id="diff-select" onchange="updatePoolInfo()">
+      <option value="alle">Alle Stufen</option>
+      <option value="leicht">Leicht</option>
+      <option value="mittel">Mittel</option>
+      <option value="schwer">Schwer</option>
+    </select>
+  </div>
+  <div class="pool-info" id="pool-info"></div>
+</div>
+
+<!-- ===== ACTION BAR ===== -->
+<div class="action-bar">
+  <button class="btn btn-primary" onclick="generateExercises()">Aufgaben generieren</button>
+  <button class="btn btn-secondary" id="btn-regen" style="display:none" onclick="generateExercises()">Neu generieren</button>
+  <button class="btn btn-secondary" id="btn-solutions" style="display:none" onclick="toggleAllSolutions()">Alle Lösungen zeigen</button>
+  <button class="btn btn-secondary" id="btn-copy" style="display:none" onclick="copyExercises()">Kopieren</button>
+  <button class="btn btn-secondary" id="btn-print" style="display:none" onclick="window.print()">Drucken</button>
+  <label class="print-opt no-print" id="print-opt" style="display:none">
+    <input type="checkbox" id="print-sol-cb" onchange="togglePrintSolutions()"> Lösungen mitdrucken
+  </label>
+</div>
+
+<!-- ===== OUTPUT ===== -->
+<div class="print-header">
+  <span class="print-date" id="print-date"></span>
+  <span>Name: <span class="print-name">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></span>
+</div>
+<div id="output">
+  <div class="empty-state">
+    <div class="icon">📐</div>
+    <p>Stelle die didaktischen Regler ein, wähle Themen und klicke auf <strong>„Aufgaben generieren"</strong>.</p>
+  </div>
+</div>
+
+</main>
+
+<script>
+// ============================================================
+//  HILFSFUNKTIONEN
+// ============================================================
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+const randInt = (lo, hi) => lo + Math.floor(Math.random() * (hi - lo + 1));
+const round2 = n => Math.round(n * 100) / 100;
+const fmt = n => {
+  if (Number.isInteger(n)) return String(n);
+  return n.toLocaleString('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 4 });
+};
+const fm = s => `<span class="fm">${s}</span>`;
+
+// Schöne Werte
+const A_VALS = [1, 2, 3, 4, 5, 8, 10];
+const B_WACHSTUM = [1.5, 2, 3, 1.2, 1.1, 1.05];
+const B_ZERFALL = [0.5, 0.6, 0.7, 0.75, 0.8, 0.9, 0.95];
+const B_ALL = [...B_WACHSTUM, ...B_ZERFALL];
+const A_SACH = [100, 200, 500, 1000, 2000, 5000, 10000];
+const P_VALS = [2, 3, 4, 5, 8, 10, 15, 20, 25, 30, 50];
+const TOPIC_LABELS = {
+  grundform: 'Grundform', wachstumsrate: 'Rate/Faktor', wachstum_zerfall: 'Wachstum/Zerfall',
+  funktionswerte: 'Funktionswerte', zwei_punkte: 'Zwei-Punkte', halbwertszeit: 'Halbwertszeit',
+  graph: 'Graph', sachkontext: 'Sachkontext'
+};
+const DIFF_LABELS = { leicht: 'Leicht', mittel: 'Mittel', schwer: 'Schwer' };
+
+// ============================================================
+//  AUFGABEN-TEMPLATES
+// ============================================================
+const TEMPLATES = [
+
+// ──────────── GRUNDFORM ────────────
+{id:'gf01',topic:'grundform',difficulty:'leicht',
+ aff:{werkzeug:0.5,verstaendnis:0.2,mathe:0.1,prozess:0.8,offen:0.8},
+ gen(){const a=pick(A_VALS),b=pick(B_WACHSTUM);return{
+  text:`Gib den y-Achsenabschnitt und den Wachstumsfaktor der Funktion ${fm(`f(x) = ${a} · ${fmt(b)}<sup>x</sup>`)} an.`,
+  sol:{steps:[`Der y-Achsenabschnitt ist f(0) = a = ${a}.`,`Der Wachstumsfaktor ist b = ${fmt(b)}.`],answer:`a = ${a}, b = ${fmt(b)}`}};}},
+
+{id:'gf02',topic:'grundform',difficulty:'leicht',
+ aff:{werkzeug:0.5,verstaendnis:0.1,mathe:0.1,prozess:0.3,offen:0.9},
+ gen(){const a=pick(A_VALS);return{
+  text:`Erkläre in eigenen Worten, was der Parameter ${fm('a')} in ${fm('f(x) = a · b<sup>x</sup>')} bedeutet. Verdeutliche deine Erklärung am Beispiel ${fm(`a = ${a}`)}.`,
+  sol:{steps:[`a ist der Anfangswert bzw. der y-Achsenabschnitt der Funktion.`,`Es gilt f(0) = a · b⁰ = a · 1 = a.`,`Für a = ${a} schneidet der Graph die y-Achse bei (0|${a}).`],answer:`a = ${a} ist der y-Achsenabschnitt (Anfangswert)`}};}},
+
+{id:'gf03',topic:'grundform',difficulty:'mittel',
+ aff:{werkzeug:0.5,verstaendnis:0.1,mathe:0.1,prozess:0.4,offen:0.6},
+ gen(){const a=pick(A_VALS),b=pick(B_ALL);const wz=b>1?'Wachstum':'Zerfall';return{
+  text:`Entscheide, ob die folgende Aussage wahr oder falsch ist, und begründe deine Antwort:<br><em>„Der Graph von ${fm(`f(x) = ${a} · ${fmt(b)}<sup>x</sup>`)} schneidet die x-Achse."</em>`,
+  sol:{steps:[`Falsch. Da b = ${fmt(b)} > 0 und a = ${a} > 0 gilt, ist f(x) = ${a} · ${fmt(b)}^x > 0 für alle x ∈ ℝ.`,`Die x-Achse (y = 0) ist eine waagerechte Asymptote.`,`Der Graph nähert sich der x-Achse beliebig an, schneidet sie aber nie.`],answer:'Falsch – der Graph hat keine Nullstellen'}};}},
+
+{id:'gf04',topic:'grundform',difficulty:'leicht',
+ aff:{werkzeug:0.5,verstaendnis:0.8,mathe:0.1,prozess:0.8,offen:0.4},
+ gen(){const a=pick(A_VALS),b=pick(B_WACHSTUM),x=randInt(1,4);const fx=round2(a*Math.pow(b,x));return{
+  text:`Berechne ${fm(`f(${x})`)} für ${fm(`f(x) = ${a} · ${fmt(b)}<sup>x</sup>`)}.`,
+  sol:{steps:[`f(${x}) = ${a} · ${fmt(b)}^${x}`,`= ${a} · ${fmt(round2(Math.pow(b,x)))}`,`= ${fmt(fx)}`],answer:`f(${x}) = ${fmt(fx)}`}};}},
+
+{id:'gf05',topic:'grundform',difficulty:'mittel',
+ aff:{werkzeug:0.5,verstaendnis:0.7,mathe:0.1,prozess:0.7,offen:0.3},
+ gen(){const a=pick(A_VALS),b=pick(B_ALL);const vals=[0,1,2,3].map(x=>({x,y:round2(a*Math.pow(b,x))}));return{
+  text:`Erstelle eine Wertetabelle für ${fm(`f(x) = ${a} · ${fmt(b)}<sup>x</sup>`)} mit x = 0, 1, 2, 3.`,
+  sol:{steps:vals.map(v=>`f(${v.x}) = ${a} · ${fmt(b)}^${v.x} = ${fmt(v.y)}`),answer:`Wertetabelle: ${vals.map(v=>`(${v.x}|${fmt(v.y)})`).join(', ')}`}};}},
+
+{id:'gf06',topic:'grundform',difficulty:'leicht',
+ aff:{werkzeug:0.5,verstaendnis:0.0,mathe:0.1,prozess:0.2,offen:0.2},
+ gen(){const a=pick(A_VALS),b=pick(B_ALL);const props=b>1?['streng monoton steigend','exponentiellem Wachstum']:['streng monoton fallend','exponentiellem Zerfall'];return{
+  text:`Nenne die Asymptote, die Monotonie und den Wertebereich von ${fm(`f(x) = ${a} · ${fmt(b)}<sup>x</sup>`)}.`,
+  sol:{steps:[`Asymptote: y = 0 (waagerecht, x-Achse)`,`Monotonie: ${props[0]} (da b = ${fmt(b)} ${b>1?'> 1':'< 1'})`,`Wertebereich: W = (0; +∞), da a = ${a} > 0`],answer:`Asymptote y=0, ${props[0]}, W=(0;+∞)`}};}},
+
+{id:'gf07',topic:'grundform',difficulty:'mittel',
+ aff:{werkzeug:0.5,verstaendnis:0.1,mathe:0.1,prozess:0.1,offen:0.1},
+ gen(){const a1=pick(A_VALS),b1=pick(B_WACHSTUM),a2=pick(A_VALS),b2=pick(B_ZERFALL);return{
+  text:`Begründe, warum ${fm(`f(x) = ${a1} · ${fmt(b1)}<sup>x</sup>`)} für x → +∞ gegen +∞ strebt, während ${fm(`g(x) = ${a2} · ${fmt(b2)}<sup>x</sup>`)} für x → +∞ gegen 0 strebt.`,
+  sol:{steps:[`Für f: Da b = ${fmt(b1)} > 1, werden die Potenzen ${fmt(b1)}^x für wachsendes x immer größer → f(x) → +∞.`,`Für g: Da b = ${fmt(b2)} mit 0 < ${fmt(b2)} < 1, werden die Potenzen ${fmt(b2)}^x für wachsendes x immer kleiner (nähern sich 0) → g(x) → 0.`],answer:`b>1: Graph steigt unbeschränkt; 0<b<1: Graph fällt gegen 0`}};}},
+
+{id:'gf08',topic:'grundform',difficulty:'schwer',
+ aff:{werkzeug:0.5,verstaendnis:0.0,mathe:0.1,prozess:0.1,offen:0.1},
+ gen(){const a=pick(A_VALS),b=pick(B_ALL);return{
+  text:`Nenne drei verschiedene Exponentialfunktionen der Form ${fm('f(x) = a · b<sup>x</sup>')}, die denselben y-Achsenabschnitt wie ${fm(`g(x) = ${a} · ${fmt(b)}<sup>x</sup>`)} haben, aber verschiedene Wachstumsfaktoren besitzen.`,
+  sol:{steps:[`Der y-Achsenabschnitt ist g(0) = ${a}.`,`Jede Funktion f(x) = ${a} · b^x mit b > 0, b ≠ 1 und b ≠ ${fmt(b)} erfüllt die Bedingung.`,`Beispiele: f₁(x) = ${a}·2^x, f₂(x) = ${a}·0,5^x, f₃(x) = ${a}·3^x`],answer:`z.B. ${a}·2^x, ${a}·0,5^x, ${a}·3^x`}};}},
+
+// ──────────── WACHSTUMSRATE ────────────
+{id:'wr01',topic:'wachstumsrate',difficulty:'leicht',
+ aff:{werkzeug:0.5,verstaendnis:0.7,mathe:0.1,prozess:0.7,offen:0.5},
+ gen(){const p=pick(P_VALS);const b=round2(1+p/100);return{
+  text:`Berechne den Wachstumsfaktor b für eine jährliche Zunahme von ${fm(`${p} %`)}.`,
+  sol:{steps:[`b = 1 + p/100`,`b = 1 + ${p}/100`,`b = ${fmt(b)}`],answer:`b = ${fmt(b)}`}};}},
+
+{id:'wr02',topic:'wachstumsrate',difficulty:'leicht',
+ aff:{werkzeug:0.5,verstaendnis:0.7,mathe:0.1,prozess:0.7,offen:0.5},
+ gen(){const p=pick(P_VALS);const b=round2(1-p/100);return{
+  text:`Eine Menge nimmt pro Zeiteinheit um ${fm(`${p} %`)} ab. Bestimme den Wachstumsfaktor b.`,
+  sol:{steps:[`Bei Abnahme: b = 1 − p/100`,`b = 1 − ${p}/100`,`b = ${fmt(b)}`],answer:`b = ${fmt(b)}`}};}},
+
+{id:'wr03',topic:'wachstumsrate',difficulty:'mittel',
+ aff:{werkzeug:0.5,verstaendnis:0.6,mathe:0.1,prozess:0.7,offen:0.5},
+ gen(){const b=pick(B_ALL);const p=round2((b-1)*100);const typ=p>=0?'Zunahme':'Abnahme';return{
+  text:`Gegeben ist der Wachstumsfaktor ${fm(`b = ${fmt(b)}`)}. Berechne die Wachstumsrate p in Prozent und interpretiere das Ergebnis.`,
+  sol:{steps:[`p = (b − 1) · 100`,`p = (${fmt(b)} − 1) · 100`,`p = ${fmt(p)} %`],answer:`p = ${fmt(p)} % (${typ} um ${fmt(Math.abs(p))} % pro Einheit)`}};}},
+
+{id:'wr04',topic:'wachstumsrate',difficulty:'mittel',
+ aff:{werkzeug:0.5,verstaendnis:0.1,mathe:0.1,prozess:0.4,offen:0.4},
+ gen(){return{
+  text:`Entscheide, ob die Aussage wahr oder falsch ist, und begründe:<br><em>„Ein Wachstumsfaktor von b = 2 bedeutet 200 % Wachstum."</em>`,
+  sol:{steps:[`Falsch! Die Wachstumsrate berechnet sich: p = (b − 1) · 100.`,`p = (2 − 1) · 100 = 100 %.`,`b = 2 bedeutet also 100 % Wachstum (Verdoppelung), nicht 200 %.`],answer:'Falsch – b = 2 bedeutet 100 % Wachstum'}};}},
+
+{id:'wr05',topic:'wachstumsrate',difficulty:'leicht',
+ aff:{werkzeug:0.5,verstaendnis:0.1,mathe:0.1,prozess:0.3,offen:0.3},
+ gen(){return{
+  text:`Erkläre den Zusammenhang zwischen Wachstumsrate p und Wachstumsfaktor b. Warum gilt ${fm('b = 1 + p/100')}?`,
+  sol:{steps:[`Der Wachstumsfaktor b gibt an, mit welchem Faktor der Bestand pro Zeiteinheit multipliziert wird.`,`Bei p % Zunahme hat man nach einer Zeiteinheit: Bestand · (1 + p/100).`,`Daher ist b = 1 + p/100 der Faktor, um den multipliziert wird.`],answer:'b = 1 + p/100, da p % Zunahme den Faktor (1 + p/100) ergibt'}};}},
+
+{id:'wr06',topic:'wachstumsrate',difficulty:'mittel',
+ aff:{werkzeug:0.5,verstaendnis:0.2,mathe:0.1,prozess:0.4,offen:0.3},
+ gen(){return{
+  text:`Entscheide, ob die Aussage wahr oder falsch ist, und begründe:<br><em>„Ein Wachstumsfaktor von 0,95 bedeutet 95 % Wachstum."</em>`,
+  sol:{steps:[`Falsch! p = (0,95 − 1) · 100 = −5 %.`,`Ein Wachstumsfaktor von 0,95 bedeutet eine Abnahme um 5 % pro Zeiteinheit.`,`Da 0 < b = 0,95 < 1, handelt es sich um exponentiellen Zerfall.`],answer:'Falsch – b = 0,95 bedeutet 5 % Abnahme'}};}},
+
+{id:'wr07',topic:'wachstumsrate',difficulty:'schwer',
+ aff:{werkzeug:0.5,verstaendnis:0.5,mathe:0.1,prozess:0.5,offen:0.2},
+ gen(){const p1=pick([5,10,15,20]),p2=pick([3,4,6,8,12]);return{
+  text:`Ordne den Wachstumsraten die passenden Wachstumsfaktoren zu:<br>Raten: ${fm(`p₁ = +${p1} %`)}, ${fm(`p₂ = −${p2} %`)}<br>Faktoren: ${fm(`b = ${fmt(1-p2/100)}`)}, ${fm(`b = ${fmt(1+p1/100)}`)}`,
+  sol:{steps:[`p₁ = +${p1} % → b = 1 + ${p1}/100 = ${fmt(1+p1/100)}`,`p₂ = −${p2} % → b = 1 − ${p2}/100 = ${fmt(1-p2/100)}`],answer:`+${p1}% → b=${fmt(1+p1/100)}, −${p2}% → b=${fmt(1-p2/100)}`}};}},
+
+// ──────────── WACHSTUM & ZERFALL ────────────
+{id:'wz01',topic:'wachstum_zerfall',difficulty:'leicht',
+ aff:{werkzeug:0.5,verstaendnis:0.3,mathe:0.1,prozess:0.6,offen:0.5},
+ gen(){const a=pick(A_VALS),b=pick(B_ALL);const typ=b>1?'exponentielles Wachstum':'exponentiellen Zerfall';return{
+  text:`Bestimme, ob ${fm(`f(x) = ${a} · ${fmt(b)}<sup>x</sup>`)} exponentielles Wachstum oder exponentiellen Zerfall beschreibt. Begründe.`,
+  sol:{steps:[`b = ${fmt(b)} ${b>1?'> 1 → exponentielles Wachstum':'< 1 → exponentieller Zerfall'}.`,`Da ${b>1?'b > 1, steigt':'0 < b < 1, fällt'} der Graph streng monoton.`],answer:`${typ}, da b = ${fmt(b)} ${b>1?'> 1':'< 1'}`}};}},
+
+{id:'wz02',topic:'wachstum_zerfall',difficulty:'mittel',
+ aff:{werkzeug:0.5,verstaendnis:0.2,mathe:0.1,prozess:0.1,offen:0.2},
+ gen(){const a=pick(A_VALS),b1=pick(B_WACHSTUM),b2=pick(B_ZERFALL);return{
+  text:`Vergleiche die Graphen von ${fm(`f(x) = ${a} · ${fmt(b1)}<sup>x</sup>`)} und ${fm(`g(x) = ${a} · ${fmt(b2)}<sup>x</sup>`)}. Nenne mindestens drei Gemeinsamkeiten und drei Unterschiede.`,
+  sol:{steps:[`Gemeinsamkeiten: Gleicher y-Achsenabschnitt (0|${a}), gleiche Asymptote y=0, gleicher Definitionsbereich ℝ, gleicher Wertebereich (0;+∞).`,`Unterschiede: f steigt (b₁=${fmt(b1)}>1), g fällt (b₂=${fmt(b2)}<1). Für x→+∞: f→+∞, g→0. Für x→−∞: f→0, g→+∞.`],answer:'Gleich: y-Achsenabschnitt, Asymptote, D, W. Verschieden: Monotonie, Grenzverhalten'}};}},
+
+{id:'wz03',topic:'wachstum_zerfall',difficulty:'mittel',
+ aff:{werkzeug:0.5,verstaendnis:0.1,mathe:0.1,prozess:0.1,offen:0.1},
+ gen(){const fns=[{a:pick(A_VALS),b:pick(B_WACHSTUM)},{a:pick(A_VALS),b:pick(B_ZERFALL)},{a:pick(A_VALS),b:pick(B_WACHSTUM)}];
+  return{
+  text:`Ordne zu – welche Funktion beschreibt Wachstum (W), welche Zerfall (Z)?<br>${fns.map((f,i)=>fm(`f<sub>${i+1}</sub>(x) = ${f.a} · ${fmt(f.b)}<sup>x</sup>`)).join(', ')}`,
+  sol:{steps:fns.map((f,i)=>`f${i+1}: b = ${fmt(f.b)} ${f.b>1?'> 1 → Wachstum (W)':'< 1 → Zerfall (Z)'}`),answer:fns.map((f,i)=>`f${i+1}: ${f.b>1?'W':'Z'}`).join(', ')}};}},
+
+{id:'wz04',topic:'wachstum_zerfall',difficulty:'schwer',
+ aff:{werkzeug:0.5,verstaendnis:0.0,mathe:0.1,prozess:0.0,offen:0.0},
+ gen(){const a=pick(A_VALS),b=pick(B_ALL);return{
+  text:`Untersuche, ob es einen Wert x gibt, für den ${fm(`f(x) = ${a} · ${fmt(b)}<sup>x</sup>`)} den Wert 0 annimmt. Begründe deine Antwort mathematisch.`,
+  sol:{steps:[`Angenommen f(x) = 0, also ${a} · ${fmt(b)}^x = 0.`,`Da ${a} ≠ 0 und ${fmt(b)}^x > 0 für alle x ∈ ℝ (Potenz mit positiver Basis), ist das Produkt stets > 0.`,`Es gibt kein x mit f(x) = 0. Die x-Achse ist Asymptote.`],answer:'Nein – f(x) > 0 für alle x, da b^x stets positiv ist'}};}},
+
+{id:'wz05',topic:'wachstum_zerfall',difficulty:'mittel',
+ aff:{werkzeug:0.0,verstaendnis:0.5,mathe:0.8,prozess:0.2,offen:0.5},
+ gen(){const a=pick(A_VALS),b=pick(B_ALL);return{
+  text:`Zeichne den Graphen von ${fm(`f(x) = ${a} · ${fmt(b)}<sup>x</sup>`)} mit GeoGebra. Beschreibe die Eigenschaften des Graphen: Monotonie, Asymptote, y-Achsenabschnitt und Grenzverhalten.`,
+  sol:{steps:[`Eingabe in GeoGebra: f(x) = ${a} * ${fmt(b)}^x`,`y-Achsenabschnitt: f(0) = ${a}`,`Asymptote: y = 0`,`Monotonie: streng monoton ${b>1?'steigend':'fallend'}`,`Grenzverhalten: f(x) → ${b>1?'+∞':'0'} für x → +∞; f(x) → ${b>1?'0':'+∞'} für x → −∞`],answer:`Graph: y-Abschnitt ${a}, Asymptote y=0, ${b>1?'steigend':'fallend'}`}};}},
+
+// ──────────── FUNKTIONSWERTE ────────────
+{id:'fw01',topic:'funktionswerte',difficulty:'leicht',
+ aff:{werkzeug:0.5,verstaendnis:0.8,mathe:0.1,prozess:0.8,offen:0.5},
+ gen(){const a=pick(A_VALS),b=pick([2,3,1.5,0.5]),x=randInt(1,4);const fx=round2(a*Math.pow(b,x));return{
+  text:`Berechne ${fm(`f(${x})`)} für ${fm(`f(x) = ${a} · ${fmt(b)}<sup>x</sup>`)}.`,
+  sol:{steps:[`f(${x}) = ${a} · ${fmt(b)}^${x}`,`= ${a} · ${fmt(round2(Math.pow(b,x)))}`,`= ${fmt(fx)}`],answer:`f(${x}) = ${fmt(fx)}`}};}},
+
+{id:'fw02',topic:'funktionswerte',difficulty:'mittel',
+ aff:{werkzeug:0.5,verstaendnis:0.8,mathe:0.1,prozess:0.7,offen:0.5},
+ gen(){const a=pick(A_VALS),b=pick([2,3,0.5]),x=randInt(-2,-1);const bx=Math.pow(b,x);const fx=round2(a*bx);return{
+  text:`Berechne ${fm(`f(${x})`)} für ${fm(`f(x) = ${a} · ${fmt(b)}<sup>x</sup>`)}. Beachte den negativen Exponenten!`,
+  sol:{steps:[`f(${x}) = ${a} · ${fmt(b)}^(${x})`,`= ${a} · 1/${fmt(b)}^${Math.abs(x)}`,`= ${a} · ${fmt(round2(bx))}`,`= ${fmt(fx)}`],answer:`f(${x}) = ${fmt(fx)}`}};}},
+
+{id:'fw03',topic:'funktionswerte',difficulty:'mittel',
+ aff:{werkzeug:0.5,verstaendnis:0.7,mathe:0.1,prozess:0.7,offen:0.5},
+ gen(){const a=pick(A_VALS),b=pick([2,3,4,5]);const target=a*b*b;return{
+  text:`Für welches x gilt ${fm(`f(x) = ${target}`)}? Gegeben: ${fm(`f(x) = ${a} · ${b}<sup>x</sup>`)}.`,
+  sol:{steps:[`${a} · ${b}^x = ${target}`,`${b}^x = ${target}/${a} = ${target/a}`,`${b}^x = ${b*b}`,`x = 2`],answer:`x = 2`}};}},
+
+{id:'fw04',topic:'funktionswerte',difficulty:'leicht',
+ aff:{werkzeug:0.5,verstaendnis:0.9,mathe:0.1,prozess:0.8,offen:0.5},
+ gen(){const a=pick(A_VALS),b=pick(B_ALL);const vals=[0,1,2].map(x=>round2(a*Math.pow(b,x)));return{
+  text:`Berechne ${fm('f(0)')}, ${fm('f(1)')} und ${fm('f(2)')} für ${fm(`f(x) = ${a} · ${fmt(b)}<sup>x</sup>`)}.`,
+  sol:{steps:[`f(0) = ${a} · ${fmt(b)}⁰ = ${a} · 1 = ${a}`,`f(1) = ${a} · ${fmt(b)}¹ = ${fmt(vals[1])}`,`f(2) = ${a} · ${fmt(b)}² = ${fmt(vals[2])}`],answer:`f(0)=${a}, f(1)=${fmt(vals[1])}, f(2)=${fmt(vals[2])}`}};}},
+
+{id:'fw05',topic:'funktionswerte',difficulty:'schwer',
+ aff:{werkzeug:0.5,verstaendnis:0.8,mathe:0.1,prozess:0.7,offen:0.5},
+ gen(){const a=pick(A_VALS),b=pick([2,3,4]);const x1=1,x2=3;const f1=a*Math.pow(b,x1),f2=a*Math.pow(b,x2);return{
+  text:`Berechne ${fm(`f(${x2}) − f(${x1})`)} für ${fm(`f(x) = ${a} · ${b}<sup>x</sup>`)}.`,
+  sol:{steps:[`f(${x1}) = ${a} · ${b}^${x1} = ${f1}`,`f(${x2}) = ${a} · ${b}^${x2} = ${f2}`,`f(${x2}) − f(${x1}) = ${f2} − ${f1} = ${f2-f1}`],answer:`f(${x2}) − f(${x1}) = ${f2-f1}`}};}},
+
+{id:'fw06',topic:'funktionswerte',difficulty:'leicht',
+ aff:{werkzeug:0.0,verstaendnis:0.7,mathe:0.8,prozess:0.7,offen:0.5},
+ gen(){const a=pick(A_VALS),b=pick(B_ALL);return{
+  text:`Erstelle mit dem Taschenrechner eine Wertetabelle für ${fm(`f(x) = ${a} · ${fmt(b)}<sup>x</sup>`)} für x = −2, −1, 0, 1, 2, 3 und beschreibe den Verlauf.`,
+  sol:{steps:[-2,-1,0,1,2,3].map(x=>`f(${x}) = ${fmt(round2(a*Math.pow(b,x)))}`).concat([`Der Graph ${b>1?'steigt – die Werte werden immer größer (exponentielles Wachstum).':'fällt – die Werte werden immer kleiner (exponentieller Zerfall).'}`]),answer:`Wertetabelle erstellt, ${b>1?'Wachstum':'Zerfall'}`}};}},
+
+// ──────────── ZWEI-PUNKTE-METHODE ────────────
+{id:'zp01',topic:'zwei_punkte',difficulty:'mittel',
+ aff:{werkzeug:0.5,verstaendnis:0.7,mathe:0.1,prozess:0.7,offen:0.5},
+ gen(){const a=pick([2,3,4,5]),b=pick([2,3,1.5]);const x1=0,x2=randInt(2,3);const y1=a,y2=round2(a*Math.pow(b,x2));return{
+  text:`Bestimme die Funktionsgleichung ${fm('f(x) = a · b<sup>x</sup>')} durch die Punkte ${fm(`P(${x1}|${y1})`)} und ${fm(`Q(${x2}|${y2})`)}.`,
+  sol:{steps:[`Aus P(0|${y1}): f(0) = a · b⁰ = a = ${y1} → a = ${a}`,`Aus Q(${x2}|${y2}): ${y2} = ${a} · b^${x2}`,`b^${x2} = ${y2}/${a} = ${y2/a}`,`b = ${x2===2?'√':'∛'}(${y2/a}) = ${fmt(b)}`,`f(x) = ${a} · ${fmt(b)}^x`],answer:`f(x) = ${a} · ${fmt(b)}^x`}};}},
+
+{id:'zp02',topic:'zwei_punkte',difficulty:'schwer',
+ aff:{werkzeug:0.5,verstaendnis:0.7,mathe:0.1,prozess:0.7,offen:0.5},
+ gen(){const a=pick([2,4,5,8]),b=pick([2,3]);const x1=1,x2=3;const y1=a*b,y2=a*Math.pow(b,3);return{
+  text:`Bestimme die Funktionsgleichung ${fm('f(x) = a · b<sup>x</sup>')} durch die Punkte ${fm(`P(${x1}|${y1})`)} und ${fm(`Q(${x2}|${y2})`)}.`,
+  sol:{steps:[`Gleichungssystem: ${y1} = a·b^${x1} und ${y2} = a·b^${x2}`,`Division: ${y2}/${y1} = b^(${x2}−${x1}) = b²`,`b² = ${y2/y1}`,`b = √${y2/y1} = ${b}`,`a = ${y1}/b^${x1} = ${y1}/${b} = ${a}`,`f(x) = ${a} · ${b}^x`],answer:`f(x) = ${a} · ${b}^x`}};}},
+
+{id:'zp03',topic:'zwei_punkte',difficulty:'mittel',
+ aff:{werkzeug:0.5,verstaendnis:0.6,mathe:0.1,prozess:0.6,offen:0.0},
+ gen(){const a=pick([2,3,5]),b=pick([2,3]);const x2=2;const y1=a,y2=a*b*b;return{
+  text:`Bestimme f(x) = a · b<sup>x</sup> durch P(0|${y1}) und Q(${x2}|${y2}). Gehe dabei schrittweise vor:
+  <div class="step-box"><strong>Schritt 1:</strong> Setze P(0|${y1}) ein. Was ergibt sich für a?</div>
+  <div class="step-box"><strong>Schritt 2:</strong> Setze Q(${x2}|${y2}) ein und löse nach b auf.</div>
+  <div class="step-box"><strong>Schritt 3:</strong> Schreibe die Funktionsgleichung auf.</div>
+  <div class="step-box"><strong>Schritt 4:</strong> Mache die Probe mit beiden Punkten.</div>`,
+  sol:{steps:[`Schritt 1: f(0) = a·b⁰ = a = ${y1} → a = ${a}`,`Schritt 2: ${y2} = ${a}·b² → b² = ${y2/a} → b = ${b}`,`Schritt 3: f(x) = ${a}·${b}^x`,`Schritt 4: f(0)=${a}·${b}⁰=${a} ✓ und f(${x2})=${a}·${b}²=${y2} ✓`],answer:`f(x) = ${a} · ${b}^x`}};}},
+
+{id:'zp04',topic:'zwei_punkte',difficulty:'schwer',
+ aff:{werkzeug:0.5,verstaendnis:0.5,mathe:0.1,prozess:0.3,offen:0.0},
+ gen(){const a=pick([2,3,5,10]);return{
+  text:`Finde eine Exponentialfunktion ${fm('f(x) = a · b<sup>x</sup>')}, die durch den Punkt ${fm(`P(0|${a})`)} verläuft und exponentielles Wachstum beschreibt. Gibt es mehrere Möglichkeiten? Begründe.`,
+  sol:{steps:[`Aus P(0|${a}): a = ${a}.`,`Für Wachstum muss b > 1 gelten.`,`Es gibt unendlich viele Möglichkeiten, z.B. f(x) = ${a}·2^x, f(x) = ${a}·1,5^x, f(x) = ${a}·3^x.`,`Jedes b > 1 liefert eine gültige Exponentialfunktion durch P.`],answer:`Unendlich viele: f(x) = ${a}·b^x mit beliebigem b > 1`}};}},
+
+// ──────────── HALBWERTSZEIT ────────────
+{id:'hw01',topic:'halbwertszeit',difficulty:'mittel',
+ aff:{werkzeug:0.5,verstaendnis:0.7,mathe:0.1,prozess:0.7,offen:0.5},
+ gen(){const a=pick([100,200,500]),b=pick([0.5,0.8,0.9,0.7]);const thalf=round2(Math.log(0.5)/Math.log(b));return{
+  text:`Berechne die Halbwertszeit von ${fm(`f(x) = ${a} · ${fmt(b)}<sup>x</sup>`)}.`,
+  sol:{steps:[`Halbwertszeit: f(T½) = ${a}/2 = ${a/2}`,`${a} · ${fmt(b)}^T½ = ${a/2}`,`${fmt(b)}^T½ = 0,5`,`T½ = log(0,5) / log(${fmt(b)})`,`T½ = ${fmt(round2(Math.log(0.5)))} / ${fmt(round2(Math.log(b)))}`,`T½ ≈ ${fmt(thalf)}`],answer:`T½ ≈ ${fmt(thalf)}`}};}},
+
+{id:'hw02',topic:'halbwertszeit',difficulty:'mittel',
+ aff:{werkzeug:0.5,verstaendnis:0.7,mathe:0.1,prozess:0.7,offen:0.5},
+ gen(){const a=pick([100,200,500,1000]),b=pick([1.5,2,3,1.2]);const td=round2(Math.log(2)/Math.log(b));return{
+  text:`Berechne die Verdopplungszeit von ${fm(`f(x) = ${a} · ${fmt(b)}<sup>x</sup>`)}.`,
+  sol:{steps:[`Verdopplungszeit: f(T₂) = 2·${a} = ${2*a}`,`${a} · ${fmt(b)}^T₂ = ${2*a}`,`${fmt(b)}^T₂ = 2`,`T₂ = log(2) / log(${fmt(b)})`,`T₂ ≈ ${fmt(td)}`],answer:`T₂ ≈ ${fmt(td)}`}};}},
+
+{id:'hw03',topic:'halbwertszeit',difficulty:'leicht',
+ aff:{werkzeug:0.5,verstaendnis:0.1,mathe:0.1,prozess:0.4,offen:0.4},
+ gen(){return{
+  text:`Erkläre, warum die Halbwertszeit nicht vom Anfangswert a abhängt.`,
+  sol:{steps:[`Halbwertszeit: a · b^T½ = a/2`,`Teile beide Seiten durch a: b^T½ = 1/2`,`Die Gleichung b^T½ = 0,5 enthält kein a mehr.`,`Also hängt T½ nur von b ab, nicht von a.`],answer:'T½ = log(0,5)/log(b) – a kürzt sich heraus'}};}},
+
+{id:'hw04',topic:'halbwertszeit',difficulty:'mittel',
+ aff:{werkzeug:0.5,verstaendnis:0.2,mathe:0.1,prozess:0.5,offen:0.4},
+ gen(){return{
+  text:`Entscheide, ob die Aussage wahr oder falsch ist, und begründe:<br><em>„Die Halbwertszeit von f(x) = 100 · 0,5<sup>x</sup> beträgt genau 1."</em>`,
+  sol:{steps:[`Prüfe: f(1) = 100 · 0,5¹ = 50 = 100/2 ✓`,`Tatsächlich ist f(1) = ½ · f(0), also T½ = 1.`,`Alternativ: T½ = log(0,5)/log(0,5) = 1 ✓`],answer:'Wahr – T½ = 1, da 0,5¹ = 0,5'}};}},
+
+{id:'hw05',topic:'halbwertszeit',difficulty:'schwer',
+ aff:{werkzeug:0.5,verstaendnis:0.8,mathe:0.1,prozess:0.7,offen:0.5},
+ gen(){const thalf=pick([2,3,4,5,8]);const b=round2(Math.pow(0.5,1/thalf));return{
+  text:`Die Halbwertszeit einer Substanz beträgt ${fm(`T½ = ${thalf}`)} Stunden. Bestimme den Zerfallsfaktor b.`,
+  sol:{steps:[`Aus b^T½ = 0,5 folgt:`,`b^${thalf} = 0,5`,`b = 0,5^(1/${thalf})`,`b = ${fmt(b)}`],answer:`b ≈ ${fmt(b)}`}};}},
+
+{id:'hw06',topic:'halbwertszeit',difficulty:'schwer',
+ aff:{werkzeug:0.5,verstaendnis:0.1,mathe:0.1,prozess:0.3,offen:0.3},
+ gen(){return{
+  text:`Erkläre den Unterschied zwischen Halbwertszeit und Verdopplungszeit. Wann verwendet man welchen Begriff? Nenne je ein Beispiel aus dem Alltag.`,
+  sol:{steps:[`Halbwertszeit T½: Zeit, nach der sich ein Wert halbiert hat. Gilt für Zerfall (0 < b < 1).`,`Verdopplungszeit T₂: Zeit, nach der sich ein Wert verdoppelt hat. Gilt für Wachstum (b > 1).`,`Beispiel T½: Radioaktiver Zerfall (z.B. Jod-131: T½ ≈ 8 Tage).`,`Beispiel T₂: Bakterienwachstum (z.B. E. coli verdoppelt sich alle 20 min).`],answer:'T½ für Zerfall (b<1), T₂ für Wachstum (b>1)'}};}},
+
+// ──────────── GRAPH ────────────
+{id:'gr01',topic:'graph',difficulty:'leicht',
+ aff:{werkzeug:0.0,verstaendnis:0.5,mathe:0.7,prozess:0.5,offen:0.5},
+ gen(){const a=pick(A_VALS),b=pick(B_ALL);return{
+  text:`Zeichne den Graphen von ${fm(`f(x) = ${a} · ${fmt(b)}<sup>x</sup>`)} in GeoGebra. Markiere den y-Achsenabschnitt und die Asymptote.`,
+  sol:{steps:[`Eingabe: f(x) = ${a}*${fmt(b)}^x`,`y-Achsenabschnitt: Punkt (0|${a}) markieren`,`Asymptote: Gerade y = 0 einzeichnen`,`Graph ${b>1?'steigt von links nach rechts':'fällt von links nach rechts'}`],answer:`Graph gezeichnet: y-Abschnitt (0|${a}), Asymptote y=0`}};}},
+
+{id:'gr02',topic:'graph',difficulty:'mittel',
+ aff:{werkzeug:0.5,verstaendnis:0.5,mathe:0.2,prozess:0.5,offen:0.5},
+ gen(){const a=pick([2,3,4,5]),b=pick([2,3,0.5]);return{
+  text:`Skizziere den Graphen von ${fm(`f(x) = ${a} · ${fmt(b)}<sup>x</sup>`)} ohne Hilfsmittel. Berechne dazu f(−1), f(0), f(1), f(2) und trage die Punkte ein.`,
+  sol:{steps:[-1,0,1,2].map(x=>`f(${x}) = ${a}·${fmt(b)}^${x<0?'('+x+')':x} = ${fmt(round2(a*Math.pow(b,x)))}`).concat(['Punkte verbinden, Asymptote y=0 einzeichnen']),answer:`Punkte: ${[-1,0,1,2].map(x=>`(${x}|${fmt(round2(a*Math.pow(b,x)))})`).join(', ')}`}};}},
+
+{id:'gr03',topic:'graph',difficulty:'mittel',
+ aff:{werkzeug:0.5,verstaendnis:0.3,mathe:0.1,prozess:0.3,offen:0.5},
+ gen(){const a=pick([2,3,4,5]),b=pick([2,3,0.5,0.25]);const f1=a*b;return{
+  text:`Ein exponentieller Graph verläuft durch die Punkte ${fm(`(0|${a})`)} und ${fm(`(1|${fmt(f1)})`)}. Bestimme die Funktionsgleichung.`,
+  sol:{steps:[`Aus (0|${a}): a = ${a}`,`Aus (1|${fmt(f1)}): f(1) = ${a}·b = ${fmt(f1)}`,`b = ${fmt(f1)}/${a} = ${fmt(b)}`,`f(x) = ${a}·${fmt(b)}^x`],answer:`f(x) = ${a} · ${fmt(b)}^x`}};}},
+
+{id:'gr04',topic:'graph',difficulty:'leicht',
+ aff:{werkzeug:0.0,verstaendnis:0.3,mathe:0.1,prozess:0.2,offen:0.1},
+ gen(){const a=pick(A_VALS),b=pick(B_ALL);return{
+  text:`Untersuche mit GeoGebra, wie sich der Graph von ${fm('g(x) = a · b<sup>x</sup>')} verändert, wenn du den Parameter a von 1 bis 5 änderst (bei b = ${fmt(b)}). Beschreibe deine Beobachtungen.`,
+  sol:{steps:[`Eingabe: Schieberegler a mit Min=1, Max=5, Schrittweite=1`,`g(x) = a * ${fmt(b)}^x`,`Beobachtung: Der y-Achsenabschnitt verschiebt sich (f(0) = a).`,`Der Graph wird "gestreckt" – alle y-Werte werden mit a multipliziert.`,`Die Asymptote y = 0 und das Monotonieverhalten bleiben gleich.`],answer:'a streckt den Graphen vertikal, y-Achsenabschnitt = a'}};}},
+
+{id:'gr05',topic:'graph',difficulty:'schwer',
+ aff:{werkzeug:0.5,verstaendnis:0.2,mathe:0.1,prozess:0.1,offen:0.1},
+ gen(){const a=pick([2,3,4]),b=pick([2,3]);return{
+  text:`Untersuche mit GeoGebra, wie sich der Graph von ${fm(`f(x) = ${a} · b<sup>x</sup>`)} verändert, wenn du b von 0,5 über 1 bis ${b} änderst. Was passiert bei b = 1? Beschreibe deine Beobachtungen systematisch.`,
+  sol:{steps:[`Für 0 < b < 1: Graph fällt (Zerfall)`,`Für b = 1: f(x) = ${a}·1^x = ${a} (konstante Funktion, waagerechte Gerade)`,`Für b > 1: Graph steigt (Wachstum)`,`Je weiter b von 1 entfernt ist, desto stärker steigt/fällt der Graph.`],answer:'b<1: Zerfall, b=1: konstant, b>1: Wachstum'}};}},
+
+// ──────────── SACHKONTEXTE ────────────
+{id:'sk01',topic:'sachkontext',difficulty:'mittel',
+ aff:{werkzeug:0.5,verstaendnis:0.7,mathe:0.1,prozess:0.7,offen:0.5},
+ gen(){const a=pick([100,200,500]),p=pick([5,10,15,20]);const b=round2(1-p/100);const x=pick([3,4,5]);const fx=round2(a*Math.pow(b,x));return{
+  text:`Eine radioaktive Substanz hat zur Zeit t = 0 eine Masse von ${fm(`${a} g`)}. Pro Stunde zerfallen ${fm(`${p} %`)} der Substanz.<br>a) Stelle die Funktionsgleichung auf.<br>b) Berechne die Masse nach ${x} Stunden.`,
+  sol:{steps:[`a) Zerfallsfaktor: b = 1 − ${p}/100 = ${fmt(b)}`,`Funktionsgleichung: f(t) = ${a} · ${fmt(b)}^t`,`b) f(${x}) = ${a} · ${fmt(b)}^${x}`,`= ${a} · ${fmt(round2(Math.pow(b,x)))}`,`≈ ${fmt(fx)} g`],answer:`f(t) = ${a}·${fmt(b)}^t; nach ${x}h: ≈ ${fmt(fx)} g`}};}},
+
+{id:'sk02',topic:'sachkontext',difficulty:'mittel',
+ aff:{werkzeug:0.5,verstaendnis:0.7,mathe:0.1,prozess:0.7,offen:0.5},
+ gen(){const K=pick([1000,2000,5000,10000]);const p=pick([2,3,4,5]);const b=round2(1+p/100);const t=pick([5,10,15,20]);const Kt=round2(K*Math.pow(b,t));return{
+  text:`Ein Kapital von ${fm(`${K} €`)} wird zu ${fm(`${p} % p.a.`)} (Zinseszins) angelegt.<br>a) Stelle die Funktionsgleichung auf.<br>b) Berechne das Kapital nach ${t} Jahren.`,
+  sol:{steps:[`a) Wachstumsfaktor: b = 1 + ${p}/100 = ${fmt(b)}`,`K(t) = ${K} · ${fmt(b)}^t`,`b) K(${t}) = ${K} · ${fmt(b)}^${t}`,`= ${K} · ${fmt(round2(Math.pow(b,t)))}`,`≈ ${fmt(Kt)} €`],answer:`K(t) = ${K}·${fmt(b)}^t; nach ${t} Jahren: ≈ ${fmt(Kt)} €`}};}},
+
+{id:'sk03',topic:'sachkontext',difficulty:'mittel',
+ aff:{werkzeug:0.5,verstaendnis:0.6,mathe:0.1,prozess:0.6,offen:0.5},
+ gen(){const a=pick([500,1000,2000]);const td=pick([2,3,4]);const t=pick([6,8,10,12]);const b=round2(Math.pow(2,1/td));const ft=round2(a*Math.pow(b,t));return{
+  text:`Eine Bakterienkultur startet mit ${fm(`${a} Bakterien`)} und verdoppelt sich alle ${fm(`${td} Stunden`)}.<br>a) Bestimme den Wachstumsfaktor b pro Stunde.<br>b) Wie viele Bakterien gibt es nach ${t} Stunden?`,
+  sol:{steps:[`a) Verdoppelung alle ${td}h: b^${td} = 2`,`b = 2^(1/${td}) ≈ ${fmt(b)}`,`f(t) = ${a} · ${fmt(b)}^t`,`b) f(${t}) = ${a} · ${fmt(b)}^${t} ≈ ${fmt(ft)}`],answer:`b ≈ ${fmt(b)}; nach ${t}h: ≈ ${fmt(ft)} Bakterien`}};}},
+
+{id:'sk04',topic:'sachkontext',difficulty:'schwer',
+ aff:{werkzeug:0.5,verstaendnis:0.7,mathe:0.1,prozess:0.7,offen:0.5},
+ gen(){const a=pick([200,400,500]);const p=pick([10,15,20,25]);const b=round2(1-p/100);const target=pick([50,20,10]);const t=round2(Math.log(target/a)/Math.log(b));return{
+  text:`Ein Medikament (Anfangsdosis ${fm(`${a} mg`)}) wird mit einer Rate von ${fm(`${p} % pro Stunde`)} abgebaut.<br>Nach wie vielen Stunden sind weniger als ${fm(`${target} mg`)} im Körper?`,
+  sol:{steps:[`f(t) = ${a} · ${fmt(b)}^t`,`Gesucht: ${a} · ${fmt(b)}^t < ${target}`,`${fmt(b)}^t < ${target}/${a} = ${fmt(target/a)}`,`t > log(${fmt(target/a)}) / log(${fmt(b)})`,`t > ${fmt(t)}`,`Nach ca. ${Math.ceil(t)} Stunden sind weniger als ${target} mg vorhanden.`],answer:`Nach ca. ${Math.ceil(t)} Stunden (t ≈ ${fmt(t)})`}};}},
+
+{id:'sk05',topic:'sachkontext',difficulty:'schwer',
+ aff:{werkzeug:0.5,verstaendnis:0.5,mathe:0.1,prozess:0.5,offen:0.5},
+ gen(){const a=pick([50000,100000,200000]);const p=pick([1,2,3]);const b=round2(1+p/100);const target=a*2;const t=round2(Math.log(2)/Math.log(b));return{
+  text:`Eine Stadt hat ${fm(`${a.toLocaleString('de-DE')} Einwohner`)} und wächst jährlich um ${fm(`${p} %`)}.<br>a) Stelle die Funktionsgleichung auf.<br>b) Wann wird die Einwohnerzahl ${fm(`${target.toLocaleString('de-DE')}`)} erreichen?`,
+  sol:{steps:[`a) f(t) = ${a.toLocaleString('de-DE')} · ${fmt(b)}^t`,`b) ${a.toLocaleString('de-DE')} · ${fmt(b)}^t = ${target.toLocaleString('de-DE')}`,`${fmt(b)}^t = 2`,`t = log(2) / log(${fmt(b)})`,`t ≈ ${fmt(t)} Jahre`],answer:`f(t) = ${a.toLocaleString('de-DE')}·${fmt(b)}^t; Verdopplung nach ≈ ${fmt(t)} Jahren`}};}},
+
+{id:'sk06',topic:'sachkontext',difficulty:'mittel',
+ aff:{werkzeug:0.5,verstaendnis:0.6,mathe:0.1,prozess:0.6,offen:0.0},
+ gen(){const a=pick([1000,2000,5000]);const p=pick([5,10,15,20]);const b=round2(1-p/100);const x=pick([3,4,5]);const fx=round2(a*Math.pow(b,x));const thalf=round2(Math.log(0.5)/Math.log(b));return{
+  text:`Ein radioaktives Präparat hat anfangs eine Aktivität von ${fm(`${a} Bq`)}. Die Aktivität nimmt pro Stunde um ${fm(`${p} %`)} ab. Gehe schrittweise vor:
+  <div class="step-box"><strong>Schritt 1:</strong> Bestimme den Zerfallsfaktor b.</div>
+  <div class="step-box"><strong>Schritt 2:</strong> Stelle die Funktionsgleichung f(t) auf.</div>
+  <div class="step-box"><strong>Schritt 3:</strong> Berechne die Aktivität nach ${x} Stunden.</div>
+  <div class="step-box"><strong>Schritt 4:</strong> Berechne die Halbwertszeit.</div>`,
+  sol:{steps:[`Schritt 1: b = 1 − ${p}/100 = ${fmt(b)}`,`Schritt 2: f(t) = ${a} · ${fmt(b)}^t`,`Schritt 3: f(${x}) = ${a} · ${fmt(b)}^${x} ≈ ${fmt(fx)} Bq`,`Schritt 4: T½ = log(0,5)/log(${fmt(b)}) ≈ ${fmt(thalf)} Stunden`],answer:`b=${fmt(b)}, f(t)=${a}·${fmt(b)}^t, f(${x})≈${fmt(fx)} Bq, T½≈${fmt(thalf)}h`}};}},
+
+{id:'sk07',topic:'sachkontext',difficulty:'leicht',
+ aff:{werkzeug:0.5,verstaendnis:0.3,mathe:0.1,prozess:0.2,offen:0.0},
+ gen(){const a=pick([100,200,500,1000]);const td=pick([1,2,3]);const t=td*4;const ft=a*Math.pow(2,t/td);return{
+  text:`In einem Teich verdoppelt sich die Algenfläche alle ${fm(`${td} Tage`)}. Heute bedecken die Algen ${fm(`${a} cm²`)}.<br>Wie groß ist die Algenfläche nach ${t} Tagen?`,
+  sol:{steps:[`Verdopplungszeit: ${td} Tag(e)`,`f(t) = ${a} · 2^(t/${td})`,`f(${t}) = ${a} · 2^(${t}/${td}) = ${a} · 2^${t/td}`,`= ${a} · ${Math.pow(2,t/td)} = ${ft.toLocaleString('de-DE')} cm²`],answer:`${ft.toLocaleString('de-DE')} cm² nach ${t} Tagen`}};}},
+
+{id:'sk08',topic:'sachkontext',difficulty:'schwer',
+ aff:{werkzeug:0.5,verstaendnis:0.2,mathe:0.1,prozess:0.0,offen:0.0},
+ gen(){return{
+  text:`Nenne ein Beispiel aus dem Alltag für exponentielles Wachstum und eines für exponentiellen Zerfall. Modelliere beide Situationen mit einer Funktionsgleichung der Form ${fm('f(x) = a · b<sup>x</sup>')} und erkläre die Bedeutung der Parameter.`,
+  sol:{steps:[`Wachstum z.B.: Bakterienkultur mit 1000 Bakterien, Verdopplung alle 3h → f(t) = 1000 · 2^(t/3)`,`a = 1000 (Anfangsanzahl), b ≈ 1,26 (Wachstumsfaktor pro Stunde)`,`Zerfall z.B.: Koffeinabbau, 200 mg, Halbwertszeit 5h → f(t) = 200 · 0,5^(t/5)`,`a = 200 (Anfangsdosis in mg), b ≈ 0,87 (Zerfallsfaktor pro Stunde)`],answer:'Eigene Modellierung mit passenden Parametern'}};}},
+
+{id:'sk09',topic:'sachkontext',difficulty:'mittel',
+ aff:{werkzeug:0.5,verstaendnis:0.6,mathe:0.1,prozess:0.5,offen:0.5},
+ gen(){const wert0=pick([20000,30000,40000]);const p=pick([10,15,20]);const b=round2(1-p/100);const t=pick([3,4,5]);const ft=round2(wert0*Math.pow(b,t));return{
+  text:`Ein Auto hat einen Neupreis von ${fm(`${wert0.toLocaleString('de-DE')} €`)}. Pro Jahr verliert es ${fm(`${p} %`)} an Wert.<br>a) Stelle die Funktionsgleichung auf.<br>b) Wie viel ist das Auto nach ${t} Jahren wert?`,
+  sol:{steps:[`a) Wertminderung: b = 1 − ${p}/100 = ${fmt(b)}`,`W(t) = ${wert0.toLocaleString('de-DE')} · ${fmt(b)}^t`,`b) W(${t}) = ${wert0.toLocaleString('de-DE')} · ${fmt(b)}^${t}`,`≈ ${fmt(ft)} €`],answer:`W(t)=${wert0.toLocaleString('de-DE')}·${fmt(b)}^t; nach ${t}J: ≈ ${fmt(ft)} €`}};}},
+
+{id:'sk10',topic:'sachkontext',difficulty:'schwer',
+ aff:{werkzeug:0.5,verstaendnis:0.8,mathe:0.1,prozess:0.8,offen:0.5},
+ gen(){const K=pick([5000,10000]);const p=pick([3,4,5]);const b=1+p/100;const ziel=pick([2,3])*K;const t=round2(Math.log(ziel/K)/Math.log(b));return{
+  text:`Berechne, nach wie vielen Jahren sich ein Kapital von ${fm(`${K.toLocaleString('de-DE')} €`)} bei ${fm(`${p} % p.a.`)} Zinsen ${ziel/K===2?'verdoppelt':'verdreifacht'} hat.`,
+  sol:{steps:[`K(t) = ${K.toLocaleString('de-DE')} · ${fmt(b)}^t = ${ziel.toLocaleString('de-DE')}`,`${fmt(b)}^t = ${ziel/K}`,`t = log(${ziel/K}) / log(${fmt(b)})`,`t ≈ ${fmt(t)} Jahre`],answer:`Nach ≈ ${fmt(t)} Jahren`}};}},
+
+// ──────────── ZUSÄTZLICHE GEFÜHRTE TEMPLATES ────────────
+{id:'gf09',topic:'grundform',difficulty:'leicht',
+ aff:{werkzeug:0.5,verstaendnis:0.5,mathe:0.1,prozess:0.6,offen:0.0},
+ gen(){const a=pick(A_VALS),b=pick(B_ALL);const f0=a,f1=round2(a*b),f2=round2(a*b*b);return{
+  text:`Gegeben ist ${fm(`f(x) = ${a} · ${fmt(b)}<sup>x</sup>`)}. Gehe schrittweise vor:
+  <div class="step-box"><strong>Schritt 1:</strong> Berechne f(0). Was fällt dir auf?</div>
+  <div class="step-box"><strong>Schritt 2:</strong> Berechne f(1) und f(2).</div>
+  <div class="step-box"><strong>Schritt 3:</strong> Berechne f(1)/f(0) und f(2)/f(1). Was stellst du fest?</div>`,
+  sol:{steps:[`Schritt 1: f(0) = ${a}·${fmt(b)}⁰ = ${a} → Der y-Achsenabschnitt ist a = ${a}.`,`Schritt 2: f(1) = ${fmt(f1)}, f(2) = ${fmt(f2)}`,`Schritt 3: f(1)/f(0) = ${fmt(f1)}/${a} = ${fmt(b)}; f(2)/f(1) = ${fmt(f2)}/${fmt(f1)} = ${fmt(b)}`,`Der Quotient aufeinanderfolgender Werte ist immer b = ${fmt(b)} (konstanter Faktor).`],answer:`f(0)=${a}, f(1)=${fmt(f1)}, f(2)=${fmt(f2)}; Quotient stets ${fmt(b)}`}};}},
+
+{id:'gf10',topic:'grundform',difficulty:'mittel',
+ aff:{werkzeug:0.5,verstaendnis:0.4,mathe:0.1,prozess:0.5,offen:0.5},
+ gen(){const a=pick([2,3,4,5]),b=pick([2,3]);return{
+  text:`Berechne ${fm(`f(−1)`)} für ${fm(`f(x) = ${a} · ${b}<sup>x</sup>`)}. Ist das Ergebnis negativ? Begründe.`,
+  sol:{steps:[`f(−1) = ${a} · ${b}^(−1) = ${a} · 1/${b} = ${fmt(a/b)}`,`Das Ergebnis ist positiv (nicht negativ!).`,`Da b = ${b} > 0, ist b^x > 0 für alle x ∈ ℝ.`,`Negative Exponenten erzeugen Brüche, keine negativen Zahlen.`],answer:`f(−1) = ${fmt(a/b)} (positiv, da b^x stets > 0)`}};}},
+
+// ──────────── ZUSÄTZLICHE WACHSTUMSRATE ────────────
+{id:'wr08',topic:'wachstumsrate',difficulty:'schwer',
+ aff:{werkzeug:0.5,verstaendnis:0.6,mathe:0.1,prozess:0.6,offen:0.0},
+ gen(){const p=pick([5,10,15,20]);const b=round2(1-p/100);const a=pick(A_SACH);return{
+  text:`Eine Maschine verliert jährlich ${fm(`${p} %`)} an Wert. Der Neuwert beträgt ${fm(`${a.toLocaleString('de-DE')} €`)}. Gehe schrittweise vor:
+  <div class="step-box"><strong>Schritt 1:</strong> Berechne den Wertminderungsfaktor b.</div>
+  <div class="step-box"><strong>Schritt 2:</strong> Stelle die Funktionsgleichung W(t) auf.</div>
+  <div class="step-box"><strong>Schritt 3:</strong> Berechne den Wert nach 5 Jahren.</div>`,
+  sol:{steps:[`Schritt 1: b = 1 − ${p}/100 = ${fmt(b)}`,`Schritt 2: W(t) = ${a.toLocaleString('de-DE')} · ${fmt(b)}^t`,`Schritt 3: W(5) = ${a.toLocaleString('de-DE')} · ${fmt(b)}^5 = ${a.toLocaleString('de-DE')} · ${fmt(round2(Math.pow(b,5)))} ≈ ${fmt(round2(a*Math.pow(b,5)))} €`],answer:`b = ${fmt(b)}, W(t) = ${a.toLocaleString('de-DE')}·${fmt(b)}^t, W(5) ≈ ${fmt(round2(a*Math.pow(b,5)))} €`}};}},
+
+// ──────────── ZUSÄTZLICHE WACHSTUM & ZERFALL ────────────
+{id:'wz06',topic:'wachstum_zerfall',difficulty:'leicht',
+ aff:{werkzeug:0.5,verstaendnis:0.3,mathe:0.1,prozess:0.5,offen:0.3},
+ gen(){const a=pick(A_VALS),b=pick(B_WACHSTUM);const f0=a,f1=round2(a*b);return{
+  text:`Der y-Achsenabschnitt von ${fm(`f(x) = ${a} · ${fmt(b)}<sup>x</sup>`)} ist ${fm(`${a}`)} und ${fm(`f(1) = ${fmt(f1)}`)}. Handelt es sich um Wachstum oder Zerfall? Begründe mit dem Quotienten f(1)/f(0).`,
+  sol:{steps:[`f(1)/f(0) = ${fmt(f1)}/${a} = ${fmt(b)}`,`Da ${fmt(b)} > 1, handelt es sich um exponentielles Wachstum.`,`Pro Zeiteinheit wird der Bestand mit dem Faktor ${fmt(b)} multipliziert.`],answer:`Wachstum, da f(1)/f(0) = ${fmt(b)} > 1`}};}},
+
+{id:'wz07',topic:'wachstum_zerfall',difficulty:'schwer',
+ aff:{werkzeug:0.5,verstaendnis:0.0,mathe:0.1,prozess:0.0,offen:0.0},
+ gen(){const a1=pick([2,3,5]),b1=pick([1.5,2]),a2=pick([10,20,50]),b2=pick([0.8,0.9]);return{
+  text:`Vergleiche die Funktionen ${fm(`f(x) = ${a1} · ${fmt(b1)}<sup>x</sup>`)} und ${fm(`g(x) = ${a2} · ${fmt(b2)}<sup>x</sup>`)}.<br>a) Welche Funktion hat den größeren y-Achsenabschnitt?<br>b) Gibt es ein x, für das f(x) > g(x)? Begründe.`,
+  sol:{steps:[`a) f(0) = ${a1}, g(0) = ${a2}. Da ${a2} > ${a1}, hat g den größeren y-Achsenabschnitt.`,`b) f steigt (b=${fmt(b1)}>1), g fällt (b=${fmt(b2)}<1).`,`Für große x wird f(x) beliebig groß, während g(x) → 0.`,`Also gibt es ein x, ab dem f(x) > g(x) gilt.`],answer:`g(0)>${a1}=f(0), aber f überholt g für hinreichend großes x`}};}},
+
+// ──────────── ZUSÄTZLICHE FUNKTIONSWERTE ────────────
+{id:'fw07',topic:'funktionswerte',difficulty:'schwer',
+ aff:{werkzeug:0.5,verstaendnis:0.9,mathe:0.1,prozess:0.9,offen:0.5},
+ gen(){const a=pick([2,4,5,10]),b=pick([2,3]);const target=a*Math.pow(b,3);return{
+  text:`Löse die Gleichung ${fm(`${a} · ${b}<sup>x</sup> = ${target}`)}.`,
+  sol:{steps:[`${b}^x = ${target}/${a} = ${target/a}`,`${b}^x = ${Math.pow(b,3)}`,`Da ${b}³ = ${Math.pow(b,3)}, gilt x = 3.`,`Probe: ${a} · ${b}³ = ${a} · ${Math.pow(b,3)} = ${target} ✓`],answer:`x = 3`}};}},
+
+{id:'fw08',topic:'funktionswerte',difficulty:'mittel',
+ aff:{werkzeug:0.0,verstaendnis:0.5,mathe:0.7,prozess:0.5,offen:0.5},
+ gen(){const a=pick(A_VALS),b=pick(B_ALL);return{
+  text:`Gib die Funktion ${fm(`f(x) = ${a} · ${fmt(b)}<sup>x</sup>`)} in GeoGebra ein und lies die Funktionswerte für x = −2, 0, 2, 4 aus der Algebra-Ansicht ab. Vergleiche mit deiner Handrechnung.`,
+  sol:{steps:[`GeoGebra-Eingabe: f(x) = ${a}*${fmt(b)}^x`,`f(−2) = ${fmt(round2(a*Math.pow(b,-2)))}`,`f(0) = ${a}`,`f(2) = ${fmt(round2(a*Math.pow(b,2)))}`,`f(4) = ${fmt(round2(a*Math.pow(b,4)))}`],answer:`Wertetabelle: f(-2)=${fmt(round2(a*Math.pow(b,-2)))}, f(0)=${a}, f(2)=${fmt(round2(a*Math.pow(b,2)))}, f(4)=${fmt(round2(a*Math.pow(b,4)))}`}};}},
+
+// ──────────── ZUSÄTZLICHE ZWEI-PUNKTE ────────────
+{id:'zp05',topic:'zwei_punkte',difficulty:'schwer',
+ aff:{werkzeug:0.5,verstaendnis:0.8,mathe:0.1,prozess:0.8,offen:0.0},
+ gen(){const a=pick([2,4,5]),b=pick([2,3]);const x1=1,x2=3;const y1=a*b,y2=a*Math.pow(b,3);return{
+  text:`Bestimme f(x) = a · b<sup>x</sup> durch P(${x1}|${y1}) und Q(${x2}|${y2}). Gehe schrittweise vor:
+  <div class="step-box"><strong>Schritt 1:</strong> Stelle zwei Gleichungen auf: ${y1} = a·b<sup>${x1}</sup> und ${y2} = a·b<sup>${x2}</sup>.</div>
+  <div class="step-box"><strong>Schritt 2:</strong> Dividiere die zweite durch die erste Gleichung. Was kürzt sich?</div>
+  <div class="step-box"><strong>Schritt 3:</strong> Löse nach b auf.</div>
+  <div class="step-box"><strong>Schritt 4:</strong> Setze b in eine der Gleichungen ein und bestimme a.</div>
+  <div class="step-box"><strong>Schritt 5:</strong> Mache die Probe.</div>`,
+  sol:{steps:[`Schritt 1: ${y1} = a·b und ${y2} = a·b³`,`Schritt 2: ${y2}/${y1} = b³/b = b² → b² = ${y2/y1}`,`Schritt 3: b = √${y2/y1} = ${b}`,`Schritt 4: ${y1} = a·${b} → a = ${y1}/${b} = ${a}`,`Schritt 5: f(${x1}) = ${a}·${b} = ${y1} ✓, f(${x2}) = ${a}·${b}³ = ${y2} ✓`],answer:`f(x) = ${a} · ${b}^x`}};}},
+
+{id:'zp06',topic:'zwei_punkte',difficulty:'mittel',
+ aff:{werkzeug:0.5,verstaendnis:0.5,mathe:0.1,prozess:0.5,offen:0.2},
+ gen(){const a=pick([3,4,5,6]),b=pick([0.5,2]);const y0=a,y1=a*b;return{
+  text:`Ein exponentieller Graph geht durch ${fm(`A(0|${y0})`)} und ${fm(`B(1|${fmt(y1)})`)}. Bestimme die Funktionsgleichung ${fm('f(x) = a · b<sup>x</sup>')}.`,
+  sol:{steps:[`Aus A(0|${y0}): f(0) = a·b⁰ = a → a = ${a}`,`Aus B(1|${fmt(y1)}): ${fmt(y1)} = ${a}·b → b = ${fmt(y1)}/${a} = ${fmt(b)}`,`f(x) = ${a} · ${fmt(b)}^x`],answer:`f(x) = ${a} · ${fmt(b)}^x`}};}},
+
+// ──────────── ZUSÄTZLICHE HALBWERTSZEIT ────────────
+{id:'hw07',topic:'halbwertszeit',difficulty:'mittel',
+ aff:{werkzeug:0.5,verstaendnis:0.7,mathe:0.1,prozess:0.7,offen:0.0},
+ gen(){const a=pick([200,400,500,800]);const b=pick([0.5,0.8,0.9]);const thalf=round2(Math.log(0.5)/Math.log(b));const t=Math.ceil(thalf)*2;const ft=round2(a*Math.pow(b,t));return{
+  text:`Ein Medikament (${fm(`${a} mg`)}) wird mit dem Zerfallsfaktor ${fm(`b = ${fmt(b)}`)} pro Stunde abgebaut. Gehe schrittweise vor:
+  <div class="step-box"><strong>Schritt 1:</strong> Stelle die Zerfallsfunktion f(t) auf.</div>
+  <div class="step-box"><strong>Schritt 2:</strong> Berechne die Halbwertszeit T½ = log(0,5)/log(b).</div>
+  <div class="step-box"><strong>Schritt 3:</strong> Berechne, wie viel Medikament nach ${t} Stunden noch vorhanden ist.</div>`,
+  sol:{steps:[`Schritt 1: f(t) = ${a} · ${fmt(b)}^t`,`Schritt 2: T½ = log(0,5)/log(${fmt(b)}) ≈ ${fmt(thalf)} Stunden`,`Schritt 3: f(${t}) = ${a} · ${fmt(b)}^${t} ≈ ${fmt(ft)} mg`],answer:`f(t)=${a}·${fmt(b)}^t, T½≈${fmt(thalf)}h, f(${t})≈${fmt(ft)} mg`}};}},
+
+{id:'hw08',topic:'halbwertszeit',difficulty:'schwer',
+ aff:{werkzeug:0.5,verstaendnis:0.9,mathe:0.1,prozess:0.9,offen:0.5},
+ gen(){const a=pick([100,200,500]);const b=pick([0.7,0.8,0.9]);const target=pick([10,25,50]);const t=round2(Math.log(target/a)/Math.log(b));return{
+  text:`Bestimme, nach wie vielen Stunden von anfänglich ${fm(`${a} mg`)} eines Medikaments (Zerfallsfaktor ${fm(`b = ${fmt(b)}`)}) nur noch ${fm(`${target} mg`)} übrig sind.`,
+  sol:{steps:[`${a} · ${fmt(b)}^t = ${target}`,`${fmt(b)}^t = ${target}/${a} = ${fmt(target/a)}`,`t = log(${fmt(target/a)}) / log(${fmt(b)})`,`t ≈ ${fmt(t)} Stunden`],answer:`Nach ≈ ${fmt(t)} Stunden`}};}},
+
+// ──────────── ZUSÄTZLICHE GRAPH ────────────
+{id:'gr06',topic:'graph',difficulty:'leicht',
+ aff:{werkzeug:0.0,verstaendnis:0.4,mathe:0.6,prozess:0.4,offen:0.5},
+ gen(){const a=pick([2,3,5]),b=pick([2,3,0.5]);const f1=a*b;return{
+  text:`Zeichne den Graphen von ${fm(`f(x) = ${a} · ${fmt(b)}<sup>x</sup>`)} in GeoGebra. Beschreibe:
+  <div class="step-box"><strong>a)</strong> Gib die Funktion in die Eingabezeile ein.</div>
+  <div class="step-box"><strong>b)</strong> Lies den y-Achsenabschnitt ab und vergleiche mit a = ${a}.</div>
+  <div class="step-box"><strong>c)</strong> Lies f(1) ab und berechne f(1)/f(0). Was erhältst du?</div>`,
+  sol:{steps:[`a) Eingabe: f(x) = ${a}*${fmt(b)}^x`,`b) y-Achsenabschnitt: f(0) = ${a} → stimmt mit a = ${a} überein`,`c) f(1) = ${fmt(f1)}; f(1)/f(0) = ${fmt(f1)}/${a} = ${fmt(b)} = b`],answer:`y-Abschnitt ${a}, f(1)/f(0) = ${fmt(b)} = b`}};}},
+
+{id:'gr07',topic:'graph',difficulty:'mittel',
+ aff:{werkzeug:0.0,verstaendnis:0.2,mathe:0.5,prozess:0.2,offen:0.3},
+ gen(){const a=pick([1,2,3]),b1=pick([2,3]),b2=pick([0.5,0.25]);return{
+  text:`Zeichne die Graphen von ${fm(`f(x) = ${a} · ${b1}<sup>x</sup>`)} und ${fm(`g(x) = ${a} · ${fmt(b2)}<sup>x</sup>`)} in GeoGebra in einem Koordinatensystem. Untersuche: Wo schneiden sich die Graphen? Was fällt bei x = 0 auf?`,
+  sol:{steps:[`Beide Graphen schneiden sich bei x = 0, da f(0) = g(0) = ${a}.`,`f steigt (b=${b1}>1), g fällt (b=${fmt(b2)}<1).`,`Für x > 0: f(x) > g(x); für x < 0: f(x) < g(x).`,`Die Graphen sind spiegelbildlich bezüglich der y-Achse, wenn b₁ · b₂ = 1.`],answer:`Schnittpunkt bei (0|${a}), f steigt, g fällt`}};}},
+
+// ──────────── ZUSÄTZLICHE SACHKONTEXTE ────────────
+{id:'sk11',topic:'sachkontext',difficulty:'leicht',
+ aff:{werkzeug:0.5,verstaendnis:0.5,mathe:0.1,prozess:0.5,offen:0.0},
+ gen(){const a=pick([500,1000,2000]);const p=pick([10,20,25]);const b=round2(1-p/100);const x=pick([2,3,4]);const fx=round2(a*Math.pow(b,x));return{
+  text:`Ein Smartphone kostet ${fm(`${a} €`)} und verliert pro Jahr ${fm(`${p} %`)} an Wert. Gehe schrittweise vor:
+  <div class="step-box"><strong>Schritt 1:</strong> Bestimme den Wertminderungsfaktor b.</div>
+  <div class="step-box"><strong>Schritt 2:</strong> Stelle die Funktion W(t) auf.</div>
+  <div class="step-box"><strong>Schritt 3:</strong> Berechne den Wert nach ${x} Jahren.</div>`,
+  sol:{steps:[`Schritt 1: b = 1 − ${p}/100 = ${fmt(b)}`,`Schritt 2: W(t) = ${a} · ${fmt(b)}^t`,`Schritt 3: W(${x}) = ${a} · ${fmt(b)}^${x} ≈ ${fmt(fx)} €`],answer:`b=${fmt(b)}, W(t)=${a}·${fmt(b)}^t, W(${x})≈${fmt(fx)} €`}};}},
+
+{id:'sk12',topic:'sachkontext',difficulty:'mittel',
+ aff:{werkzeug:0.5,verstaendnis:0.3,mathe:0.1,prozess:0.2,offen:0.2},
+ gen(){const a=pick([10,20,50]);const td=pick([5,8,10,12]);return{
+  text:`Ein Isotop hat eine Halbwertszeit von ${fm(`${td} Stunden`)}. Zu Beginn sind ${fm(`${a} g`)} vorhanden.<br>a) Wie viel ist nach ${td} Stunden vorhanden?<br>b) Wie viel nach ${2*td} Stunden?<br>c) Wie viel nach ${3*td} Stunden?<br>Erkenne das Muster und erkläre es.`,
+  sol:{steps:[`a) Nach ${td}h (1 HWZ): ${a}/2 = ${a/2} g`,`b) Nach ${2*td}h (2 HWZ): ${a/2}/2 = ${a/4} g`,`c) Nach ${3*td}h (3 HWZ): ${a/4}/2 = ${a/8} g`,`Muster: Nach n Halbwertszeiten ist noch ${a}/2^n übrig.`],answer:`${a/2}g, ${a/4}g, ${a/8}g – nach n·T½ bleibt ${a}/2^n`}};}},
+
+{id:'sk13',topic:'sachkontext',difficulty:'schwer',
+ aff:{werkzeug:0.5,verstaendnis:0.3,mathe:0.1,prozess:0.2,offen:0.2},
+ gen(){const a=pick([100,200,500]);const p1=pick([5,10]);const p2=pick([15,20,25]);const b1=round2(1+p1/100);const b2=round2(1-p2/100);const t=pick([5,8,10]);const f1=round2(a*Math.pow(b1,t));const f2=round2(a*Math.pow(b2,t));return{
+  text:`Anlage A wächst jährlich um ${fm(`${p1} %`)}, Anlage B verliert jährlich ${fm(`${p2} %`)}. Beide starten mit ${fm(`${a} €`)}.<br>a) Stelle für beide die Funktionsgleichung auf.<br>b) Berechne den Wert beider Anlagen nach ${t} Jahren.<br>c) Um wie viel Euro unterscheiden sich die Werte?`,
+  sol:{steps:[`a) A(t) = ${a}·${fmt(b1)}^t; B(t) = ${a}·${fmt(b2)}^t`,`b) A(${t}) = ${a}·${fmt(b1)}^${t} ≈ ${fmt(f1)} €`,`B(${t}) = ${a}·${fmt(b2)}^${t} ≈ ${fmt(f2)} €`,`c) Differenz: ${fmt(f1)} − ${fmt(f2)} = ${fmt(round2(f1-f2))} €`],answer:`A(${t})≈${fmt(f1)}€, B(${t})≈${fmt(f2)}€, Diff≈${fmt(round2(f1-f2))}€`}};}},
+
+{id:'sk14',topic:'sachkontext',difficulty:'mittel',
+ aff:{werkzeug:0.5,verstaendnis:0.2,mathe:0.1,prozess:0.2,offen:0.2},
+ gen(){const temp0=pick([80,90,100]);const tRoom=20;const b=pick([0.9,0.85,0.8]);const t=pick([5,10,15]);const diff0=temp0-tRoom;const diffT=round2(diff0*Math.pow(b,t));const tempT=round2(tRoom+diffT);return{
+  text:`Eine Tasse Kaffee hat eine Anfangstemperatur von ${fm(`${temp0}°C`)}. Die Raumtemperatur beträgt ${fm(`${tRoom}°C`)}. Die Temperaturdifferenz nimmt pro Minute mit dem Faktor ${fm(`b = ${fmt(b)}`)} ab.<br>a) Wie groß ist die Temperaturdifferenz zu Beginn?<br>b) Wie hoch ist die Kaffeetemperatur nach ${t} Minuten?`,
+  sol:{steps:[`a) Differenz: ${temp0} − ${tRoom} = ${diff0}°C`,`ΔT(t) = ${diff0} · ${fmt(b)}^t`,`b) ΔT(${t}) = ${diff0} · ${fmt(b)}^${t} ≈ ${fmt(diffT)}°C`,`Temperatur: ${tRoom} + ${fmt(diffT)} ≈ ${fmt(tempT)}°C`],answer:`Differenz: ${diff0}°C, Temperatur nach ${t} min: ≈ ${fmt(tempT)}°C`}};}},
+
+// ──────────── ZUSÄTZLICHE WERKZEUG/KNÖPFCHEN ────────────
+{id:'fw09',topic:'funktionswerte',difficulty:'leicht',
+ aff:{werkzeug:0.5,verstaendnis:0.6,mathe:0.9,prozess:0.6,offen:0.5},
+ gen(){const a=pick(A_VALS),b=pick(B_ALL);return{
+  text:`Gib in GeoGebra folgende Befehle ein und notiere die Ergebnisse:<br>
+  <div class="step-box"><strong>1.</strong> Eingabe: <code>f(x) = ${a}*${fmt(b)}^x</code></div>
+  <div class="step-box"><strong>2.</strong> Eingabe: <code>f(0)</code> – Notiere den Wert.</div>
+  <div class="step-box"><strong>3.</strong> Eingabe: <code>f(3)</code> – Notiere den Wert.</div>
+  <div class="step-box"><strong>4.</strong> Eingabe: <code>Löse(f(x) = ${round2(a*Math.pow(b,2))}, x)</code></div>`,
+  sol:{steps:[`f(0) = ${a}`,`f(3) = ${fmt(round2(a*Math.pow(b,3)))}`,`Löse(f(x) = ${round2(a*Math.pow(b,2))}, x) → x = 2`],answer:`f(0)=${a}, f(3)=${fmt(round2(a*Math.pow(b,3)))}, Lösung: x=2`}};}},
+
+{id:'gr08',topic:'graph',difficulty:'leicht',
+ aff:{werkzeug:0.0,verstaendnis:0.3,mathe:0.9,prozess:0.3,offen:0.5},
+ gen(){const a=pick([2,3,5]),b=pick([1.5,2,3]);return{
+  text:`Erstelle in GeoGebra eine interaktive Darstellung:
+  <div class="step-box"><strong>1.</strong> Gib in die Eingabezeile ein: <code>a = ${a}</code> (Schieberegler erscheint)</div>
+  <div class="step-box"><strong>2.</strong> Gib ein: <code>f(x) = a * ${fmt(b)}^x</code></div>
+  <div class="step-box"><strong>3.</strong> Verändere den Schieberegler a. Was beobachtest du?</div>
+  Beschreibe, wie sich der Graph verändert, wenn a größer bzw. kleiner wird.`,
+  sol:{steps:[`Der Schieberegler a verändert den y-Achsenabschnitt.`,`Für a > 0: Graph liegt oberhalb der x-Achse.`,`Größeres a → Graph wird nach oben gestreckt.`,`Kleineres a → Graph wird nach unten gestaucht.`,`Die Asymptote y = 0 und die Basis b = ${fmt(b)} bleiben gleich.`],answer:`a streckt/staucht den Graph vertikal, y-Achsenabschnitt = a`}};}},
+
+// ──────────── ZUSÄTZLICHE ZWEI-PUNKTE ────────────
+{id:'zp07',topic:'zwei_punkte',difficulty:'leicht',
+ aff:{werkzeug:0.5,verstaendnis:0.3,mathe:0.1,prozess:0.5,offen:0.3},
+ gen(){const a=pick([2,3,5,10]),b=pick([2,3]);const y2=a*b*b;return{
+  text:`Der Graph einer Exponentialfunktion ${fm('f(x) = a · b<sup>x</sup>')} geht durch ${fm(`(0|${a})`)} und ${fm(`(2|${y2})`)}. Bestimme a und b.`,
+  sol:{steps:[`Aus (0|${a}): a = ${a}`,`Aus (2|${y2}): ${y2} = ${a}·b² → b² = ${y2/a} → b = ${b}`,`f(x) = ${a} · ${b}^x`],answer:`a = ${a}, b = ${b}, f(x) = ${a}·${b}^x`}};
+}},
+
+{id:'zp08',topic:'zwei_punkte',difficulty:'schwer',
+ aff:{werkzeug:0.5,verstaendnis:0.4,mathe:0.1,prozess:0.4,offen:0.0},
+ gen(){const a=pick([4,5,8]),b=pick([0.5,2]);const x1=0,x2=3;const y1=a,y2=round2(a*Math.pow(b,3));return{
+  text:`Bestimme die Funktionsgleichung durch P(${x1}|${y1}) und Q(${x2}|${fmt(y2)}). Gehe schrittweise vor:
+  <div class="step-box"><strong>Schritt 1:</strong> Bestimme a aus Punkt P.</div>
+  <div class="step-box"><strong>Schritt 2:</strong> Setze Q ein: ${fmt(y2)} = ${a}·b³. Löse nach b auf.</div>
+  <div class="step-box"><strong>Schritt 3:</strong> Überprüfe dein Ergebnis mit beiden Punkten.</div>`,
+  sol:{steps:[`Schritt 1: a = ${a} (aus P)`,`Schritt 2: b³ = ${fmt(y2)}/${a} = ${fmt(round2(Math.pow(b,3)))} → b = ${fmt(b)}`,`Schritt 3: f(0)=${a} ✓, f(3)=${a}·${fmt(b)}³=${fmt(y2)} ✓`],answer:`f(x) = ${a} · ${fmt(b)}^x`}};
+}},
+
+// ──────────── ZUSÄTZLICHE WACHSTUM/ZERFALL ────────────
+{id:'wz08',topic:'wachstum_zerfall',difficulty:'leicht',
+ aff:{werkzeug:0.5,verstaendnis:0.2,mathe:0.1,prozess:0.4,offen:0.3},
+ gen(){const p=pick([10,20,25,50]);const b=1-p/100;return{
+  text:`Eine Größe nimmt pro Zeiteinheit um ${fm(`${p} %`)} ab. Liegt exponentielles Wachstum oder exponentieller Zerfall vor? Gib den Wachstumsfaktor b an.`,
+  sol:{steps:[`Abnahme um ${p} % → Zerfall.`,`b = 1 − ${p}/100 = ${fmt(b)}`,`Da 0 < b = ${fmt(b)} < 1, liegt exponentieller Zerfall vor.`],answer:`Zerfall, b = ${fmt(b)}`}};
+}},
+
+{id:'wz09',topic:'wachstum_zerfall',difficulty:'schwer',
+ aff:{werkzeug:0.5,verstaendnis:0.1,mathe:0.1,prozess:0.2,offen:0.2},
+ gen(){const a=pick([100,200,500]);const b=pick([1.1,1.2,1.5]);const n=pick([5,8,10]);const fn=round2(a*Math.pow(b,n));const ratio=round2(fn/a);return{
+  text:`Eine Bakterienkultur wächst von ${fm(`${a}`)} auf ${fm(`${fn}`)} in ${fm(`${n} Stunden`)}.<br>a) Bestimme den Wachstumsfaktor b pro Stunde.<br>b) Berechne die prozentuale Zunahme pro Stunde.`,
+  sol:{steps:[`a) f(n) = a · b^n → ${fn} = ${a} · b^${n}`,`b^${n} = ${fn}/${a} = ${fmt(ratio)}`,`b = ${fmt(ratio)}^(1/${n}) ≈ ${fmt(b)}`,`b) p = (b−1)·100 = (${fmt(b)}−1)·100 = ${fmt(round2((b-1)*100))} %`],answer:`b ≈ ${fmt(b)}, Zunahme ≈ ${fmt(round2((b-1)*100))} % pro Stunde`}};
+}},
+
+{id:'hw09',topic:'halbwertszeit',difficulty:'mittel',
+ aff:{werkzeug:0.0,verstaendnis:0.5,mathe:0.8,prozess:0.5,offen:0.5},
+ gen(){const a=pick([100,200,500]);const b=pick([0.7,0.8,0.9]);return{
+  text:`Gib in GeoGebra ein: ${fm(`f(x) = ${a}*${fmt(b)}^x`)}. Bestimme die Halbwertszeit grafisch:
+  <div class="step-box"><strong>1.</strong> Zeichne die Gerade ${fm(`y = ${a/2}`)} (halber Anfangswert).</div>
+  <div class="step-box"><strong>2.</strong> Bestimme den Schnittpunkt mit dem Graphen von f.</div>
+  <div class="step-box"><strong>3.</strong> Lies die x-Koordinate ab – das ist T½.</div>
+  <div class="step-box"><strong>4.</strong> Überprüfe rechnerisch: T½ = log(0,5)/log(${fmt(b)}).</div>`,
+  sol:{steps:[`Gerade: y = ${a/2}`,`Schnittpunkt mit f(x) ablesen`,`T½ = log(0,5)/log(${fmt(b)}) ≈ ${fmt(round2(Math.log(0.5)/Math.log(b)))}`,`Grafischer und rechnerischer Wert stimmen überein.`],answer:`T½ ≈ ${fmt(round2(Math.log(0.5)/Math.log(b)))}`}};}},
+
+];
+
+// ============================================================
+//  AUFGABEN-AUSWAHL
+// ============================================================
+function getSliderValues() {
+  return {
+    werkzeug: +document.getElementById('sl-werkzeug').value / 100,
+    verstaendnis: +document.getElementById('sl-verstaendnis').value / 100,
+    mathe: +document.getElementById('sl-mathe').value / 100,
+    prozess: +document.getElementById('sl-prozess').value / 100,
+    offen: +document.getElementById('sl-offen').value / 100
+  };
+}
+
+function getSelectedTopics() {
+  return [...document.querySelectorAll('.topic-grid input:checked')].map(cb => cb.value);
+}
+
+function scoreTemplate(tpl, sv) {
+  const dims = ['werkzeug','verstaendnis','mathe','prozess','offen'];
+  let score = 0;
+  for (const d of dims) {
+    score += 1 - Math.abs(sv[d] - tpl.aff[d]);
+  }
+  return score;
+}
+
+function generateExercises() {
+  const sv = getSliderValues();
+  const topics = getSelectedTopics();
+  const count = +document.getElementById('count-slider').value;
+  const diff = document.getElementById('diff-select').value;
+
+  if (topics.length === 0) {
+    document.getElementById('output').innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><p>Bitte wähle mindestens ein Thema aus.</p></div>';
+    return;
+  }
+
+  // Filter
+  let pool = TEMPLATES.filter(t => topics.includes(t.topic));
+  if (diff !== 'alle') pool = pool.filter(t => t.difficulty === diff);
+
+  if (pool.length === 0) {
+    document.getElementById('output').innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><p>Keine Aufgaben für diese Kombination gefunden. Passe die Filter an.</p></div>';
+    return;
+  }
+
+  // Score
+  const scored = pool.map(t => ({ tpl: t, score: scoreTemplate(t, sv) }));
+  scored.sort((a, b) => b.score - a.score);
+
+  // Weighted selection with topic diversity
+  const selected = [];
+  const usedIds = new Set();
+  const topicCounts = {};
+
+  // Target distribution
+  const perTopic = Math.max(1, Math.floor(count / topics.length));
+
+  // First pass: ensure diversity
+  for (const topic of topics) {
+    const topicPool = scored.filter(s => s.tpl.topic === topic && !usedIds.has(s.tpl.id));
+    const take = Math.min(perTopic, topicPool.length);
+    for (let i = 0; i < take && selected.length < count; i++) {
+      selected.push(topicPool[i]);
+      usedIds.add(topicPool[i].tpl.id);
+      topicCounts[topic] = (topicCounts[topic] || 0) + 1;
+    }
+  }
+
+  // Fill remaining from best-scored
+  const remaining = scored.filter(s => !usedIds.has(s.tpl.id));
+  for (let i = 0; i < remaining.length && selected.length < count; i++) {
+    selected.push(remaining[i]);
+    usedIds.add(remaining[i].tpl.id);
+  }
+
+  // Shuffle slightly to avoid always same order
+  for (let i = selected.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [selected[i], selected[j]] = [selected[j], selected[i]];
+  }
+
+  // Generate exercises
+  const exercises = selected.map((s, i) => {
+    const data = s.tpl.gen();
+    return { num: i + 1, topic: s.tpl.topic, difficulty: s.tpl.difficulty, text: data.text, sol: data.sol };
+  });
+
+  renderExercises(exercises);
+
+  // Show buttons
+  document.getElementById('btn-regen').style.display = '';
+  document.getElementById('btn-solutions').style.display = '';
+  document.getElementById('btn-print').style.display = '';
+  document.getElementById('print-opt').style.display = '';
+}
+
+// ============================================================
+//  RENDERING
+// ============================================================
+function renderExercises(exercises) {
+  const html = exercises.map(ex => `
+    <div class="exercise-card ${ex.difficulty}">
+      <div class="ex-header">
+        <div class="ex-title">Aufgabe ${ex.num}</div>
+        <div class="ex-tags">
+          <span class="tag tag-topic">${TOPIC_LABELS[ex.topic]}</span>
+          <span class="tag tag-diff ${ex.difficulty}">${DIFF_LABELS[ex.difficulty]}</span>
+        </div>
+      </div>
+      <div class="ex-text">${ex.text}</div>
+      <div class="solution-toggle">
+        <button class="btn-sol" onclick="toggleSolution(this)">Lösung anzeigen</button>
+      </div>
+      <div class="sol-content">
+        <h4>Lösung:</h4>
+        <ol>${ex.sol.steps.map(s => `<li>${s}</li>`).join('')}</ol>
+        <div class="sol-answer">Ergebnis: ${ex.sol.answer}</div>
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('output').innerHTML = html;
+  allSolutionsVisible = false;
+  document.getElementById('btn-solutions').textContent = 'Alle Lösungen zeigen';
+}
+
+function toggleSolution(btn) {
+  const card = btn.closest('.exercise-card');
+  const sol = card.querySelector('.sol-content');
+  const show = !sol.classList.contains('show');
+  sol.classList.toggle('show', show);
+  btn.textContent = show ? 'Lösung verbergen' : 'Lösung anzeigen';
+}
+
+let allSolutionsVisible = false;
+function toggleAllSolutions() {
+  allSolutionsVisible = !allSolutionsVisible;
+  document.querySelectorAll('.sol-content').forEach(el => el.classList.toggle('show', allSolutionsVisible));
+  document.querySelectorAll('.btn-sol').forEach(btn => btn.textContent = allSolutionsVisible ? 'Lösung verbergen' : 'Lösung anzeigen');
+  document.getElementById('btn-solutions').textContent = allSolutionsVisible ? 'Alle Lösungen verbergen' : 'Alle Lösungen zeigen';
+}
+
+function togglePrintSolutions() {
+  const show = document.getElementById('print-sol-cb').checked;
+  document.querySelectorAll('.sol-content').forEach(el => el.classList.toggle('print-show', show));
+}
+
+// ============================================================
+//  PRESET PROFILES
+// ============================================================
+const PRESETS = {
+  einstieg:   { werkzeug: 30, verstaendnis: 15, mathe: 20, prozess: 15, offen: 20 },
+  uebung:     { werkzeug: 50, verstaendnis: 65, mathe: 30, prozess: 70, offen: 55 },
+  vertiefung: { werkzeug: 35, verstaendnis: 10, mathe: 15, prozess: 10, offen: 10 },
+  klausur:    { werkzeug: 60, verstaendnis: 85, mathe: 20, prozess: 90, offen: 80 },
+  digital:    { werkzeug: 15, verstaendnis: 40, mathe: 85, prozess: 40, offen: 35 }
+};
+
+function applyPreset(name, btn) {
+  const p = PRESETS[name];
+  if (!p) return;
+  for (const [key, val] of Object.entries(p)) {
+    document.getElementById('sl-' + key).value = val;
+  }
+  document.querySelectorAll('.btn-preset').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  updatePoolInfo();
+}
+
+// ============================================================
+//  POOL INFO
+// ============================================================
+function updatePoolInfo() {
+  const topics = getSelectedTopics();
+  const diff = document.getElementById('diff-select').value;
+  let pool = TEMPLATES.filter(t => topics.includes(t.topic));
+  if (diff !== 'alle') pool = pool.filter(t => t.difficulty === diff);
+  const info = document.getElementById('pool-info');
+  info.innerHTML = `<strong>${pool.length}</strong> passende Aufgaben-Templates verfügbar`;
+}
+
+// ============================================================
+//  COPY TO CLIPBOARD
+// ============================================================
+function copyExercises() {
+  const cards = document.querySelectorAll('.exercise-card');
+  if (cards.length === 0) return;
+  let text = 'Aufgaben · Exponentialfunktionen\n';
+  text += '='.repeat(40) + '\n\n';
+  cards.forEach(card => {
+    const title = card.querySelector('.ex-title').textContent;
+    const tags = card.querySelector('.ex-tags').textContent.trim().replace(/\s+/g, ' ');
+    const body = card.querySelector('.ex-text').innerText;
+    text += `${title} [${tags}]\n${body}\n\n`;
+  });
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('btn-copy');
+    const orig = btn.textContent;
+    btn.textContent = 'Kopiert!';
+    btn.style.background = 'var(--green-light)';
+    btn.style.color = 'var(--green)';
+    setTimeout(() => { btn.textContent = orig; btn.style.background = ''; btn.style.color = ''; }, 1500);
+  });
+}
+
+// ============================================================
+//  INIT
+// ============================================================
+document.querySelectorAll('.topic-grid input').forEach(cb => cb.addEventListener('change', updatePoolInfo));
+document.querySelectorAll('.mms-track input').forEach(sl => sl.addEventListener('input', () => {
+  document.querySelectorAll('.btn-preset').forEach(b => b.classList.remove('active'));
+}));
+
+// Set print date
+document.getElementById('print-date').textContent = 'Exponentialfunktionen · ' + new Date().toLocaleDateString('de-DE');
+
+// Show initial pool info
+updatePoolInfo();
+
+// Show btn-copy after generation
+const origGenerate = generateExercises;
+generateExercises = function() {
+  origGenerate();
+  document.getElementById('btn-copy').style.display = '';
+  document.getElementById('print-date').textContent = 'Exponentialfunktionen · ' + new Date().toLocaleDateString('de-DE');
+};
+</script>
+</body>
+</html>

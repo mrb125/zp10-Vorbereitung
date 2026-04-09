@@ -1,0 +1,1659 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mathe-Diagnose</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --card2: #273449;
+    --border: #334155;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --blue: #3b82f6;
+    --green: #22c55e;
+    --red: #ef4444;
+    --yellow: #eab308;
+    --orange: #f97316;
+    --purple: #a855f7;
+    --radius: 12px;
+    --trans: 0.18s ease;
+  }
+
+  html, body { height: 100%; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── SCREENS ─────────────────────────────────────── */
+  .screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px 16px 40px;
+  }
+  .screen.active { display: flex; }
+
+  /* ── HEADER / HERO ────────────────────────────────── */
+  .hero {
+    width: 100%;
+    max-width: 640px;
+    border-radius: var(--radius);
+    padding: 32px 28px 24px;
+    text-align: center;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, var(--grad1, #3b82f6), var(--grad2, #6366f1));
+    opacity: .18;
+    z-index: 0;
+  }
+  .hero > * { position: relative; z-index: 1; }
+  .hero .icon { font-size: 3rem; margin-bottom: 8px; }
+  .hero h1 { font-size: 1.75rem; font-weight: 700; }
+  .hero p { color: var(--text2); margin-top: 6px; }
+
+  /* ── CARD ─────────────────────────────────────────── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    width: 100%;
+    max-width: 640px;
+    margin-bottom: 16px;
+  }
+
+  /* ── BUTTONS ──────────────────────────────────────── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 22px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: opacity var(--trans), transform var(--trans), background var(--trans);
+  }
+  .btn:hover { opacity: .88; transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+  .btn-primary { background: linear-gradient(135deg, #3b82f6, #6366f1); color: #fff; }
+  .btn-success { background: var(--green); color: #fff; }
+  .btn-ghost { background: var(--card2); color: var(--text); border: 1px solid var(--border); }
+  .btn-sm { padding: 7px 14px; font-size: 0.85rem; }
+  .btn-block { width: 100%; }
+
+  /* ── PROGRESS ─────────────────────────────────────── */
+  .progress-wrap {
+    width: 100%;
+    max-width: 640px;
+    margin-bottom: 16px;
+  }
+  .progress-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.82rem;
+    color: var(--text2);
+    margin-bottom: 5px;
+  }
+  .progress-bar-bg {
+    height: 7px;
+    background: var(--card);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, #3b82f6, #6366f1);
+    transition: width .4s ease;
+  }
+
+  /* ── BADGES ───────────────────────────────────────── */
+  .badges {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    max-width: 640px;
+    margin-bottom: 16px;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 12px;
+    border-radius: 99px;
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+  .badge-xp { background: #78350f; color: #fbbf24; }
+  .badge-streak { background: #7c2d12; color: #fb923c; }
+  .badge-cat {
+    background: var(--card);
+    color: var(--text2);
+    border: 1px solid var(--border);
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  /* ── QUESTION ─────────────────────────────────────── */
+  .q-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  .q-num {
+    font-size: 0.8rem;
+    color: var(--text2);
+  }
+  .klp-chip {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 99px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .q-text {
+    font-size: 1.05rem;
+    font-weight: 500;
+    margin-bottom: 18px;
+    line-height: 1.55;
+  }
+  .q-formula {
+    background: var(--card2);
+    border-left: 3px solid #6366f1;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 1.05rem;
+    margin-bottom: 14px;
+    color: #a5b4fc;
+  }
+  .q-svg {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 14px;
+  }
+  .q-svg svg {
+    border-radius: 8px;
+    background: #0f172a;
+    border: 1px solid var(--border);
+  }
+
+  /* MC Options */
+  .mc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .mc-opt {
+    background: var(--card2);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 11px 14px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    color: var(--text);
+    text-align: left;
+    transition: border-color var(--trans), background var(--trans);
+  }
+  .mc-opt:hover:not(:disabled) { border-color: var(--blue); background: #1d3a5f; }
+  .mc-opt.correct { border-color: var(--green) !important; background: #14532d !important; color: #86efac; }
+  .mc-opt.wrong   { border-color: var(--red)   !important; background: #450a0a !important; color: #fca5a5; }
+  .mc-opt:disabled { cursor: not-allowed; }
+
+  /* TF */
+  .tf-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .tf-btn {
+    padding: 14px;
+    border-radius: 8px;
+    border: 1.5px solid var(--border);
+    background: var(--card2);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: border-color var(--trans), background var(--trans);
+  }
+  .tf-btn:hover:not(:disabled) { border-color: var(--blue); background: #1d3a5f; }
+  .tf-btn.correct { border-color: var(--green) !important; background: #14532d !important; color: #86efac; }
+  .tf-btn.wrong   { border-color: var(--red)   !important; background: #450a0a !important; color: #fca5a5; }
+  .tf-btn:disabled { cursor: not-allowed; }
+
+  /* Input */
+  .input-row {
+    display: flex;
+    gap: 10px;
+  }
+  .q-input {
+    flex: 1;
+    background: var(--card2);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-size: 1rem;
+    outline: none;
+    transition: border-color var(--trans);
+  }
+  .q-input:focus { border-color: var(--blue); }
+  .q-input.correct { border-color: var(--green); background: #14532d; }
+  .q-input.wrong   { border-color: var(--red);   background: #450a0a; }
+
+  /* Feedback */
+  .feedback {
+    margin-top: 14px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    display: none;
+  }
+  .feedback.show { display: block; }
+  .feedback.ok  { background: #052e16; border: 1px solid #166534; color: #86efac; }
+  .feedback.bad { background: #1c0505; border: 1px solid #7f1d1d; color: #fca5a5; }
+
+  /* Hint */
+  .hint-wrap { margin-top: 10px; }
+  .hint-toggle {
+    background: none;
+    border: 1px dashed #475569;
+    border-radius: 6px;
+    color: var(--text2);
+    padding: 5px 12px;
+    cursor: pointer;
+    font-size: 0.82rem;
+    transition: border-color var(--trans);
+  }
+  .hint-toggle:hover { border-color: #38bdf8; color: #38bdf8; }
+  .hint-box {
+    display: none;
+    margin-top: 8px;
+    background: #0c2340;
+    border: 1px solid #1e40af;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 0.87rem;
+    color: #93c5fd;
+  }
+  .hint-box.show { display: block; }
+
+  /* Solution */
+  .solution-box {
+    display: none;
+    margin-top: 10px;
+    background: #1a0533;
+    border: 1px solid #7e22ce;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 0.87rem;
+    color: #d8b4fe;
+  }
+  .solution-box.show { display: block; }
+  .solution-box strong { color: #e9d5ff; }
+
+  /* Next button area */
+  .q-actions {
+    margin-top: 16px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  /* ── RESULT ───────────────────────────────────────── */
+  .result-score {
+    text-align: center;
+    padding: 20px;
+  }
+  .score-big {
+    font-size: 3rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #3b82f6, #6366f1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .score-sub { color: var(--text2); margin-top: 4px; }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .stat-item {
+    background: var(--card2);
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+  }
+  .stat-val { font-size: 1.4rem; font-weight: 700; }
+  .stat-lbl { font-size: 0.75rem; color: var(--text2); }
+
+  .section-title {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--text2);
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+
+  /* KLP bars */
+  .klp-list { display: flex; flex-direction: column; gap: 10px; }
+  .klp-row { }
+  .klp-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    margin-bottom: 4px;
+  }
+  .klp-bar-bg {
+    height: 8px;
+    background: var(--card2);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .klp-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width .6s ease;
+  }
+
+  /* MV list */
+  .mv-list { display: flex; flex-direction: column; gap: 10px; }
+  .mv-item {
+    background: var(--card2);
+    border-left: 4px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 0.87rem;
+  }
+  .mv-item.triggered { border-left-color: var(--red); }
+  .mv-item.ok        { border-left-color: var(--green); }
+  .mv-item-title { font-weight: 600; margin-bottom: 4px; }
+  .mv-item-text  { color: var(--text2); font-size: 0.82rem; }
+
+  /* Achievements */
+  .ach-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .ach-item {
+    background: var(--card2);
+    border-radius: 8px;
+    padding: 12px 8px;
+    text-align: center;
+    transition: opacity var(--trans);
+  }
+  .ach-item.locked { opacity: .35; filter: grayscale(1); }
+  .ach-icon { font-size: 1.5rem; }
+  .ach-title { font-size: 0.72rem; font-weight: 600; margin-top: 4px; }
+  .ach-desc  { font-size: 0.65rem; color: var(--text2); }
+
+  /* ── FOERDER ──────────────────────────────────────── */
+  .foerder-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 640px;
+    margin-bottom: 14px;
+    font-size: 0.85rem;
+    color: var(--text2);
+  }
+  .diff-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+  .diff-leicht { background: #14532d; color: #86efac; }
+  .diff-mittel { background: #713f12; color: #fde68a; }
+  .diff-schwer { background: #3b0764; color: #d8b4fe; }
+
+  /* ── LINKS ────────────────────────────────────────── */
+  .links-section-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 20px 0 10px;
+    color: var(--text);
+    width: 100%;
+    max-width: 640px;
+  }
+  .links-section-title:first-child { margin-top: 0; }
+  .link-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    width: 100%;
+    max-width: 640px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    text-decoration: none;
+    color: var(--text);
+    transition: border-color var(--trans), background var(--trans);
+  }
+  .link-card:hover { border-color: var(--blue); background: #1a2d4a; }
+  .link-icon { font-size: 1.4rem; flex-shrink: 0; }
+  .link-name { font-weight: 600; font-size: 0.92rem; }
+  .link-desc { font-size: 0.8rem; color: var(--text2); margin-top: 2px; }
+
+  /* ── NAV TABS ─────────────────────────────────────── */
+  .top-nav {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    width: 100%;
+    max-width: 640px;
+    margin-bottom: 16px;
+  }
+
+  /* ── TOAST ────────────────────────────────────────── */
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    z-index: 9999;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity .25s, transform .25s;
+    pointer-events: none;
+  }
+  #toast.show { opacity: 1; transform: translateY(0); }
+  #toast.info    { background: #1e3a5f; color: #93c5fd; border: 1px solid #2563eb; }
+  #toast.success { background: #052e16; color: #86efac; border: 1px solid #166534; }
+  #toast.ach     { background: #1a0533; color: #d8b4fe; border: 1px solid #7e22ce; }
+
+  /* ── RESPONSIVE ───────────────────────────────────── */
+  @media (max-width: 480px) {
+    .mc-grid, .tf-grid { grid-template-columns: 1fr; }
+    .stat-grid { grid-template-columns: 1fr 1fr; }
+    .ach-grid { grid-template-columns: repeat(4, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCREENS
+════════════════════════════════════════════════════════════ -->
+
+<!-- START -->
+<div id="screen-start" class="screen active">
+  <div class="hero" id="start-hero">
+    <div class="icon" id="start-icon"></div>
+    <h1 id="start-name"></h1>
+    <p id="start-subtitle"></p>
+  </div>
+  <div class="card" style="text-align:center">
+    <p style="color:var(--text2); margin-bottom:16px; font-size:0.95rem;" id="start-desc"></p>
+    <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-bottom:20px;">
+      <span id="start-q-badge" class="badge badge-cat">📝 -- Fragen</span>
+      <span id="start-time-badge" class="badge badge-cat">⏱ -- Min</span>
+    </div>
+    <button class="btn btn-primary" onclick="startQuiz()" style="min-width:180px">
+      Diagnose starten →
+    </button>
+  </div>
+  <div class="card">
+    <div class="section-title">Was wird geprüft?</div>
+    <div id="start-klp-list"></div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div id="screen-quiz" class="screen">
+  <div class="top-nav">
+    <button class="btn btn-ghost btn-sm" onclick="showLinks()">🔗 Links</button>
+  </div>
+  <div class="badges">
+    <span class="badge badge-xp" id="q-xp">⭐ 0 XP</span>
+    <span class="badge badge-streak" id="q-streak">🔥 0</span>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-info">
+      <span id="q-prog-text">Frage 1 / 15</span>
+      <span id="q-prog-pct">0%</span>
+    </div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="q-prog-fill" style="width:0%"></div></div>
+  </div>
+  <div class="card" id="q-card">
+    <!-- rendered by JS -->
+  </div>
+</div>
+
+<!-- RESULT -->
+<div id="screen-result" class="screen">
+  <div class="hero" id="result-hero">
+    <div class="icon" id="result-icon"></div>
+    <h1 id="result-title">Diagnose abgeschlossen</h1>
+    <p id="result-sub"></p>
+  </div>
+  <div class="card">
+    <div class="result-score">
+      <div class="score-big" id="res-score">0 / 0</div>
+      <div class="score-sub" id="res-xp-line"></div>
+    </div>
+    <div class="stat-grid" id="res-stats"></div>
+  </div>
+  <div class="card">
+    <div class="section-title">Kompetenzbereich-Analyse</div>
+    <div class="klp-list" id="res-klp"></div>
+  </div>
+  <div class="card">
+    <div class="section-title">Fehlvorstellungen</div>
+    <div class="mv-list" id="res-mv"></div>
+  </div>
+  <div class="card">
+    <div class="section-title">Errungenschaften</div>
+    <div class="ach-grid" id="res-ach"></div>
+  </div>
+  <div id="foerder-btn-wrap" style="width:100%; max-width:640px; margin-bottom:12px; display:none">
+    <button class="btn btn-success btn-block" onclick="startFoerder()">
+      📚 Förderübungen starten
+    </button>
+  </div>
+  <div style="display:flex; gap:10px; width:100%; max-width:640px; flex-wrap:wrap">
+    <button class="btn btn-ghost" onclick="showLinks()" style="flex:1">🔗 Lernmaterial</button>
+    <button class="btn btn-primary" onclick="restartQuiz()" style="flex:1">🔄 Neu starten</button>
+  </div>
+</div>
+
+<!-- FOERDER -->
+<div id="screen-foerder" class="screen">
+  <div class="hero" id="foerder-hero" style="padding:20px 24px 16px">
+    <div class="icon">📚</div>
+    <h1 style="font-size:1.3rem">Förderübungen</h1>
+    <p id="foerder-sub" style="font-size:0.85rem"></p>
+  </div>
+  <div class="foerder-nav">
+    <span id="f-prog-text">Aufgabe 1 / --</span>
+    <button class="btn btn-ghost btn-sm" onclick="buildResult()">✖ Beenden</button>
+  </div>
+  <div class="card" id="f-card"><!-- rendered --></div>
+  <div id="f-actions" style="display:flex; gap:10px; width:100%; max-width:640px;"></div>
+</div>
+
+<!-- LINKS -->
+<div id="screen-links" class="screen">
+  <div class="hero" id="links-hero" style="padding:20px 24px 16px">
+    <div class="icon" id="links-icon"></div>
+    <h1 id="links-name" style="font-size:1.3rem"></h1>
+    <p style="font-size:0.85rem">Lernmaterial &amp; Übungen</p>
+  </div>
+  <div style="width:100%; max-width:640px; margin-bottom:8px">
+    <button class="btn btn-ghost btn-sm" onclick="goBack()">← Zurück</button>
+  </div>
+  <div id="links-content" style="width:100%"></div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   KONFIGURATION – Nur diesen Block für ein neues Thema ändern
+══════════════════════════════════════════════════════════════ */
+const TOPIC = {
+  name: 'Lineare Funktionen',
+  subtitle: 'Klasse 8 · NRW · Diagnose',
+  icon: '📈',
+  headerGrad: ['#3b82f6','#6366f1'],
+  questionCount: 15,
+  estimatedMin: 12,
+
+  klp: {
+    K1: { name:'Argumentieren', color:'#818cf8', bg:'#1e1b4b' },
+    K2: { name:'Problemlösen',  color:'#34d399', bg:'#022c22' },
+    K3: { name:'Modellieren',   color:'#f472b6', bg:'#500724' },
+    K4: { name:'Darstellen',    color:'#fb923c', bg:'#431407' },
+    K5: { name:'Kommunizieren', color:'#a78bfa', bg:'#2e1065' },
+    K6: { name:'Werkzeuge',     color:'#38bdf8', bg:'#0c4a6e' },
+  },
+
+  mv: {
+    M1: {
+      code:'M1', title:'m und b vertauscht',
+      false_belief:'Schüler*innen verwechseln die Steigung m mit dem y-Achsenabschnitt b.',
+      correct:'In y = mx + b ist m die Steigung und b der y-Achsenabschnitt.',
+      example:'Bei y = 3x + 7 ist m = 3, nicht 7.'
+    },
+    M2: {
+      code:'M2', title:'Negative Steigung nicht erkannt',
+      false_belief:'Eine negative Steigung wird als ungültig oder unmöglich angesehen.',
+      correct:'Negative Steigungen beschreiben fallende Geraden und sind vollständig gültig.',
+      example:'y = −3x + 1 hat m = −3 und fällt von links nach rechts.'
+    },
+    M3: {
+      code:'M3', title:'y-Achsenabschnitt = f(1)',
+      false_belief:'Der y-Achsenabschnitt wird als f(1) berechnet, also der Funktionswert bei x = 1.',
+      correct:'Der y-Achsenabschnitt ist f(0) = b, also der Wert, wo die Gerade die y-Achse schneidet.',
+      example:'Bei y = 5x + 3: f(0) = 3, nicht f(1) = 8.'
+    },
+    M4: {
+      code:'M4', title:'Steigung als Δx/Δy',
+      false_belief:'Die Formel für die Steigung wird zu Δx/Δy (x- und y-Differenz vertauscht).',
+      correct:'Die Steigung ist m = Δy/Δx = (y₂ − y₁) / (x₂ − x₁).',
+      example:'Durch P(1|3) und Q(4|9): m = (9−3)/(4−1) = 6/3 = 2.'
+    },
+    M5: {
+      code:'M5', title:'Parallelität = gleicher b',
+      false_belief:'Zwei Geraden sind parallel, wenn sie denselben y-Achsenabschnitt b haben.',
+      correct:'Zwei Geraden sind genau dann parallel, wenn sie dieselbe Steigung m haben.',
+      example:'y = 2x + 5 ∥ y = 2x − 3, aber nicht y = 3x + 5.'
+    },
+  },
+
+  questions: [
+    {
+      id: 1,
+      klp: 'K4', mvTarget: 'M1',
+      type: 'mc', xp: 10, cat: 'Steigung ablesen',
+      klpDesc: 'Darstellen: Graphen und Terme zuordnen',
+      text: 'Welchen Wert hat die Steigung m in der Funktion y = 3x + 7?',
+      formula: 'y = 3x + 7',
+      opts: ['3', '7', '3x', '10'],
+      answer: 0,
+      fb_ok:  'Richtig! In y = mx + b ist m der Koeffizient vor x, also m = 3.',
+      fb_nok: 'Nicht korrekt. In y = mx + b steht m vor dem x – hier ist m = 3.',
+      mv_nok: 'M1',
+      sol: 'y = 3x + 7 → m = 3, b = 7. Die Steigung ist der Koeffizient vor x.',
+    },
+    {
+      id: 2,
+      klp: 'K4', mvTarget: 'M1',
+      type: 'mc', xp: 10, cat: 'y-Achsenabschnitt ablesen',
+      klpDesc: 'Darstellen: Terme interpretieren',
+      text: 'Welchen Wert hat der y-Achsenabschnitt b in der Funktion y = 5x − 4?',
+      formula: 'y = 5x − 4',
+      opts: ['5', '−4', '5x', '1'],
+      answer: 1,
+      fb_ok:  'Korrekt! b ist der konstante Term, also b = −4.',
+      fb_nok: 'Falsch. Der y-Achsenabschnitt b ist die Konstante, nicht der Koeffizient vor x.',
+      mv_nok: 'M1',
+      sol: 'y = 5x − 4 → m = 5, b = −4. b ist die Zahl ohne x.',
+    },
+    {
+      id: 3,
+      klp: 'K1', mvTarget: 'M2',
+      type: 'tf', xp: 8, cat: 'Negative Steigung',
+      klpDesc: 'Argumentieren: Aussagen beurteilen',
+      text: 'Aussage: y = −3x + 1 ist keine gültige lineare Funktion, weil die Steigung negativ ist.',
+      answer: false,
+      fb_ok:  'Richtig! Negative Steigungen sind vollständig gültig. Die Gerade fällt von links nach rechts.',
+      fb_nok: 'Falsch. Negative Steigungen sind gültig – sie beschreiben fallende Geraden.',
+      mv_nok: 'M2',
+      sol: 'y = −3x + 1 ist eine gültige lineare Funktion mit m = −3 (fallend) und b = 1.',
+    },
+    {
+      id: 4,
+      klp: 'K5', mvTarget: 'M3',
+      type: 'mc', xp: 12, cat: 'y-Achsenabschnitt verstehen',
+      klpDesc: 'Kommunizieren: Fehler in Aussagen erkennen',
+      text: 'Anna behauptet: „Der y-Achsenabschnitt von y = 6x + 7 ist f(1) = 13." Was stimmt nicht an dieser Aussage?',
+      opts: [
+        'f(0) = 7 ist der y-Achsenabschnitt, nicht f(1)',
+        'f(1) = 13 stimmt tatsächlich, also hat Anna recht',
+        'Der y-Achsenabschnitt liegt bei x = 7',
+        'Die Funktion hat keinen y-Achsenabschnitt'
+      ],
+      answer: 0,
+      fb_ok:  'Richtig! Der y-Achsenabschnitt ist immer f(0), weil die Gerade dort die y-Achse schneidet.',
+      fb_nok: 'Nicht ganz. f(1) = 13 ist ein Funktionswert, aber nicht der y-Achsenabschnitt.',
+      mv_nok: 'M3',
+      sol: 'y-Achsenabschnitt = f(0) = 6·0 + 7 = 7. Anna hat f(1) = 13 berechnet – das ist falsch für den y-Achsenabschnitt.',
+    },
+    {
+      id: 5,
+      klp: 'K2', mvTarget: null,
+      type: 'input', xp: 10, cat: 'Funktionswert berechnen',
+      klpDesc: 'Problemlösen: Terme auswerten',
+      text: 'Berechne f(3) für die Funktion y = 2x + 1.',
+      formula: 'y = 2x + 1, x = 3',
+      answer: '7',
+      hint: 'Setze x = 3 in die Gleichung ein: y = 2·3 + 1.',
+      fb_ok:  'Perfekt! y = 2·3 + 1 = 6 + 1 = 7.',
+      fb_nok: 'Nicht richtig. Rechne: y = 2·3 + 1 = 6 + 1 = 7.',
+      mv_nok: null,
+      sol: 'f(3) = 2·3 + 1 = 6 + 1 = 7',
+    },
+    {
+      id: 6,
+      klp: 'K1', mvTarget: 'M5',
+      type: 'mc', xp: 12, cat: 'Parallelität',
+      klpDesc: 'Argumentieren: Geraden vergleichen',
+      text: 'Welche der folgenden Geraden ist parallel zu y = 2x + 5?',
+      opts: ['y = 3x + 5', 'y = 2x − 3', 'y = −2x + 5', 'y = 5x + 2'],
+      answer: 1,
+      fb_ok:  'Korrekt! Parallele Geraden haben dieselbe Steigung m = 2. Nur y = 2x − 3 hat m = 2.',
+      fb_nok: 'Falsch. Parallelität bedeutet gleiche Steigung m, nicht gleicher y-Achsenabschnitt.',
+      mv_nok: 'M5',
+      sol: 'y = 2x + 5 hat m = 2. Parallel ist y = 2x − 3 (auch m = 2, anderes b).',
+    },
+    {
+      id: 7,
+      klp: 'K1', mvTarget: 'M5',
+      type: 'tf', xp: 10, cat: 'Schnittpunkt paralleler Geraden',
+      klpDesc: 'Argumentieren: Eigenschaften paralleler Geraden',
+      text: 'Aussage: Die Geraden y = 2x + 3 und y = 2x − 1 schneiden sich in genau einem Punkt.',
+      answer: false,
+      fb_ok:  'Richtig! Zwei Geraden mit gleicher Steigung (m = 2) sind parallel und schneiden sich nie.',
+      fb_nok: 'Falsch. Beide Geraden haben m = 2. Parallele Geraden haben keinen gemeinsamen Punkt.',
+      mv_nok: 'M5',
+      sol: 'Beide Geraden haben m = 2 → parallel → kein Schnittpunkt.',
+    },
+    {
+      id: 8,
+      klp: 'K4', mvTarget: 'M4',
+      type: 'mc', xp: 12, cat: 'Steigung berechnen',
+      klpDesc: 'Darstellen: Steigung aus zwei Punkten',
+      text: 'Berechne die Steigung der Geraden durch P(1 | 3) und Q(4 | 9).',
+      opts: ['2', '3', '0,5', '6'],
+      answer: 0,
+      hint: 'Formel: m = (y₂ − y₁) / (x₂ − x₁)',
+      fb_ok:  'Richtig! m = (9 − 3) / (4 − 1) = 6 / 3 = 2.',
+      fb_nok: 'Falsch. Nutze m = Δy/Δx = (y₂ − y₁) / (x₂ − x₁).',
+      mv_nok: 'M4',
+      sol: 'm = (9 − 3) / (4 − 1) = 6 / 3 = 2',
+    },
+    {
+      id: 9,
+      klp: 'K2', mvTarget: 'M3',
+      type: 'input', xp: 8, cat: 'y-Achsenabschnitt',
+      klpDesc: 'Problemlösen: b ablesen',
+      text: 'Wie groß ist der y-Achsenabschnitt b der Funktion y = 6x + 9?',
+      formula: 'y = 6x + 9',
+      answer: '9',
+      fb_ok:  'Genau! b = 9. Er ergibt sich direkt als konstanter Term.',
+      fb_nok: 'Falsch. In y = mx + b ist b der konstante Term – hier b = 9.',
+      mv_nok: 'M3',
+      sol: 'y = 6x + 9 → b = 9 (der Wert bei x = 0).',
+    },
+    {
+      id: 10,
+      klp: 'K4', mvTarget: 'M4',
+      type: 'mc', xp: 10, cat: 'Steigungsformel',
+      klpDesc: 'Darstellen: Formel kennen',
+      text: 'Welche Formel berechnet die Steigung m einer Geraden aus zwei Punkten korrekt?',
+      opts: ['m = Δy / Δx', 'm = Δx / Δy', 'm = x₂ · y₂', 'm = y₁ − y₂'],
+      answer: 0,
+      fb_ok:  'Korrekt! m = Δy / Δx = (y₂ − y₁) / (x₂ − x₁).',
+      fb_nok: 'Falsch. Die Steigungsformel lautet m = Δy/Δx (y-Differenz geteilt durch x-Differenz).',
+      mv_nok: 'M4',
+      sol: 'm = Δy/Δx. Zähler ist die y-Differenz, Nenner die x-Differenz.',
+    },
+    {
+      id: 11,
+      klp: 'K1', mvTarget: null,
+      type: 'tf', xp: 8, cat: 'Konstante Funktion',
+      klpDesc: 'Argumentieren: Sonderfälle erkennen',
+      text: 'Aussage: Die Funktion y = 4 (eine waagerechte Gerade) ist eine lineare Funktion.',
+      answer: true,
+      fb_ok:  'Richtig! y = 4 ist y = 0·x + 4, also eine lineare Funktion mit Steigung m = 0.',
+      fb_nok: 'Falsch. y = 4 entspricht y = 0·x + 4 – das ist eine lineare Funktion (Steigung = 0).',
+      mv_nok: null,
+      sol: 'y = 4 ist y = 0x + 4 mit m = 0 und b = 4. Linearer Zusammenhang.',
+    },
+    {
+      id: 12,
+      klp: 'K3', mvTarget: 'M2',
+      type: 'mc', xp: 14, cat: 'Sachkontext',
+      klpDesc: 'Modellieren: Situation in Funktion übersetzen',
+      text: 'Eine Flüssigkeit hat Starttemperatur −2 °C und kühlt mit −3 °C pro Minute. Welche Funktion beschreibt die Temperatur T nach x Minuten?',
+      opts: ['T = −3x − 2', 'T = 3x − 2', 'T = −2x − 3', 'T = 3x + 2'],
+      answer: 0,
+      fb_ok:  'Richtig! Die Steigung ist −3 (Abkühlung) und der Startwert (y-Achsenabschnitt) ist −2.',
+      fb_nok: 'Falsch. Die Steigung entspricht der Änderungsrate: −3 °C/min. Der Startwert ist −2 °C.',
+      mv_nok: 'M2',
+      sol: 'T = −3x − 2: Steigung m = −3 (Abkühlung), b = −2 (Starttemperatur).',
+    },
+    {
+      id: 13,
+      klp: 'K2', mvTarget: 'M4',
+      type: 'input', xp: 12, cat: 'Steigung berechnen',
+      klpDesc: 'Problemlösen: m aus Punkten bestimmen',
+      text: 'Berechne die Steigung der Geraden durch A(0 | 2) und B(3 | 8).',
+      hint: 'm = (y₂ − y₁) / (x₂ − x₁) = (8 − 2) / (3 − 0)',
+      answer: '2',
+      fb_ok:  'Super! m = (8 − 2) / (3 − 0) = 6 / 3 = 2.',
+      fb_nok: 'Nicht richtig. m = Δy/Δx = (8 − 2)/(3 − 0) = 6/3 = 2.',
+      mv_nok: 'M4',
+      sol: 'm = (8 − 2) / (3 − 0) = 6 / 3 = 2',
+    },
+    {
+      id: 14,
+      klp: 'K4', mvTarget: 'M2',
+      type: 'mc', xp: 12, cat: 'Graph ablesen',
+      klpDesc: 'Darstellen: Graphen interpretieren',
+      text: 'Betrachte die zwei Geraden im Koordinatensystem. Welche Aussage ist korrekt?',
+      svg: `<svg width="220" height="200" xmlns="http://www.w3.org/2000/svg">
+  <rect width="220" height="200" fill="#0f172a"/>
+  <line x1="10" y1="100" x2="210" y2="100" stroke="#334155" stroke-width="1"/>
+  <line x1="110" y1="10" x2="110" y2="190" stroke="#334155" stroke-width="1"/>
+  <line x1="10" y1="50"  x2="210" y2="50"  stroke="#1e293b" stroke-width="0.5"/>
+  <line x1="10" y1="150" x2="210" y2="150" stroke="#1e293b" stroke-width="0.5"/>
+  <line x1="60"  y1="10" x2="60"  y2="190" stroke="#1e293b" stroke-width="0.5"/>
+  <line x1="160" y1="10" x2="160" y2="190" stroke="#1e293b" stroke-width="0.5"/>
+  <line x1="20" y1="170" x2="200" y2="30" stroke="#3b82f6" stroke-width="2.5"/>
+  <line x1="20" y1="40"  x2="200" y2="170" stroke="#ef4444" stroke-width="2.5"/>
+  <text x="195" y="28"  fill="#3b82f6" font-size="13" font-weight="bold">A</text>
+  <text x="195" y="185" fill="#ef4444" font-size="13" font-weight="bold">B</text>
+  <text x="115" y="15"  fill="#94a3b8" font-size="10">y</text>
+  <text x="205" y="105" fill="#94a3b8" font-size="10">x</text>
+</svg>`,
+      opts: [
+        'Gerade A hat positive, Gerade B hat negative Steigung',
+        'Gerade B ist kein Graph einer linearen Funktion',
+        'Beide Geraden haben die gleiche Steigung',
+        'Gerade A hat negative, Gerade B hat positive Steigung'
+      ],
+      answer: 0,
+      fb_ok:  'Korrekt! Steigende Geraden (von links nach rechts aufwärts) haben m > 0, fallende m < 0.',
+      fb_nok: 'Falsch. Gerade A steigt von links nach rechts → m > 0. Gerade B fällt → m < 0.',
+      mv_nok: 'M2',
+      sol: 'A steigt (m > 0, blau), B fällt (m < 0, rot). Beide sind gültige lineare Funktionen.',
+    },
+    {
+      id: 15,
+      klp: 'K1', mvTarget: 'M5',
+      type: 'tf', xp: 10, cat: 'Parallelität',
+      klpDesc: 'Argumentieren: Parallelitätsbedingung prüfen',
+      text: 'Aussage: Die Geraden y = 2x + 3 und y = 3x + 2 sind parallel zueinander.',
+      answer: false,
+      fb_ok:  'Richtig! Die Steigungen sind verschieden (m₁ = 2, m₂ = 3), also sind die Geraden nicht parallel.',
+      fb_nok: 'Falsch. Für Parallelität muss m₁ = m₂ gelten. Hier: m₁ = 2 ≠ 3 = m₂.',
+      mv_nok: 'M5',
+      sol: 'm₁ = 2, m₂ = 3 → m₁ ≠ m₂ → nicht parallel. (b₁=3, b₂=2 – irrelevant für Parallelität)',
+    },
+  ],
+
+  foerder: {
+    M1: [
+      {
+        diff: 'leicht', type: 'mc',
+        text: 'In y = 4x + 2: Was ist die Steigung m?',
+        opts: ['4','2','4x','6'],
+        answer: 0,
+        hint: 'm ist der Koeffizient vor x.',
+        fb_ok: 'Richtig! m = 4 (vor dem x).',
+        fb_nok: 'Falsch. m ist der Faktor vor x, also 4.',
+        sol: 'y = mx + b → m = 4, b = 2.'
+      },
+      {
+        diff: 'mittel', type: 'mc',
+        text: 'In y = −5x + 8: Was ist der y-Achsenabschnitt b?',
+        opts: ['−5','8','−5x','3'],
+        answer: 1,
+        hint: 'b ist die Konstante (ohne x).',
+        fb_ok: 'Richtig! b = 8 ist die Konstante.',
+        fb_nok: 'Falsch. b ist die Zahl ohne x, also 8.',
+        sol: 'y = −5x + 8 → m = −5, b = 8.'
+      },
+      {
+        diff: 'schwer', type: 'mc',
+        text: 'Eine Gerade hat Steigung m = 3 und y-Achsenabschnitt b = −1. Welche Gleichung stimmt?',
+        opts: ['y = 3x − 1','y = −x + 3','y = 3x + 1','y = −3x − 1'],
+        answer: 0,
+        hint: 'Setze m und b in y = mx + b ein.',
+        fb_ok: 'Korrekt! y = 3x − 1.',
+        fb_nok: 'Falsch. y = mx + b mit m = 3 und b = −1 ergibt y = 3x − 1.',
+        sol: 'y = mx + b = 3x + (−1) = 3x − 1.'
+      },
+    ],
+    M2: [
+      {
+        diff: 'leicht', type: 'tf',
+        text: 'Eine Gerade mit negativer Steigung (z.B. m = −2) ist eine gültige lineare Funktion.',
+        answer: true,
+        hint: 'Lineare Funktionen können beliebige Steigungen haben.',
+        fb_ok: 'Richtig! Negative Steigungen sind vollständig gültig.',
+        fb_nok: 'Falsch. Negative Steigungen sind erlaubt – sie beschreiben fallende Geraden.',
+        sol: 'y = −2x + 5 ist eine gültige lineare Funktion (fallende Gerade).'
+      },
+      {
+        diff: 'mittel', type: 'mc',
+        text: 'Welche Gerade fällt von links nach rechts?',
+        opts: ['y = −2x + 1','y = 2x − 1','y = x + 3','y = 4'],
+        answer: 0,
+        hint: 'Eine Gerade fällt, wenn m < 0.',
+        fb_ok: 'Korrekt! m = −2 < 0 → fallende Gerade.',
+        fb_nok: 'Falsch. Eine fallende Gerade hat m < 0, also y = −2x + 1.',
+        sol: 'y = −2x + 1 hat m = −2 < 0 → fällt.'
+      },
+      {
+        diff: 'schwer', type: 'mc',
+        text: 'Temperatur startet bei 10 °C, sinkt um 4 °C/min. Welche Funktion ist korrekt?',
+        opts: ['T = −4x + 10','T = 4x + 10','T = 10x − 4','T = −10x + 4'],
+        answer: 0,
+        hint: 'Steigung = Änderungsrate (negativ = sinkend), b = Startwert.',
+        fb_ok: 'Genau! m = −4 (Abnahme), b = 10 (Start).',
+        fb_nok: 'Falsch. Sinken = negative Steigung: T = −4x + 10.',
+        sol: 'T = −4x + 10: m = −4 (sinkt 4°C/min), b = 10 (Starttemperatur).'
+      },
+    ],
+    M3: [
+      {
+        diff: 'leicht', type: 'mc',
+        text: 'Wo schneidet die Gerade y = 3x + 5 die y-Achse?',
+        opts: ['bei y = 5','bei y = 3','bei y = 8','bei y = 0'],
+        answer: 0,
+        hint: 'Setze x = 0 ein.',
+        fb_ok: 'Richtig! f(0) = 3·0 + 5 = 5.',
+        fb_nok: 'Falsch. y-Achsenschnittpunkt: x = 0 einsetzen → f(0) = 5.',
+        sol: 'f(0) = 3·0 + 5 = 5. Die Gerade schneidet die y-Achse bei (0|5).'
+      },
+      {
+        diff: 'mittel', type: 'tf',
+        text: 'Der y-Achsenabschnitt von y = 7x + 4 berechnet sich als f(1) = 11.',
+        answer: false,
+        hint: 'y-Achsenabschnitt → x = 0, nicht x = 1.',
+        fb_ok: 'Richtig! f(0) = 4 ist der y-Achsenabschnitt, nicht f(1) = 11.',
+        fb_nok: 'Falsch. Der y-Achsenabschnitt ist f(0) = 7·0 + 4 = 4, nicht f(1) = 11.',
+        sol: 'y-Achsenabschnitt = f(0) = 4. f(1) = 11 ist ein normaler Funktionswert.'
+      },
+      {
+        diff: 'schwer', type: 'mc',
+        text: 'Welche Aussage über den y-Achsenabschnitt b ist IMMER korrekt?',
+        opts: [
+          'b = f(0), also der Funktionswert an der y-Achse',
+          'b = f(1), also der Funktionswert bei x = 1',
+          'b = m · 1',
+          'b ist immer positiv'
+        ],
+        answer: 0,
+        hint: 'Die y-Achse ist die Linie mit x = 0.',
+        fb_ok: 'Richtig! b = f(0) ist immer korrekt.',
+        fb_nok: 'Falsch. b = f(0) – die y-Achse liegt bei x = 0.',
+        sol: 'b = f(0) gilt immer: Der y-Achsenabschnitt ist der Funktionswert bei x = 0.'
+      },
+    ],
+    M4: [
+      {
+        diff: 'leicht', type: 'mc',
+        text: 'Was ist die richtige Formel für die Steigung?',
+        opts: ['m = Δy / Δx','m = Δx / Δy','m = y · x','m = x₂ − x₁'],
+        answer: 0,
+        hint: 'Zähler = y-Differenz, Nenner = x-Differenz.',
+        fb_ok: 'Richtig! m = Δy / Δx.',
+        fb_nok: 'Falsch. m = Δy/Δx (nicht Δx/Δy).',
+        sol: 'm = (y₂ − y₁) / (x₂ − x₁) = Δy/Δx.'
+      },
+      {
+        diff: 'mittel', type: 'mc',
+        text: 'Berechne die Steigung durch C(2|4) und D(5|10).',
+        opts: ['2','3','0,5','5'],
+        answer: 0,
+        hint: 'm = (10 − 4) / (5 − 2)',
+        fb_ok: 'Korrekt! m = (10 − 4)/(5 − 2) = 6/3 = 2.',
+        fb_nok: 'Falsch. m = Δy/Δx = (10−4)/(5−2) = 6/3 = 2.',
+        sol: 'm = (10 − 4) / (5 − 2) = 6 / 3 = 2.'
+      },
+      {
+        diff: 'schwer', type: 'mc',
+        text: 'Durch welche Punkte E(1|5) und F(4|2) berechnet sich die Steigung zu?',
+        opts: ['−1','1','3','−3'],
+        answer: 0,
+        hint: 'm = (2 − 5) / (4 − 1)',
+        fb_ok: 'Richtig! m = (2 − 5)/(4 − 1) = −3/3 = −1.',
+        fb_nok: 'Falsch. m = (y_F − y_E)/(x_F − x_E) = (2−5)/(4−1) = −3/3 = −1.',
+        sol: 'm = (2 − 5) / (4 − 1) = −3/3 = −1. Negative Steigung → fallende Gerade.'
+      },
+    ],
+    M5: [
+      {
+        diff: 'leicht', type: 'tf',
+        text: 'Die Geraden y = 3x + 1 und y = 3x + 7 sind parallel.',
+        answer: true,
+        hint: 'Vergleiche nur die Steigungen m.',
+        fb_ok: 'Richtig! Beide haben m = 3 → parallel.',
+        fb_nok: 'Falsch. Beide haben m = 3, also gleiche Steigung → parallel.',
+        sol: 'm₁ = 3 = m₂ = 3 → parallel. b darf verschieden sein.'
+      },
+      {
+        diff: 'mittel', type: 'mc',
+        text: 'Welche Gerade ist parallel zu y = 4x − 2?',
+        opts: ['y = 4x + 10','y = 2x − 4','y = −4x + 1','y = x + 4'],
+        answer: 0,
+        hint: 'Gleiche Steigung m = 4, anderes b.',
+        fb_ok: 'Korrekt! y = 4x + 10 hat ebenfalls m = 4.',
+        fb_nok: 'Falsch. Parallelität erfordert gleiche Steigung m = 4.',
+        sol: 'Nur y = 4x + 10 hat m = 4 und ist daher parallel.'
+      },
+      {
+        diff: 'schwer', type: 'mc',
+        text: 'Welche Aussage beschreibt das Kriterium für Parallelität KORREKT?',
+        opts: [
+          'Zwei Geraden sind parallel, wenn ihre Steigungen gleich sind (m₁ = m₂)',
+          'Zwei Geraden sind parallel, wenn ihre y-Achsenabschnitte gleich sind (b₁ = b₂)',
+          'Zwei Geraden sind parallel, wenn m₁ · m₂ = −1',
+          'Zwei Geraden sind parallel, wenn sie sich nicht am Ursprung treffen'
+        ],
+        answer: 0,
+        hint: 'Das Parallelitätskriterium bezieht sich auf die Steigung.',
+        fb_ok: 'Perfekt! m₁ = m₂ ist das korrekte Kriterium.',
+        fb_nok: 'Falsch. Das Kriterium ist m₁ = m₂ (gleiche Steigung, unterschiedliches b).',
+        sol: 'Parallelität: m₁ = m₂. (m₁ · m₂ = −1 wäre Orthogonalität.)'
+      },
+    ],
+  },
+
+  links: {
+    videos: [
+      { icon:'▶️', name:'Lehrerschmidt – Grundlagen', desc:'Lineare Funktionen einfach erklärt', url:'https://www.youtube.com/watch?v=JZVuEVOqnKI' },
+      { icon:'▶️', name:'Lehrerschmidt – Steigung', desc:'Steigung m verstehen und berechnen', url:'https://www.youtube.com/watch?v=RQCF3qWnRng' },
+      { icon:'▶️', name:'Daniel Jung – Aufstellen', desc:'Geradengleichung aufstellen', url:'https://www.youtube.com/watch?v=qnWZPQMBMQ8' },
+      { icon:'▶️', name:'Daniel Jung – Parallelität', desc:'Parallele Geraden erkennen', url:'https://www.youtube.com/watch?v=3lFx4uZesTU' },
+      { icon:'▶️', name:'Mathehilfe24 – y-Achsenabschnitt', desc:'y-Achsenabschnitt bestimmen', url:'https://www.youtube.com/watch?v=W_J0WKLkjqI' },
+      { icon:'▶️', name:'Daniel Jung – Geradengleichung', desc:'Geradengleichung aufstellen (2 Punkte)', url:'https://www.youtube.com/watch?v=ELN4HiqS_Ds' },
+    ],
+    exercises: [
+      { icon:'📘', name:'Serlo', desc:'Kostenfreie Übungen und Erklärungen', url:'https://de.serlo.org/mathe/funktionen/lineare-funktionen' },
+      { icon:'📗', name:'Aufgabenfuchs', desc:'Viele Aufgaben zum Üben', url:'https://www.aufgabenfuchs.de/mathematik/funktion/lineare-funktion.shtml' },
+      { icon:'📙', name:'Matheretter', desc:'Übersicht und Erklärungen', url:'https://www.matheretter.de/wiki/lineare-funktion' },
+      { icon:'📐', name:'GeoGebra', desc:'Graphen interaktiv zeichnen', url:'https://www.geogebra.org/graphing' },
+      { icon:'📕', name:'Mathebibel', desc:'Umfassende Theorie und Aufgaben', url:'https://www.mathebibel.de/lineare-funktionen' },
+      { icon:'🌍', name:'Khan Academy', desc:'Strukturierter Kurs (Deutsch)', url:'https://de.khanacademy.org/math/algebra/x2f8bb11595b61c86:linear-equations-graphs' },
+    ],
+  },
+
+  achievements: [
+    { id:'first',   icon:'🎯', title:'Erste Antwort',    desc:'1 Frage beantwortet',    check: s => s.answered >= 1 },
+    { id:'streak3', icon:'🔥', title:'Heiße Drei',       desc:'3er Streak erreicht',    check: s => s.bestStreak >= 3 },
+    { id:'streak5', icon:'🌟', title:'Fünf am Stück',    desc:'5er Streak erreicht',    check: s => s.bestStreak >= 5 },
+    { id:'half',    icon:'⚡', title:'Halbzeit',         desc:'8 Fragen beantwortet',   check: s => s.answered >= 8 },
+    { id:'noMV',    icon:'🧠', title:'Keine Lücken',     desc:'Alle richtig, keine MV', check: s => s.triggeredMV.size === 0 && s.answered >= 15 },
+    { id:'allRight',icon:'💯', title:'Perfekt',          desc:'Alle 15 korrekt',        check: s => s.correct === s.answered && s.answered >= 15 },
+    { id:'xp100',   icon:'💰', title:'100 XP',           desc:'100 XP gesammelt',       check: s => s.xp >= 100 },
+    { id:'finish',  icon:'🏆', title:'Diagnose fertig',  desc:'Alle Fragen beantwortet',check: s => s.answered >= 15 },
+  ],
+};
+/* ══════════════════════════════════════════════════════════════
+   Ende KONFIGURATION
+══════════════════════════════════════════════════════════════ */
+
+
+/* ══════════════════════════════════════════════════════════════
+   ENGINE – Nicht ändern nötig
+══════════════════════════════════════════════════════════════ */
+
+// ── State ──────────────────────────────────────────────────
+let state = {
+  qIndex: 0,
+  xp: 0,
+  streak: 0,
+  bestStreak: 0,
+  correct: 0,
+  answered: 0,
+  klpHits: {},
+  triggeredMV: new Set(),
+  earnedAch: new Set(),
+};
+
+let foerderQueue = [];
+let foerderIndex = 0;
+let prevScreen = 'screen-result';
+
+// ── Init ───────────────────────────────────────────────────
+function init() {
+  document.documentElement.style.setProperty('--grad1', TOPIC.headerGrad[0]);
+  document.documentElement.style.setProperty('--grad2', TOPIC.headerGrad[1]);
+
+  const styleEl = document.createElement('style');
+  styleEl.textContent = `.progress-bar-fill { background: linear-gradient(90deg, ${TOPIC.headerGrad[0]}, ${TOPIC.headerGrad[1]}) !important; }`;
+  document.head.appendChild(styleEl);
+
+  document.getElementById('start-icon').textContent = TOPIC.icon;
+  document.getElementById('start-name').textContent = TOPIC.name;
+  document.getElementById('start-subtitle').textContent = TOPIC.subtitle;
+  document.getElementById('start-desc').textContent =
+    'Beantworte ' + TOPIC.questionCount + ' Fragen und erhalte eine persönliche Förderanalyse.';
+  document.getElementById('start-q-badge').textContent = '📝 ' + TOPIC.questionCount + ' Fragen';
+  document.getElementById('start-time-badge').textContent = '⏱ ca. ' + TOPIC.estimatedMin + ' Min';
+
+  const klpList = document.getElementById('start-klp-list');
+  klpList.innerHTML = Object.entries(TOPIC.klp).map(function(entry) {
+    const k = entry[0], v = entry[1];
+    return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">'
+      + '<span class="klp-chip" style="background:' + v.bg + ';color:' + v.color + '">' + k + '</span>'
+      + '<span style="font-size:0.88rem">' + v.name + '</span>'
+      + '</div>';
+  }).join('');
+}
+
+// ── Screen helpers ─────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function goBack() {
+  showScreen(prevScreen);
+}
+
+// ── Quiz start / restart ───────────────────────────────────
+function startQuiz() {
+  state = {
+    qIndex: 0, xp: 0, streak: 0, bestStreak: 0,
+    correct: 0, answered: 0,
+    klpHits: {}, triggeredMV: new Set(), earnedAch: new Set(),
+  };
+  showScreen('screen-quiz');
+  renderQuestion();
+}
+
+function restartQuiz() {
+  startQuiz();
+}
+
+// ── Render Question ────────────────────────────────────────
+function renderQuestion() {
+  const q = TOPIC.questions[state.qIndex];
+  const total = TOPIC.questions.length;
+  const pct = Math.round((state.qIndex / total) * 100);
+
+  document.getElementById('q-prog-text').textContent = 'Frage ' + (state.qIndex + 1) + ' / ' + total;
+  document.getElementById('q-prog-pct').textContent = pct + '%';
+  document.getElementById('q-prog-fill').style.width = pct + '%';
+  document.getElementById('q-xp').textContent = '⭐ ' + state.xp + ' XP';
+  document.getElementById('q-streak').textContent = '🔥 ' + state.streak;
+
+  const klpInfo = TOPIC.klp[q.klp] || {};
+  let html = '';
+
+  html += '<div class="q-meta">'
+    + '<span class="q-num">Frage ' + (state.qIndex + 1) + '</span>'
+    + '<span class="klp-chip" style="background:' + (klpInfo.bg || '#1e293b') + ';color:' + (klpInfo.color || '#fff') + '">' + q.klp + '</span>'
+    + '<span class="badge badge-cat">' + (q.cat || '') + '</span>'
+    + '<span style="font-size:0.75rem;color:var(--text2)">' + (q.klpDesc || '') + '</span>'
+    + '</div>';
+
+  html += '<div class="q-text">' + q.text + '</div>';
+
+  if (q.formula) {
+    html += '<div class="q-formula">' + q.formula + '</div>';
+  }
+
+  if (q.svg) {
+    html += '<div class="q-svg">' + q.svg + '</div>';
+  }
+
+  if (q.type === 'mc') {
+    html += '<div class="mc-grid" id="mc-opts">'
+      + q.opts.map(function(o, i) {
+          return '<button class="mc-opt" id="mc-' + i + '" onclick="checkMC(' + i + ')">' + o + '</button>';
+        }).join('')
+      + '</div>';
+  } else if (q.type === 'tf') {
+    html += '<div class="tf-grid">'
+      + '<button class="tf-btn" id="tf-true" onclick="checkTF(true)">✔ Wahr</button>'
+      + '<button class="tf-btn" id="tf-false" onclick="checkTF(false)">✖ Falsch</button>'
+      + '</div>';
+  } else if (q.type === 'input') {
+    html += '<div class="input-row">'
+      + '<input class="q-input" type="text" id="q-input-field" placeholder="Antwort eingeben…"'
+      + ' onkeydown="if(event.key===\'Enter\') checkInput()">'
+      + '<button class="btn btn-ghost" onclick="checkInput()">Prüfen</button>'
+      + '</div>';
+  }
+
+  if (q.hint) {
+    html += '<div class="hint-wrap">'
+      + '<button class="hint-toggle" onclick="toggleHint()">💡 Hinweis anzeigen</button>'
+      + '<div class="hint-box" id="hint-box">' + q.hint + '</div>'
+      + '</div>';
+  }
+
+  html += '<div class="feedback" id="q-feedback"></div>';
+  html += '<div class="solution-box" id="q-solution"></div>';
+  html += '<div class="q-actions" id="q-actions"></div>';
+
+  document.getElementById('q-card').innerHTML = html;
+
+  if (q.type === 'input') {
+    setTimeout(function() {
+      const inp = document.getElementById('q-input-field');
+      if (inp) inp.focus();
+    }, 100);
+  }
+}
+
+function toggleHint() {
+  const box = document.getElementById('hint-box');
+  if (box) box.classList.toggle('show');
+}
+
+// ── Check MC ───────────────────────────────────────────────
+function checkMC(i) {
+  const q = TOPIC.questions[state.qIndex];
+  const ok = i === q.answer;
+
+  document.querySelectorAll('.mc-opt').forEach(function(btn) { btn.disabled = true; });
+  document.getElementById('mc-' + q.answer).classList.add('correct');
+  if (!ok) document.getElementById('mc-' + i).classList.add('wrong');
+
+  handleResult(ok, q);
+}
+
+// ── Check TF ───────────────────────────────────────────────
+function checkTF(val) {
+  const q = TOPIC.questions[state.qIndex];
+  const ok = val === q.answer;
+
+  document.getElementById('tf-true').disabled = true;
+  document.getElementById('tf-false').disabled = true;
+
+  document.getElementById(q.answer ? 'tf-true' : 'tf-false').classList.add('correct');
+  if (!ok) document.getElementById(val ? 'tf-true' : 'tf-false').classList.add('wrong');
+
+  handleResult(ok, q);
+}
+
+// ── Check Input ────────────────────────────────────────────
+function checkInput() {
+  const q = TOPIC.questions[state.qIndex];
+  const inp = document.getElementById('q-input-field');
+  if (!inp) return;
+  const userVal = inp.value.trim().replace(',', '.');
+  const correctVal = String(q.answer).replace(',', '.');
+  const ok = userVal === correctVal;
+
+  inp.disabled = true;
+  inp.classList.add(ok ? 'correct' : 'wrong');
+
+  handleResult(ok, q);
+}
+
+// ── Handle Result ──────────────────────────────────────────
+function handleResult(ok, q) {
+  state.answered++;
+
+  let xpEarned = ok ? q.xp : 0;
+
+  if (ok) {
+    state.streak++;
+    if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+    if (state.streak >= 3) {
+      xpEarned = Math.round(xpEarned * 1.25);
+      if (state.streak === 3) showToast('🔥 Streak-Bonus! +25% XP', 'info');
+    }
+    state.xp += xpEarned;
+    state.correct++;
+  } else {
+    state.streak = 0;
+    if (q.mv_nok) state.triggeredMV.add(q.mv_nok);
+  }
+
+  if (!state.klpHits[q.klp]) state.klpHits[q.klp] = { correct: 0, total: 0 };
+  state.klpHits[q.klp].total++;
+  if (ok) state.klpHits[q.klp].correct++;
+
+  document.getElementById('q-xp').textContent = '⭐ ' + state.xp + ' XP';
+  document.getElementById('q-streak').textContent = '🔥 ' + state.streak;
+
+  const fb = document.getElementById('q-feedback');
+  if (ok) {
+    const bonusNote = xpEarned > q.xp ? ' (+' + xpEarned + ' XP mit Streak-Bonus!)' : ' (+' + xpEarned + ' XP)';
+    fb.textContent = '✅ ' + q.fb_ok + bonusNote;
+  } else {
+    fb.textContent = '❌ ' + q.fb_nok;
+  }
+  fb.className = 'feedback show ' + (ok ? 'ok' : 'bad');
+
+  if (!ok && q.sol) {
+    const solBox = document.getElementById('q-solution');
+    solBox.innerHTML = '<strong>Lösung:</strong> ' + q.sol;
+    solBox.classList.add('show');
+  }
+
+  checkAchievements();
+
+  const actions = document.getElementById('q-actions');
+  const isLast = state.qIndex >= TOPIC.questions.length - 1;
+  actions.innerHTML = '<button class="btn btn-primary" onclick="nextQuestion()">'
+    + (isLast ? '📊 Auswertung →' : 'Weiter →')
+    + '</button>';
+}
+
+// ── Next Question ──────────────────────────────────────────
+function nextQuestion() {
+  state.qIndex++;
+  if (state.qIndex >= TOPIC.questions.length) {
+    buildResult();
+  } else {
+    renderQuestion();
+  }
+}
+
+// ── Achievements ───────────────────────────────────────────
+function checkAchievements() {
+  TOPIC.achievements.forEach(function(a) {
+    if (!state.earnedAch.has(a.id) && a.check(state)) {
+      state.earnedAch.add(a.id);
+      showToast(a.icon + ' Errungenschaft: ' + a.title, 'ach');
+    }
+  });
+}
+
+// ── Build Result ───────────────────────────────────────────
+function buildResult() {
+  showScreen('screen-result');
+
+  const total = TOPIC.questions.length;
+  const pct = Math.round((state.correct / total) * 100);
+
+  document.getElementById('result-icon').textContent = TOPIC.icon;
+  document.getElementById('result-sub').textContent = TOPIC.subtitle;
+  document.getElementById('res-score').textContent = state.correct + ' / ' + total;
+  document.getElementById('res-xp-line').textContent = state.xp + ' XP · ' + pct + '% korrekt';
+
+  document.getElementById('res-stats').innerHTML =
+    '<div class="stat-item">'
+      + '<div class="stat-val" style="color:#fbbf24">' + state.xp + '</div>'
+      + '<div class="stat-lbl">XP gesamt</div>'
+    + '</div>'
+    + '<div class="stat-item">'
+      + '<div class="stat-val" style="color:#fb923c">' + state.bestStreak + '</div>'
+      + '<div class="stat-lbl">Bester Streak</div>'
+    + '</div>'
+    + '<div class="stat-item">'
+      + '<div class="stat-val" style="color:#34d399">' + pct + '%</div>'
+      + '<div class="stat-lbl">Trefferquote</div>'
+    + '</div>';
+
+  const klpEl = document.getElementById('res-klp');
+  klpEl.innerHTML = Object.entries(TOPIC.klp).map(function(entry) {
+    const k = entry[0], v = entry[1];
+    const hits = state.klpHits[k];
+    let barPct = 0, label = 'keine Fragen';
+    if (hits && hits.total > 0) {
+      barPct = Math.round((hits.correct / hits.total) * 100);
+      label = hits.correct + '/' + hits.total + ' (' + barPct + '%)';
+    }
+    return '<div class="klp-row">'
+      + '<div class="klp-label">'
+      + '<span><span class="klp-chip" style="background:' + v.bg + ';color:' + v.color + '">' + k + '</span> ' + v.name + '</span>'
+      + '<span style="font-size:0.8rem;color:var(--text2)">' + label + '</span>'
+      + '</div>'
+      + '<div class="klp-bar-bg">'
+      + '<div class="klp-bar-fill" style="width:' + barPct + '%;background:' + v.color + '"></div>'
+      + '</div></div>';
+  }).join('');
+
+  const mvEl = document.getElementById('res-mv');
+  mvEl.innerHTML = Object.entries(TOPIC.mv).map(function(entry) {
+    const k = entry[0], v = entry[1];
+    const triggered = state.triggeredMV.has(k);
+    return '<div class="mv-item ' + (triggered ? 'triggered' : 'ok') + '">'
+      + '<div class="mv-item-title">' + (triggered ? '⚠️' : '✅') + ' ' + v.code + ': ' + v.title + '</div>'
+      + (triggered
+          ? '<div class="mv-item-text">' + v.false_belief + '</div>'
+          : '<div class="mv-item-text" style="color:#4ade80">Keine Fehlvorstellung erkannt</div>')
+      + '</div>';
+  }).join('');
+
+  const achEl = document.getElementById('res-ach');
+  achEl.innerHTML = TOPIC.achievements.map(function(a) {
+    const earned = state.earnedAch.has(a.id);
+    return '<div class="ach-item ' + (earned ? '' : 'locked') + '" title="' + a.desc + '">'
+      + '<div class="ach-icon">' + a.icon + '</div>'
+      + '<div class="ach-title">' + a.title + '</div>'
+      + '<div class="ach-desc">' + a.desc + '</div>'
+      + '</div>';
+  }).join('');
+
+  maybeShowFoerderBtn();
+}
+
+// ── Förder button visibility ───────────────────────────────
+function maybeShowFoerderBtn() {
+  let show = false;
+  if (state.triggeredMV.size > 0) show = true;
+  Object.entries(state.klpHits).forEach(function(entry) {
+    const v = entry[1];
+    if (v.total > 0 && (v.correct / v.total) < 0.6) show = true;
+  });
+  document.getElementById('foerder-btn-wrap').style.display = show ? 'block' : 'none';
+}
+
+// ── Förder: start ──────────────────────────────────────────
+function startFoerder() {
+  foerderQueue = [];
+
+  const mvKeys = state.triggeredMV.size > 0
+    ? Array.from(state.triggeredMV)
+    : Object.keys(TOPIC.mv);
+
+  mvKeys.forEach(function(mvKey) {
+    const tasks = TOPIC.foerder[mvKey];
+    if (tasks) {
+      tasks.forEach(function(t) {
+        foerderQueue.push(Object.assign({}, t, { mvKey: mvKey }));
+      });
+    }
+  });
+
+  foerderIndex = 0;
+
+  if (foerderQueue.length === 0) {
+    showToast('Keine Förderaufgaben verfügbar.', 'info');
+    return;
+  }
+
+  const mvNames = mvKeys.map(function(k) { return TOPIC.mv[k] ? TOPIC.mv[k].title : k; }).join(', ');
+  document.getElementById('foerder-sub').textContent = 'Themen: ' + mvNames;
+
+  prevScreen = 'screen-result';
+  showScreen('screen-foerder');
+  renderFoerderTask();
+}
+
+// ── Förder: render ─────────────────────────────────────────
+function renderFoerderTask() {
+  const t = foerderQueue[foerderIndex];
+  const total = foerderQueue.length;
+
+  document.getElementById('f-prog-text').textContent = 'Aufgabe ' + (foerderIndex + 1) + ' / ' + total;
+  document.getElementById('f-card').innerHTML = buildFoerderCard(t, TOPIC.mv[t.mvKey]);
+  document.getElementById('f-actions').innerHTML = '';
+}
+
+function buildFoerderCard(t, mvInfo) {
+  const diffClass = 'diff-' + t.diff;
+  let html = '';
+
+  html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">'
+    + '<span class="diff-badge ' + diffClass + '">' + t.diff.charAt(0).toUpperCase() + t.diff.slice(1) + '</span>'
+    + (mvInfo ? '<span style="font-size:0.8rem;color:var(--text2)">' + mvInfo.code + ': ' + mvInfo.title + '</span>' : '')
+    + '</div>';
+
+  html += '<div class="q-text">' + t.text + '</div>';
+
+  if (t.type === 'mc') {
+    html += '<div class="mc-grid" id="f-mc-opts">'
+      + t.opts.map(function(o, i) {
+          return '<button class="mc-opt" id="f-mc-' + i + '" onclick="fCheckMC(' + i + ')">' + o + '</button>';
+        }).join('')
+      + '</div>';
+  } else if (t.type === 'tf') {
+    html += '<div class="tf-grid">'
+      + '<button class="tf-btn" id="f-tf-true" onclick="fCheckTF(true)">✔ Wahr</button>'
+      + '<button class="tf-btn" id="f-tf-false" onclick="fCheckTF(false)">✖ Falsch</button>'
+      + '</div>';
+  } else if (t.type === 'input') {
+    html += '<div class="input-row">'
+      + '<input class="q-input" type="text" id="f-input-field" placeholder="Antwort eingeben…"'
+      + ' onkeydown="if(event.key===\'Enter\') fCheckInput()">'
+      + '<button class="btn btn-ghost" onclick="fCheckInput()">Prüfen</button>'
+      + '</div>';
+  }
+
+  if (t.hint) {
+    html += '<div class="hint-wrap">'
+      + '<button class="hint-toggle" onclick="toggleFHint()">💡 Hinweis</button>'
+      + '<div class="hint-box" id="f-hint-box">' + t.hint + '</div>'
+      + '</div>';
+  }
+
+  html += '<div class="feedback" id="f-feedback"></div>';
+  html += '<div class="solution-box" id="f-solution"></div>';
+
+  return html;
+}
+
+function toggleFHint() {
+  const box = document.getElementById('f-hint-box');
+  if (box) box.classList.toggle('show');
+}
+
+// ── Förder check ───────────────────────────────────────────
+function fCheckMC(i) {
+  const t = foerderQueue[foerderIndex];
+  const ok = i === t.answer;
+
+  document.querySelectorAll('#f-mc-opts .mc-opt').forEach(function(b) { b.disabled = true; });
+  document.getElementById('f-mc-' + t.answer).classList.add('correct');
+  if (!ok) document.getElementById('f-mc-' + i).classList.add('wrong');
+
+  fHandleResult(ok, t);
+}
+
+function fCheckTF(val) {
+  const t = foerderQueue[foerderIndex];
+  const ok = val === t.answer;
+
+  document.getElementById('f-tf-true').disabled = true;
+  document.getElementById('f-tf-false').disabled = true;
+
+  document.getElementById(t.answer ? 'f-tf-true' : 'f-tf-false').classList.add('correct');
+  if (!ok) document.getElementById(val ? 'f-tf-true' : 'f-tf-false').classList.add('wrong');
+
+  fHandleResult(ok, t);
+}
+
+function fCheckInput() {
+  const t = foerderQueue[foerderIndex];
+  const inp = document.getElementById('f-input-field');
+  if (!inp) return;
+  const userVal = inp.value.trim().replace(',', '.');
+  const correctVal = String(t.answer).replace(',', '.');
+  const ok = userVal === correctVal;
+
+  inp.disabled = true;
+  inp.classList.add(ok ? 'correct' : 'wrong');
+
+  fHandleResult(ok, t);
+}
+
+function fHandleResult(ok, t) {
+  const fb = document.getElementById('f-feedback');
+  fb.textContent = ok ? '✅ ' + t.fb_ok : '❌ ' + t.fb_nok;
+  fb.className = 'feedback show ' + (ok ? 'ok' : 'bad');
+
+  if (!ok && t.sol) {
+    const solBox = document.getElementById('f-solution');
+    solBox.innerHTML = '<strong>Lösung:</strong> ' + t.sol;
+    solBox.classList.add('show');
+  }
+
+  const actions = document.getElementById('f-actions');
+  const isLast = foerderIndex >= foerderQueue.length - 1;
+  actions.style.gap = '10px';
+  actions.innerHTML = isLast
+    ? '<button class="btn btn-success btn-block" onclick="buildResult()">✅ Förderung abgeschlossen</button>'
+    : '<button class="btn btn-primary" style="flex:1" onclick="nextFoerder()">Nächste Aufgabe →</button>';
+}
+
+function nextFoerder() {
+  foerderIndex++;
+  renderFoerderTask();
+}
+
+// ── Links ──────────────────────────────────────────────────
+function showLinks() {
+  const active = document.querySelector('.screen.active');
+  prevScreen = active ? active.id : 'screen-result';
+
+  document.getElementById('links-icon').textContent = TOPIC.icon;
+  document.getElementById('links-name').textContent = TOPIC.name;
+
+  buildLinks();
+  showScreen('screen-links');
+}
+
+function buildLinks() {
+  const container = document.getElementById('links-content');
+  let html = '';
+
+  html += '<div class="links-section-title">▶ Erklärvideos</div>';
+  TOPIC.links.videos.forEach(function(l) {
+    html += '<a class="link-card" href="' + l.url + '" target="_blank" rel="noopener">'
+      + '<span class="link-icon">' + l.icon + '</span>'
+      + '<div><div class="link-name">' + l.name + '</div><div class="link-desc">' + l.desc + '</div></div>'
+      + '</a>';
+  });
+
+  html += '<div class="links-section-title" style="margin-top:20px;">📚 Übungsseiten</div>';
+  TOPIC.links.exercises.forEach(function(l) {
+    html += '<a class="link-card" href="' + l.url + '" target="_blank" rel="noopener">'
+      + '<span class="link-icon">' + l.icon + '</span>'
+      + '<div><div class="link-name">' + l.name + '</div><div class="link-desc">' + l.desc + '</div></div>'
+      + '</a>';
+  });
+
+  container.innerHTML = html;
+}
+
+// ── Toast ──────────────────────────────────────────────────
+let toastTimer = null;
+function showToast(msg, type) {
+  type = type || 'info';
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show ' + type;
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() {
+    el.classList.remove('show');
+  }, 2800);
+}
+
+// ── Run ────────────────────────────────────────────────────
+init();
+/* ══════════════════════════════════════════════════════════════
+   Ende ENGINE
+══════════════════════════════════════════════════════════════ */
+</script>
+</body>
+</html>

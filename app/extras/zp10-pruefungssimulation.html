@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZP10 Prüfungssimulation - Mathematik NRW</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="zp10-pruefungssimulation.css">
+</head>
+<body>
+    <div id="app"></div>
+
+    <script>
+        // ===========================
+        // QUESTION POOLS
+        // ===========================
+        const TEIL1_QUESTIONS = [
+            // Grundrechenarten mit negativen Zahlen
+            { id: 'sim_t1_01', type: 'input', question: 'Berechne: (-3) · 7 + 4 · (-2)', answer: -29, explanation: '(-3) · 7 = -21, 4 · (-2) = -8, -21 + (-8) = -29' },
+            { id: 'sim_t1_02', type: 'input', question: 'Vereinfache: 15 - (-8) + 3', answer: 26, explanation: '15 + 8 + 3 = 26' },
+            { id: 'sim_t1_03', type: 'input', question: 'Berechne: 24 ÷ (-6) + 5', answer: 1, explanation: '24 ÷ (-6) = -4, -4 + 5 = 1' },
+            { id: 'sim_t1_04', type: 'input', question: 'Berechne: (-2)² · (-3)', answer: -12, explanation: '(-2)² = 4, 4 · (-3) = -12' },
+
+            // Brüche
+            { id: 'sim_t1_05', type: 'mc', question: 'Welcher Bruch ist größer?', options: [
+                { text: '3/5', correct: true },
+                { text: '4/9', correct: false },
+                { text: 'Gleich groß', correct: false }
+            ], explanation: '3/5 = 27/45, 4/9 = 20/45, daher 3/5 > 4/9' },
+            { id: 'sim_t1_06', type: 'input', question: 'Addiere: 2/3 + 1/4', answer: 11, answerNote: '(Antwort als 11/12: gib 11 ein)', explanation: 'Gemeinsamer Nenner: 12. 2/3 = 8/12, 1/4 = 3/12, Summe = 11/12' },
+
+            // Prozentrechnung
+            { id: 'sim_t1_07', type: 'input', question: 'Ein Artikel kostete 40€ und wird 20% billiger. Wie viel kostet er nun?', answer: 32, explanation: '20% von 40€ = 8€. 40€ - 8€ = 32€' },
+            { id: 'sim_t1_08', type: 'input', question: '15% von 200 sind:', answer: 30, explanation: '15/100 · 200 = 30' },
+
+            // Geometrie-Basics
+            { id: 'sim_t1_09', type: 'input', question: 'Fläche eines Rechtecks mit l=8cm, b=5cm:', answer: 40, explanation: 'A = l · b = 8 · 5 = 40 cm²' },
+            { id: 'sim_t1_10', type: 'input', question: 'Umfang eines Quadrats mit Seitenlänge 7cm:', answer: 28, explanation: 'U = 4 · 7 = 28 cm' },
+            { id: 'sim_t1_11', type: 'tf', question: 'In einem rechtwinkligen Dreieck mit a=3, b=4 ist c=5.', answer: true, explanation: 'Nach Pythagoras: 3² + 4² = 9 + 16 = 25 = 5²' },
+
+            // Lineare Gleichungen
+            { id: 'sim_t1_12', type: 'input', question: 'Löse: 2x + 5 = 13', answer: 4, explanation: '2x = 8, x = 4' },
+            { id: 'sim_t1_13', type: 'input', question: 'Löse: 3(x - 2) = 9', answer: 5, explanation: '3x - 6 = 9, 3x = 15, x = 5' },
+            { id: 'sim_t1_14', type: 'input', question: 'Löse: x/2 - 3 = 1', answer: 8, explanation: 'x/2 = 4, x = 8' },
+
+            // Funktionen erkennen
+            { id: 'sim_t1_15', type: 'mc', question: 'Welche Funktion ist linear?', options: [
+                { text: 'f(x) = 2x + 3', correct: true },
+                { text: 'f(x) = x²', correct: false },
+                { text: 'f(x) = 1/x', correct: false }
+            ], explanation: 'Linear bedeutet: f(x) = mx + b' },
+
+            // Wahrscheinlichkeit
+            { id: 'sim_t1_16', type: 'input', question: 'Wahrscheinlichkeit, mit einem Würfel eine Primzahl zu werfen (in %):', answer: 50, explanation: 'Primzahlen: 2, 3, 5. P = 3/6 = 1/2 = 50%' },
+            { id: 'sim_t1_17', type: 'tf', question: 'Bei einem Münzwurf ist P(Kopf) + P(Zahl) = 1', answer: true, explanation: 'Die Summe aller Wahrscheinlichkeiten ist 1' },
+
+            // Proportionalität
+            { id: 'sim_t1_18', type: 'input', question: 'Wenn 3kg Äpfel 9€ kosten, kosten 5kg:', answer: 15, explanation: 'Preis pro kg: 9/3 = 3€. 5kg · 3€ = 15€' },
+
+            // Median/Mittelwert
+            { id: 'sim_t1_19', type: 'input', question: 'Median von: 3, 7, 5, 9, 1', answer: 5, explanation: 'Sortiert: 1, 3, 5, 7, 9. Mittleres Element: 5' },
+
+            // Wurzeln schätzen
+            { id: 'sim_t1_20', type: 'mc', question: 'Welche Aussage ist wahr?', options: [
+                { text: '√25 = 5', correct: true },
+                { text: '√16 = 6', correct: false },
+                { text: '√10 = 3', correct: false }
+            ], explanation: '5² = 25, daher √25 = 5' },
+
+            // Zusätzliche Fragen
+            { id: 'sim_t1_21', type: 'input', question: 'Berechne: 2³ + 3²', answer: 17, explanation: '2³ = 8, 3² = 9, 8 + 9 = 17' },
+            { id: 'sim_t1_22', type: 'input', question: 'Vereinfache: 5a + 3a - 2a', answer: 6, answerNote: '(Antwort: 6a, gib 6 ein)', explanation: '5a + 3a - 2a = 6a' },
+            { id: 'sim_t1_23', type: 'tf', question: 'Das Volumen eines Würfels mit Kantenlänge 2cm ist 8cm³', answer: true, explanation: 'V = a³ = 2³ = 8cm³' },
+            { id: 'sim_t1_24', type: 'input', question: 'Berechne die Fläche eines Dreiecks mit g=6cm und h=4cm:', answer: 12, explanation: 'A = (g · h) / 2 = (6 · 4) / 2 = 12 cm²' }
+        ];
+
+        const TEIL2_QUESTIONS = [
+            // Quadratische Funktionen
+            { id: 'sim_t2_01', type: 'input', question: 'Der Scheitelpunkt von f(x) = (x-2)² + 3 ist:', answer: 2, answerNote: '(x-Koordinate des Scheitels)', explanation: 'Scheitelpunktform: (x-2)² + 3 hat Scheitel S(2|3)' },
+            { id: 'sim_t2_02', type: 'mc', question: 'Wie viele Nullstellen hat f(x) = x² + 2x + 5?', options: [
+                { text: '0 Nullstellen', correct: true },
+                { text: '1 Nullstelle', correct: false },
+                { text: '2 Nullstellen', correct: false }
+            ], explanation: 'Diskriminante: 4 - 20 = -16 < 0, daher keine Nullstellen' },
+            { id: 'sim_t2_03', type: 'input', question: 'Berechne die Nullstelle von f(x) = 2x - 4:', answer: 2, explanation: '2x - 4 = 0 ⟹ x = 2' },
+
+            // Exponentialfunktionen
+            { id: 'sim_t2_04', type: 'input', question: 'Ein Bestand wächst exponentiell: B(t) = 100 · 2^t. Wert bei t=3:', answer: 800, explanation: 'B(3) = 100 · 2³ = 100 · 8 = 800' },
+            { id: 'sim_t2_05', type: 'mc', question: 'Eine Menge halbiert sich jährlich. Nach 3 Jahren sind noch:', options: [
+                { text: 'ein Achtel (1/8) des ursprünglichen Bestands', correct: true },
+                { text: 'ein Viertel (1/4) des ursprünglichen Bestands', correct: false },
+                { text: 'ein Drittel (1/3) des ursprünglichen Bestands', correct: false }
+            ], explanation: '(1/2)³ = 1/8' },
+
+            // Körperberechnung (3D)
+            { id: 'sim_t2_06', type: 'input', question: 'Volumen eines Zylinders mit r=2cm, h=5cm (ohne π, auf cm³):', answer: 20, answerNote: '(V = πr²h, Antwort: 20π ≈ 62,8, gib 20 ein)', explanation: 'V = π · 2² · 5 = 20π cm³' },
+            { id: 'sim_t2_07', type: 'input', question: 'Oberflächeninhalt eines Würfels mit Kantenlänge 3cm:', answer: 54, explanation: 'O = 6a² = 6 · 9 = 54 cm²' },
+            { id: 'sim_t2_08', type: 'input', question: 'Volumen einer Kugel mit r=3cm (V = 4/3·πr³, Antwort ohne π):', answer: 36, answerNote: '(Antwort: 36π, gib 36 ein)', explanation: 'V = (4/3)π · 27 = 36π cm³' },
+
+            // Stochastik - Ohne Zurücklegen
+            { id: 'sim_t2_09', type: 'input', question: 'Urne: 3 rote, 2 blaue Kugeln. P(2x rot ohne Zurücklegen) in % (auf ganze Zahl):', answer: 30, explanation: 'P = (3/5) · (2/4) = 6/20 = 30%' },
+            { id: 'sim_t2_10', type: 'mc', question: 'Kartenstapel: 5 Karten, davon 2 Asse. P(1. Karte Ass UND 2. Karte auch Ass)?', options: [
+                { text: '2/20 = 1/10', correct: true },
+                { text: '2/25', correct: false },
+                { text: '4/25', correct: false }
+            ], explanation: 'P = (2/5) · (1/4) = 2/20 = 1/10' },
+
+            // Sachkontext-Aufgaben
+            { id: 'sim_t2_11', type: 'input', question: 'Ein Auto fährt 120km mit 8 Litern Benzin. Verbrauch pro 100km:', answer: 6.67, answerNote: '(auf 2 Dezimalstellen)', explanation: '(8/120) · 100 = 6,67 L/100km' },
+            { id: 'sim_t2_12', type: 'mc', question: 'Ein Produkt kostet 50€, wird 30% teurer, dann 20% billiger. Neuer Preis?', options: [
+                { text: '52€', correct: true },
+                { text: '50€', correct: false },
+                { text: '45€', correct: false }
+            ], explanation: '50 · 1,3 = 65€, 65 · 0,8 = 52€' },
+
+            // Dateninterpretation
+            { id: 'sim_t2_13', type: 'mc', question: 'Bei einer Erhebung: Mittelwert 50, Median 40, Modus 30. Was deutet das an?', options: [
+                { text: 'Die Verteilung ist rechtsschief (Ausreißer nach oben)', correct: true },
+                { text: 'Die Verteilung ist linksschief', correct: false },
+                { text: 'Die Daten sind normalverteilt', correct: false }
+            ], explanation: 'Mittelwert > Median > Modus deutet auf Ausreißer nach oben' },
+
+            // Weitere quadratische Funktion
+            { id: 'sim_t2_14', type: 'input', question: 'Nullstellen von f(x) = x² - 5x + 6. Gib die kleinere ein:', answer: 2, explanation: '(x-2)(x-3) = 0 ⟹ x₁ = 2, x₂ = 3' },
+
+            // Modellierung
+            { id: 'sim_t2_15', type: 'tf', question: 'Der Weg s = 1/2 · g · t² modelliert einen freien Fall, wobei g≈10m/s²', answer: true, explanation: 'Das ist die Fallformeln-Gleichung für Beschleunigung' },
+
+            // Wahrscheinlichkeit erweitert
+            { id: 'sim_t2_16', type: 'input', question: 'Dreifacher Münzwurf: P(mindestens 2x Kopf) in % (auf ganze Zahl):', answer: 50, explanation: 'Günstiger: KKK, KKZ, KZK, ZKK. 4 von 8, also 50%' },
+
+            // Trigonometrie (Basic)
+            { id: 'sim_t2_17', type: 'mc', question: 'In einem rechtwinkligen Dreieck mit a=3, c=5 (c Hypotenuse), ist b=?', options: [
+                { text: '4', correct: true },
+                { text: '√34', correct: false },
+                { text: '2', correct: false }
+            ], explanation: '3² + b² = 5² ⟹ b = 4' },
+
+            // Prozentuale Änderung
+            { id: 'sim_t2_18', type: 'input', question: 'Preis steigt von 40€ auf 50€. Prozentuale Steigerung:', answer: 25, explanation: '(50-40)/40 · 100 = 10/40 · 100 = 25%' },
+
+            // Lineare Gleichungssysteme
+            { id: 'sim_t2_19', type: 'input', question: 'Löse: 2x + y = 5 und x - y = 1. Gib x ein:', answer: 2, explanation: 'Addieren: 3x = 6 ⟹ x = 2' },
+
+            // Weitere Körper
+            { id: 'sim_t2_20', type: 'input', question: 'Volumen eines Quaders l=4, b=3, h=2:', answer: 24, explanation: 'V = l · b · h = 4 · 3 · 2 = 24 cm³' }
+        ];
+
+        // ===========================
+        // STATE & UTILITY FUNCTIONS
+        // ===========================
+        let appState = {
+            screen: 'start', // start, teil1, teil2, pause, results, history
+            studentName: '',
+            examType: 'full', // full, teil1, teil2
+            currentTeil: 1,
+            timerSeconds: 0,
+            timerRunning: false,
+            timerStartTime: 0,
+            questions: [],
+            answers: {}, // { questionId: answer }
+            currentQuestionIndex: 0,
+            teil1Score: 0,
+            teil2Score: 0,
+            results: []
+        };
+
+        function getTodaySeed() {
+            const today = new Date();
+            const dateStr = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
+            let hash = 0;
+            for (let i = 0; i < dateStr.length; i++) {
+                hash = ((hash << 5) - hash) + dateStr.charCodeAt(i);
+                hash = hash & hash;
+            }
+            return Math.abs(hash);
+        }
+
+        function seededShuffle(array, seed) {
+            const arr = [...array];
+            let random = seed % 2147483647;
+            if (random <= 0) random += 2147483646;
+
+            for (let i = arr.length - 1; i > 0; i--) {
+                random = (random * 16807) % 2147483647;
+                const j = (random % (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function selectQuestionsForTeil(questions, count, seed) {
+            const shuffled = seededShuffle(questions, seed);
+            return shuffled.slice(0, count);
+        }
+
+        function loadResults() {
+            const saved = localStorage.getItem('zp10_simulation_results');
+            return saved ? JSON.parse(saved) : [];
+        }
+
+        function saveResults(result) {
+            const results = loadResults();
+            results.push(result);
+            localStorage.setItem('zp10_simulation_results', JSON.stringify(results));
+        }
+
+        function getGradeFromPercent(percent) {
+            if (percent >= 87) return '1';
+            if (percent >= 73) return '2';
+            if (percent >= 59) return '3';
+            if (percent >= 45) return '4';
+            if (percent >= 18) return '5';
+            return '6';
+        }
+
+        // ===========================
+        // TIMER FUNCTIONS
+        // ===========================
+        function startTimer(durationSeconds) {
+            appState.timerSeconds = durationSeconds;
+            appState.timerStartTime = Date.now();
+            appState.timerRunning = true;
+            updateTimer();
+        }
+
+        function stopTimer() {
+            appState.timerRunning = false;
+        }
+
+        function updateTimer() {
+            if (!appState.timerRunning) return;
+
+            const elapsed = Math.floor((Date.now() - appState.timerStartTime) / 1000);
+            appState.timerSeconds = Math.max(0, (appState.currentTeil === 1 ? 2700 : 4500) - elapsed);
+
+            if (appState.timerSeconds <= 0) {
+                stopTimer();
+                submitCurrentTeil();
+            }
+
+            render();
+            requestAnimationFrame(updateTimer);
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // ===========================
+        // EVENT HANDLERS
+        // ===========================
+        function handleStartExam() {
+            const nameInput = document.getElementById('studentNameInput');
+            if (!nameInput.value.trim()) {
+                alert('Bitte gib deinen Namen ein.');
+                return;
+            }
+            appState.studentName = nameInput.value;
+            appState.examType = document.getElementById('examTypeSelect').value;
+
+            if (appState.examType === 'full' || appState.examType === 'teil1') {
+                startTeil1();
+            } else {
+                startTeil2();
+            }
+        }
+
+        function startTeil1() {
+            const seed = getTodaySeed();
+            appState.questions = selectQuestionsForTeil(TEIL1_QUESTIONS, 10, seed);
+            appState.currentTeil = 1;
+            appState.currentQuestionIndex = 0;
+            appState.answers = {};
+            appState.screen = 'teil1';
+            startTimer(2700); // 45 minutes
+            render();
+        }
+
+        function startTeil2() {
+            const seed = getTodaySeed() + 1;
+            appState.questions = selectQuestionsForTeil(TEIL2_QUESTIONS, 10, seed);
+            appState.currentTeil = 2;
+            appState.currentQuestionIndex = 0;
+            appState.screen = 'teil2';
+            startTimer(4500); // 75 minutes
+            render();
+        }
+
+        function submitCurrentTeil() {
+            stopTimer();
+
+            // Calculate score
+            let correctCount = 0;
+            appState.questions.forEach(q => {
+                const userAnswer = appState.answers[q.id];
+                if (userAnswer !== undefined && userAnswer !== null && userAnswer !== '') {
+                    if (q.type === 'input') {
+                        if (Math.abs(parseFloat(userAnswer) - parseFloat(q.answer)) < 0.01) correctCount++;
+                    } else {
+                        if (userAnswer === q.answer) correctCount++;
+                    }
+                }
+            });
+
+            const score = (correctCount / appState.questions.length) * 100;
+
+            if (appState.currentTeil === 1) {
+                appState.teil1Score = score;
+                if (appState.examType === 'full') {
+                    appState.screen = 'pause';
+                    setTimeout(() => startTeil2(), 2000);
+                } else {
+                    showResults();
+                }
+            } else {
+                appState.teil2Score = score;
+                showResults();
+            }
+
+            render();
+        }
+
+        function showResults() {
+            appState.screen = 'results';
+
+            const totalScore = appState.examType === 'full'
+                ? (appState.teil1Score + appState.teil2Score) / 2
+                : (appState.currentTeil === 1 ? appState.teil1Score : appState.teil2Score);
+
+            const result = {
+                date: new Date().toLocaleString('de-DE'),
+                studentName: appState.studentName,
+                examType: appState.examType,
+                teil1Score: appState.examType !== 'teil2' ? appState.teil1Score : null,
+                teil2Score: appState.examType !== 'teil1' ? appState.teil2Score : null,
+                totalScore: totalScore,
+                grade: getGradeFromPercent(totalScore)
+            };
+
+            saveResults(result);
+            appState.results = [result];
+            render();
+        }
+
+        function handleAnswerChange(value) {
+            const currentQ = appState.questions[appState.currentQuestionIndex];
+            appState.answers[currentQ.id] = value;
+            render();
+        }
+
+        function goToQuestion(index) {
+            if (index >= 0 && index < appState.questions.length) {
+                appState.currentQuestionIndex = index;
+                render();
+            }
+        }
+
+        function restartExam() {
+            appState = {
+                ...appState,
+                screen: 'start',
+                studentName: '',
+                examType: 'full',
+                currentTeil: 1,
+                answers: {},
+                currentQuestionIndex: 0,
+                teil1Score: 0,
+                teil2Score: 0,
+                results: []
+            };
+            render();
+        }
+
+        // ===========================
+        // RENDER FUNCTIONS
+        // ===========================
+        function renderStartScreen() {
+            return `
+                <div class="container max-w-2xl">
+                    <div class="start-screen">
+                        <div class="start-header">
+                            <h1>📝 ZP10 Prüfungssimulation</h1>
+                            <p class="subtitle">Mathematik NRW - Gymnasium Klasse 10</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="studentNameInput">Dein Name:</label>
+                            <input type="text" id="studentNameInput" placeholder="z.B. Max Mustermann" class="form-input">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Prüfungsmodus:</label>
+                            <select id="examTypeSelect" class="form-select">
+                                <option value="full">Komplette Prüfung (120 Min)</option>
+                                <option value="teil1">Nur Teil 1 (45 Min) - ohne Hilfsmittel</option>
+                                <option value="teil2">Nur Teil 2 (75 Min) - mit Taschenrechner</option>
+                            </select>
+                        </div>
+
+                        <button class="btn btn-primary btn-large" onclick="handleStartExam()">Prüfung starten</button>
+
+                        <div class="info-box">
+                            <h3>ℹ️ Über diese Simulation</h3>
+                            <p><strong>Teil 1 (45 Minuten, ohne Hilfsmittel):</strong> Grundlagen wie Arithmetik, Brüche, einfache Geometrie und lineare Gleichungen.</p>
+                            <p><strong>Teil 2 (75 Minuten, mit Hilfsmitteln):</strong> Anspruchsvollere Aufgaben mit quadratischen Funktionen, Exponentialfunktionen, Körperberechnung und Stochastik.</p>
+                            <p><strong>Bewertung:</strong> Die gleichen Grenzwerte wie in der echten ZP10 (87% = Note 1, etc.).</p>
+                            <p><strong>Hinweis:</strong> Jeder Tag hat die gleiche Prüfung, damit du mit Mitschülern vergleichen kannst.</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderQuestionTeil(teil) {
+            const currentQ = appState.questions[appState.currentQuestionIndex];
+            const timeLimit = appState.currentTeil === 1 ? 2700 : 4500;
+            const timerClass = appState.timerSeconds < 300 ? 'timer-warning' : '';
+
+            return `
+                <div class="exam-container">
+                    <div class="exam-header">
+                        <div class="exam-title">Teil ${teil}</div>
+                        <div class="timer ${timerClass}">
+                            ${formatTime(appState.timerSeconds)}
+                        </div>
+                    </div>
+
+                    <div class="exam-layout">
+                        <div class="question-nav">
+                            <h4>Fragen (${appState.questions.length})</h4>
+                            <div class="nav-grid">
+                                ${appState.questions.map((q, idx) => {
+                                    const isAnswered = appState.answers[q.id] !== undefined && appState.answers[q.id] !== '';
+                                    const isActive = idx === appState.currentQuestionIndex;
+                                    const navClass = isActive ? 'active' : (isAnswered ? 'answered' : 'unanswered');
+                                    return `<button class="nav-circle ${navClass}" onclick="goToQuestion(${idx})">${idx + 1}</button>`;
+                                }).join('')}
+                            </div>
+                            <div class="nav-legend">
+                                <div><span class="dot answered"></span> beantwortet</div>
+                                <div><span class="dot unanswered"></span> offen</div>
+                            </div>
+                        </div>
+
+                        <div class="question-area">
+                            <div class="question-counter">Frage ${appState.currentQuestionIndex + 1} von ${appState.questions.length}</div>
+
+                            ${teil === 2 ? '<div class="aids-info">📐 Taschenrechner und Formelsammlung erlaubt</div>' : ''}
+
+                            <div class="question-content">
+                                <h3>${currentQ.question}</h3>
+
+                                ${renderQuestionInput(currentQ)}
+                            </div>
+
+                            <div class="question-nav-buttons">
+                                <button class="btn btn-secondary" onclick="goToQuestion(${appState.currentQuestionIndex - 1})"
+                                    ${appState.currentQuestionIndex === 0 ? 'disabled' : ''}>← Zurück</button>
+                                <button class="btn btn-secondary" onclick="goToQuestion(${appState.currentQuestionIndex + 1})"
+                                    ${appState.currentQuestionIndex === appState.questions.length - 1 ? 'disabled' : ''}>Weiter →</button>
+                            </div>
+
+                            <button class="btn btn-primary btn-large" onclick="submitCurrentTeil()">Abgeben</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderQuestionInput(question) {
+            const value = appState.answers[question.id] || '';
+
+            if (question.type === 'input') {
+                return `
+                    <div class="input-group">
+                        <input type="text" class="form-input" placeholder="Antwort eingeben"
+                            value="${value}"
+                            onchange="handleAnswerChange(this.value)"
+                            onkeyup="handleAnswerChange(this.value)">
+                        ${question.answerNote ? `<small>${question.answerNote}</small>` : ''}
+                    </div>
+                `;
+            } else if (question.type === 'mc') {
+                return `
+                    <div class="options">
+                        ${question.options.map((opt, idx) => `
+                            <label class="option">
+                                <input type="radio" name="q_${question.id}"
+                                    value="${JSON.stringify(opt.correct)}"
+                                    ${value === String(opt.correct) ? 'checked' : ''}
+                                    onchange="handleAnswerChange(this.value)">
+                                <span>${opt.text}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                `;
+            } else if (question.type === 'tf') {
+                return `
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="q_${question.id}"
+                                value="true"
+                                ${value === 'true' ? 'checked' : ''}
+                                onchange="handleAnswerChange(this.value)">
+                            <span>Wahr</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="q_${question.id}"
+                                value="false"
+                                ${value === 'false' ? 'checked' : ''}
+                                onchange="handleAnswerChange(this.value)">
+                            <span>Falsch</span>
+                        </label>
+                    </div>
+                `;
+            }
+        }
+
+        function renderPauseScreen() {
+            return `
+                <div class="container max-w-2xl">
+                    <div class="pause-screen">
+                        <h2>Teil 1 abgegeben ✓</h2>
+                        <p>Sehr gut! Du hast Teil 1 erfolgreich bearbeitet.</p>
+                        <div class="pause-info">
+                            <h3>Empfohlene Pause: 5 Minuten</h3>
+                            <p>Trinke etwas, bewege dich kurz und bereite dich auf Teil 2 vor.</p>
+                            <p>Teil 2 beginnt in Kürze mit Taschenrechner und Formelsammlung.</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderResultsScreen() {
+            const result = appState.results[0];
+            const totalPercent = result.totalScore;
+            const grade = result.grade;
+
+            return `
+                <div class="container max-w-3xl">
+                    <div class="results-screen">
+                        <div class="results-header">
+                            <h2>Ergebnisse</h2>
+                            <p class="results-name">Schüler: ${result.studentName}</p>
+                            <p class="results-date">${result.date}</p>
+                        </div>
+
+                        <div class="grade-box">
+                            <div class="grade-circle">
+                                <div class="grade-value">${grade}</div>
+                            </div>
+                            <div class="grade-info">
+                                <p class="grade-percent">${Math.round(totalPercent)}%</p>
+                                <p class="grade-label">Gesamtleistung</p>
+                            </div>
+                        </div>
+
+                        ${result.teil1Score !== null ? `
+                            <div class="score-box">
+                                <h4>Teil 1 (45 Min, ohne Hilfsmittel)</h4>
+                                <div class="score-bar">
+                                    <div class="score-fill" style="width: ${result.teil1Score}%"></div>
+                                </div>
+                                <p>${Math.round(result.teil1Score)}%</p>
+                            </div>
+                        ` : ''}
+
+                        ${result.teil2Score !== null ? `
+                            <div class="score-box">
+                                <h4>Teil 2 (75 Min, mit Hilfsmitteln)</h4>
+                                <div class="score-bar">
+                                    <div class="score-fill" style="width: ${result.teil2Score}%"></div>
+                                </div>
+                                <p>${Math.round(result.teil2Score)}%</p>
+                            </div>
+                        ` : ''}
+
+                        <div class="detailed-answers">
+                            <h4>Detaillierte Auswertung</h4>
+                            ${appState.questions.map((q, idx) => {
+                                const userAnswer = appState.answers[q.id];
+                                let isCorrect = false;
+
+                                if (userAnswer !== undefined) {
+                                    if (q.type === 'input') {
+                                        isCorrect = Math.abs(parseFloat(userAnswer) - parseFloat(q.answer)) < 0.01;
+                                    } else {
+                                        isCorrect = userAnswer === String(q.answer);
+                                    }
+                                }
+
+                                return `
+                                    <div class="answer-item ${isCorrect ? 'correct' : 'incorrect'}">
+                                        <div class="answer-header">
+                                            <span class="answer-number">Frage ${idx + 1}</span>
+                                            <span class="answer-badge">${isCorrect ? '✓ Richtig' : '✗ Falsch'}</span>
+                                        </div>
+                                        <p class="answer-question"><strong>Frage:</strong> ${q.question}</p>
+                                        ${userAnswer !== undefined ? `<p class="answer-student"><strong>Deine Antwort:</strong> ${userAnswer}</p>` : `<p class="answer-student" style="color: #f44336;"><strong>Keine Antwort gegeben</strong></p>`}
+                                        <p class="answer-correct"><strong>Richtige Antwort:</strong> ${q.answer}</p>
+                                        <p class="answer-explanation"><strong>Erklärung:</strong> ${q.explanation}</p>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+
+                        <div class="results-actions">
+                            <button class="btn btn-primary" onclick="restartExam()">Erneut versuchen</button>
+                        </div>
+
+                        <div class="history-box">
+                            <h4>Prüfungshistorie</h4>
+                            ${renderHistory()}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderHistory() {
+            const allResults = loadResults();
+            if (allResults.length === 0) {
+                return '<p style="color: #999;">Noch keine Prüfungen durchgeführt.</p>';
+            }
+
+            return `
+                <div class="history-list">
+                    ${allResults.slice().reverse().map(r => `
+                        <div class="history-item">
+                            <span class="history-date">${r.date}</span>
+                            <span class="history-score">${Math.round(r.totalScore)}%</span>
+                            <span class="history-grade">Note ${r.grade}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function render() {
+            const app = document.getElementById('app');
+
+            if (appState.screen === 'start') {
+                app.innerHTML = renderStartScreen();
+            } else if (appState.screen === 'teil1') {
+                app.innerHTML = renderQuestionTeil(1);
+            } else if (appState.screen === 'teil2') {
+                app.innerHTML = renderQuestionTeil(2);
+            } else if (appState.screen === 'pause') {
+                app.innerHTML = renderPauseScreen();
+            } else if (appState.screen === 'results') {
+                app.innerHTML = renderResultsScreen();
+            }
+        }
+
+        // ===========================
+        // INITIALIZATION
+        // ===========================
+        document.addEventListener('DOMContentLoaded', render);
+    </script>
+</body>
+</html>

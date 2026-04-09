@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZP10 Diagnose - Lehrer Dashboard (Lokal)</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="zp10-lehrer-lokal.css">
+</head>
+
+<body>
+  <header class="header">
+    <div class="hdr-left">
+      <a href="../index.html" class="back-btn">← Zurück zur Hub</a>
+      <div class="hdr-title">
+        <h1>📊 Lehrer-Dashboard</h1>
+      </div>
+    </div>
+    <div class="hdr-right">
+      <button class="firebase-badge" onclick="openServerConfig()" title="Daten vom Server laden">🔗 Server-Sync</button>
+      <button class="theme-toggle" onclick="toggleTheme()" title="Theme wechseln">
+        <span id="themeIcon">🌙</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('overview')">Klassenübersicht</button>
+      <button class="tab-btn" onclick="switchTab('competencies')">Kompetenzen</button>
+      <button class="tab-btn" onclick="switchTab('heatmap')">Fehlvorstellungen</button>
+      <button class="tab-btn" onclick="switchTab('recommendations')">Förderempfehlungen</button>
+      <button class="tab-btn" onclick="switchTab('import')">Daten importieren</button>
+      <button class="tab-btn" onclick="switchTab('reasoning')" style="background:linear-gradient(135deg,#FF6B8A,#8B5CF6);color:white;">✍️ Begründungen bewerten</button>
+    </div>
+
+    <!-- REASONING/BEGRÜNDUNGEN TAB -->
+    <div id="reasoning" class="tab-content">
+      <div class="card">
+        <h2>✍️ Begründungsaufgaben aus dem Escape Room</h2>
+        <p style="color:var(--text-secondary);margin-bottom:1.5rem;">Hier siehst du alle Freitext-Antworten der Schüler aus dem Escape Room. Bewerte sie mit 0-10 Punkten.</p>
+        <div id="reasoningList" style="display:flex;flex-direction:column;gap:1.5rem;">
+          <p style="color:var(--text-secondary);font-style:italic;">Noch keine Begründungen vorhanden. Schüler müssen zuerst den Escape Room absolvieren.</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="overview" class="tab-content active">
+      <div class="card">
+        <h2>📈 Klassenübersicht</h2>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h4>Klassengröße</h4>
+            <div class="big-number" id="classSize">0</div>
+            <div class="sub-text">Schüler importiert</div>
+          </div>
+          <div class="stat-card">
+            <h4>Durchschnitt</h4>
+            <div class="big-number" id="avgScore">0%</div>
+            <div class="grade-box">
+              <div class="grade-label">Prognose (NRW ZP10):</div>
+              <div class="grade-value" id="avgGrade">—</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <h4>Klassenschwerpunkte</h4>
+            <div class="big-number" id="mvCount">0</div>
+            <div class="sub-text">unterschiedliche MVs</div>
+          </div>
+          <div class="stat-card">
+            <h4>Bearbeitete Module</h4>
+            <div class="big-number" id="moduleCount">0</div>
+            <div class="sub-text">durchschnittlich</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Schüler & Ergebnisse</h3>
+        <div class="filter-row">
+          <div class="filter-group">
+            <label>Nach Name filtern:</label>
+            <input type="text" class="input" id="nameFilter" placeholder="Name eingeben..." onchange="filterTable()">
+          </div>
+          <div class="filter-group">
+            <label>Min. Score:</label>
+            <input type="number" class="input" id="minScore" placeholder="0" min="0" max="100" onchange="filterTable()">
+          </div>
+          <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <button class="btn btn--primary btn--sm" onclick="exportCSV()">📥 CSV Export</button>
+            <button class="btn btn--secondary btn--sm" onclick="window.print()">🖨️ Drucken</button>
+            <button class="btn btn--secondary btn--sm" onclick="loadDemo()">🎮 Demo laden</button>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table id="classTable">
+            <thead>
+              <tr>
+                <th onclick="sortTable(0)">Name 👤</th>
+                <th onclick="sortTable(1)">Ø Score</th>
+                <th onclick="sortTable(2)">Note</th>
+                <th onclick="sortTable(3)">Module</th>
+                <th onclick="sortTable(4)">XP</th>
+                <th onclick="sortTable(5)">MVs</th>
+                <th onclick="sortTable(6)">Zuletzt aktiv</th>
+              </tr>
+            </thead>
+            <tbody id="classTableBody">
+              <tr>
+                <td colspan="7" style="text-align: center; color: var(--text-secondary); padding: 2rem;">
+                  Keine Daten. Importieren Sie Schülerdaten oder laden Sie die Demo.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="competencies" class="tab-content">
+      <div class="card">
+        <h2>🎯 Kompetenz-Übersicht</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+          Radar-Charts zeigen, welche KLP-Kompetenzen (K1–K6) wie oft erfolgreich bearbeitet wurden.
+        </p>
+        <div id="competenciesContainer"></div>
+      </div>
+    </div>
+
+    <div id="heatmap" class="tab-content">
+      <div class="card">
+        <h2>🔥 Fehlvorstellungs-Heatmap</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+          Zeilen = Schüler · Spalten = Fehlvorstellungen (nach Häufigkeit sortiert) · Farbe = Schweregrad
+        </p>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-bottom:1.5rem;">
+          <div style="display:flex;align-items:center;gap:6px;font-size:0.8rem;color:var(--text-secondary);">
+            <div style="width:18px;height:18px;border-radius:4px;background:#fee2e2;border:1px solid #fca5a5;"></div> 1x erkannt
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:0.8rem;color:var(--text-secondary);">
+            <div style="width:18px;height:18px;border-radius:4px;background:#fca5a5;border:1px solid #f87171;"></div> 2–3x erkannt
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:0.8rem;color:var(--text-secondary);">
+            <div style="width:18px;height:18px;border-radius:4px;background:#ef4444;border:1px solid #dc2626;"></div> &gt;3x erkannt
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:0.8rem;color:var(--text-secondary);">
+            <div style="width:18px;height:18px;border-radius:4px;background:#f0f9ff;border:1px solid #e2e8f0;"></div> Nicht erkannt
+          </div>
+        </div>
+        <div id="heatmapContainer" style="overflow-x:auto;"></div>
+        <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border);">
+          <h4>Klassenschwerpunkte (&gt;50% der Klasse)</h4>
+          <div id="hotspots" style="margin-top: 1rem;"></div>
+        </div>
+      </div>
+
+      <!-- Server-Sync Modal -->
+      <div id="serverModal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2>🔗 Server-Sync (PHP-Backend)</h2>
+            <button class="close-btn" onclick="closeModal('serverModal')">×</button>
+          </div>
+          <div class="modal-body">
+            <div style="margin-bottom:1.5rem;">
+              <label style="display:block;font-weight:600;margin-bottom:6px;">Server-URL</label>
+              <input id="serverUrl" type="url" placeholder="https://deine-domain.de/api"
+                style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:0.95rem;background:var(--bg);"
+                value="">
+              <div style="font-size:0.8rem;color:var(--text-secondary);margin-top:4px;">URL zum api/-Ordner auf deinem Server</div>
+            </div>
+            <div style="margin-bottom:1.5rem;">
+              <label style="display:block;font-weight:600;margin-bottom:6px;">API-Schlüssel</label>
+              <input id="serverKey" type="password" placeholder="Dein API_KEY aus config.php"
+                style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:0.95rem;background:var(--bg);"
+                value="">
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+              <button onclick="saveServerConfig()" style="padding:10px 20px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;">
+                💾 Speichern
+              </button>
+              <button onclick="loadFromServer()" style="padding:10px 20px;background:var(--success);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;">
+                ⬇️ Daten jetzt laden
+              </button>
+              <button onclick="clearServerConfig()" style="padding:10px 20px;background:var(--danger);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;">
+                🗑️ Verbindung entfernen
+              </button>
+            </div>
+            <div id="serverStatus" style="margin-top:1rem;font-size:0.88rem;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="heatmapModal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 id="heatmapModalTitle">Schüler mit dieser MV</h2>
+            <button class="close-btn" onclick="closeModal('heatmapModal')">×</button>
+          </div>
+          <div class="modal-body" id="heatmapModalBody"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="recommendations" class="tab-content">
+      <div class="card">
+        <h2>💡 Förderempfehlungen</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+          Automatisch generierte Interventionsempfehlungen basierend auf Fehlvorstellungen und Lücken.
+        </p>
+        <div id="recommendationsContainer"></div>
+      </div>
+    </div>
+
+    <div id="import" class="tab-content">
+      <div class="card">
+        <h2>📂 Schülerdaten importieren</h2>
+        <p style="margin-bottom: 1.5rem;">
+          Schüler exportieren ihre Ergebnisse aus der Diagnose-App. Importieren Sie die JSON-Dateien hier.
+        </p>
+
+        <div class="upload-area" id="uploadArea" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+          <div style="font-size: 3rem; margin-bottom: 1rem;">📤</div>
+          <strong style="font-size: 1.1rem;">Dateien hier ablegen oder klicken</strong>
+          <p style="color: var(--text-secondary); margin-top: 0.5rem;">Unterstützte Formate: .json</p>
+        </div>
+
+        <input type="file" id="fileInput" multiple accept=".json" onchange="handleFileSelect(event)">
+
+        <div style="margin-top: 1.5rem;">
+          <h4>Importverlauf</h4>
+          <div id="importLog" class="import-log">
+            <p style="color: var(--text-secondary);">Keine Importe noch durchgeführt.</p>
+          </div>
+        </div>
+
+        <div style="margin-top: 1.5rem;">
+          <button class="btn btn--danger btn--sm" onclick="clearData()">🗑️ Alle Daten löschen</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="profileModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="profileName">Schülerprofil</h2>
+        <button class="close-btn" onclick="closeModal('profileModal')">×</button>
+      </div>
+      <div class="modal-body" id="profileContent"></div>
+    </div>
+  </div>
+
+  <script>
+    const MODULES = {
+      'M1': 'Terme & Gleichungen',
+      'M2': 'Terme & Muster',
+      'M3': 'Terme vereinfachen',
+      'M4': 'Lineare Funktionen',
+      'M5': 'Quadratische Funktionen',
+      'M6': 'Potenzen & Wurzeln',
+      'M7': 'LGS',
+      'M8': 'Geometrie',
+      'M9': 'Stochastik',
+      'M10': 'Strahlensatz',
+      'M11': 'Prozent & Wachstum',
+      'M12': 'Expo-Grundlagen',
+      'M13': 'Exponentialfunktionen'
+    };
+
+    const COMPETENCIES = {'K1': 'Modellieren', 'K2': 'Problemlösen', 'K3': 'Reasoning', 'K4': 'Darstellen', 'K5': 'Kommunikation', 'K6': 'Werkzeuge'};
+
+    const FEHLVORSTELLUNGEN = {
+      'MV1': {title: 'Äquivalenzumformung missverstanden', modules: ['M1', 'M4', 'M7']},
+      'MV2': {title: 'Negative Zahlen in Gleichungen', modules: ['M1']},
+      'MV3': {title: 'Lineare vs. quadratische Funktionen', modules: ['M4', 'M5']},
+      'MV4': {title: 'Steigung falsch interpretiert', modules: ['M4']},
+      'MV5': {title: 'Winkelsumme Dreieck falsch', modules: ['M8']},
+      'MV6': {title: 'Ähnlichkeit vs. Kongruenz', modules: ['M8', 'M10']},
+      'MV7': {title: 'Prozentrechnung Grundwert', modules: ['M11']},
+      'MV8': {title: 'Exponentielles vs. lineares Wachstum', modules: ['M11', 'M13']},
+      'MV9': {title: 'Potenzgesetze fehlerhaft', modules: ['M6', 'M13']},
+      'MV10': {title: 'Definitionsbereich übersehen', modules: ['M4', 'M5', 'M6']}
+    };
+
+    function loadData() { const s = localStorage.getItem('zp10_lehrer_data'); return s ? JSON.parse(s) : []; }
+    function saveData(d) { localStorage.setItem('zp10_lehrer_data', JSON.stringify(d)); }
+
+    function loadTheme() {
+      const t = localStorage.getItem('zp10_theme') || 'light';
+      if (t === 'dark') { document.body.classList.add('dark'); document.getElementById('themeIcon').textContent = '☀️'; }
+    }
+
+    function toggleTheme() {
+      const d = document.body.classList.toggle('dark');
+      localStorage.setItem('zp10_theme', d ? 'dark' : 'light');
+      document.getElementById('themeIcon').textContent = d ? '☀️' : '🌙';
+    }
+
+    function getGradeFromScore(s) {
+      if (s >= 87) return 1; if (s >= 73) return 2; if (s >= 59) return 3; if (s >= 45) return 4; if (s >= 18) return 5; return 6;
+    }
+
+    function calculateClassStats() {
+      const s = loadData();
+      if (s.length === 0) return {avgScore: 0, avgGrade: '—', mvCount: 0, moduleCount: 0};
+      let ts = 0, tm = 0, g = 0;
+      const mv = new Set();
+      s.forEach(st => {
+        const ms = Object.values(st.modules || {}).map(m => m.score || 0);
+        if (ms.length > 0) { ts += ms.reduce((a, b) => a + b, 0) / ms.length; g++; tm += ms.length; }
+        (st.fehlvorstellungen || []).forEach(f => mv.add(f.code));
+      });
+      const as = g > 0 ? Math.round(ts / g) : 0;
+      return {avgScore: as, avgGrade: getGradeFromScore(as), mvCount: mv.size, moduleCount: tm > 0 ? Math.round(tm / s.length) : 0};
+    }
+
+    function handleDragOver(e) { e.preventDefault(); document.getElementById('uploadArea').classList.add('dragover'); }
+    function handleDragLeave(e) { document.getElementById('uploadArea').classList.remove('dragover'); }
+    function handleDrop(e) { e.preventDefault(); document.getElementById('uploadArea').classList.remove('dragover'); processFiles(e.dataTransfer.files); }
+    document.getElementById('uploadArea').addEventListener('click', () => document.getElementById('fileInput').click());
+    function handleFileSelect(e) { processFiles(e.target.files); }
+
+    function processFiles(files) {
+      const s = loadData();
+      const log = [];
+      let fp = 0;
+      for (let f of files) {
+        if (!f.name.endsWith('.json')) {
+          log.push(`❌ ${f.name} – nicht JSON`);
+          fp++;
+          if (fp === files.length) { saveData(s); updateImportLog(log); renderAllTables(); }
+          continue;
+        }
+        const r = new FileReader();
+        r.onload = e => {
+          try {
+            const imp = JSON.parse(e.target.result);
+            const code = imp.studentCode || null;
+            const sn = code && code !== 'NONE' && code !== 'GAST' ? code : (imp.studentName || 'Unnamed');
+            let st = s.find(x => x.name === sn || (code && x.code === code));
+
+            // Support hub export format (multiple modules in one file)
+            if (imp.modules && typeof imp.modules === 'object') {
+              if (!st) {
+                st = {name: sn, code: code || null, modules: {}, totalXP: 0, fehlvorstellungen: [], lastActivity: new Date().toISOString()};
+                s.push(st);
+              }
+              if (code && !st.code) st.code = code;
+              Object.entries(imp.modules).forEach(([moduleId, modData]) => {
+                if (modData.latest) {
+                  st.modules[moduleId] = {
+                    score: modData.latest.percentage || Math.round((modData.latest.score / modData.latest.maxScore) * 100) || 0,
+                    xp: modData.latest.xp || 0,
+                    attemptCount: (st.modules[moduleId]?.attemptCount || 0) + 1,
+                    lastAttempt: modData.latest.lastDate || new Date().toISOString()
+                  };
+                }
+              });
+              st.totalXP = imp.hubData?.totalXP || Object.values(st.modules).reduce((a, m) => a + (m.xp || 0), 0);
+              st.lastActivity = imp.exportDate || new Date().toISOString();
+              log.push(`✅ ${sn} – Hub-Export (${Object.keys(imp.modules).length} Module)`);
+              fp++;
+              if (fp === files.length) { saveData(s); updateImportLog(log); renderAllTables(); }
+              return; // Skip single-module processing below
+            }
+
+            const mi = imp.moduleId || 'Unknown';
+            if (!st) {
+              st = {name: sn, code: code || null, modules: {}, totalXP: 0, fehlvorstellungen: [], lastActivity: new Date().toISOString()};
+              s.push(st);
+            }
+            if (code && !st.code) st.code = code;
+            st.modules[mi] = {score: imp.finalScore || 0, xp: imp.totalXP || 0, attemptCount: (st.modules[mi]?.attemptCount || 0) + 1, lastAttempt: new Date().toISOString()};
+            if (imp.detectedMV && Array.isArray(imp.detectedMV)) {
+              imp.detectedMV.forEach(mv => {
+                if (!st.fehlvorstellungen.find(f => f.code === mv.code && f.moduleId === mi)) {
+                  st.fehlvorstellungen.push({code: mv.code, title: mv.title || FEHLVORSTELLUNGEN[mv.code]?.title || 'Unknown', moduleId: mi, detectedAt: new Date().toISOString()});
+                }
+              });
+            }
+            st.totalXP = Object.values(st.modules).reduce((a, m) => a + (m.xp || 0), 0);
+            st.lastActivity = new Date().toISOString();
+            log.push(`✅ ${sn} – ${mi} (${imp.finalScore || 0}%)`);
+          } catch (err) {
+            log.push(`❌ ${f.name} – Parse-Fehler`);
+          }
+          fp++;
+          if (fp === files.length) { saveData(s); updateImportLog(log); renderAllTables(); }
+        };
+        r.readAsText(f);
+      }
+    }
+
+    function updateImportLog(log) {
+      document.getElementById('importLog').innerHTML = log.map(l => `<div style="margin: 0.5rem 0; padding: 0.5rem; background: var(--surface); border-radius: 8px;">${l}</div>`).join('');
+    }
+
+    function renderClassTable() {
+      const s = loadData();
+      const tb = document.getElementById('classTableBody');
+      if (s.length === 0) {
+        tb.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-secondary);">Keine Daten.</td></tr>';
+        updateStats();
+        return;
+      }
+      tb.innerHTML = s.map(st => {
+        const ms = Object.values(st.modules || {}).map(m => m.score || 0);
+        const as = ms.length > 0 ? Math.round(ms.reduce((a, b) => a + b, 0) / ms.length) : 0;
+        const ag = getGradeFromScore(as);
+        const abc = as >= 70 ? 'score-green' : as >= 45 ? 'score-yellow' : 'score-red';
+        const gbc = ag <= 2 ? 'score-green' : ag <= 3 ? 'score-yellow' : 'score-red';
+        const la = st.lastActivity ? new Date(st.lastActivity).toLocaleDateString('de-DE') : '—';
+        const mc = (st.fehlvorstellungen || []).length;
+        return `<tr><td><span class="student-name" onclick="openProfile('${st.name}')">${st.name}</span></td><td><span class="score-badge ${abc}">${as}%</span></td><td><span class="score-badge ${gbc}">Note ${ag}</span></td><td>${Object.keys(st.modules).length}</td><td><strong>${st.totalXP || 0}</strong></td><td>${mc > 0 ? `<span class="badge badge--danger">${mc}</span>` : '—'}</td><td style="font-size: 0.8125rem; color: var(--text-secondary);">${la}</td></tr>`;
+      }).join('');
+      updateStats();
+    }
+
+    function updateStats() {
+      const st = calculateClassStats();
+      document.getElementById('classSize').textContent = loadData().length;
+      document.getElementById('avgScore').textContent = st.avgScore + '%';
+      document.getElementById('avgGrade').textContent = st.avgGrade === '—' ? '—' : st.avgGrade;
+      document.getElementById('mvCount').textContent = st.mvCount;
+      document.getElementById('moduleCount').textContent = st.moduleCount;
+    }
+
+    function filterTable() {
+      const nf = document.getElementById('nameFilter').value.toLowerCase();
+      const ms = parseInt(document.getElementById('minScore').value) || 0;
+      document.querySelectorAll('#classTableBody tr').forEach(r => {
+        const nm = r.cells[0].textContent.toLowerCase();
+        const sc = parseInt(r.cells[1].textContent) || 0;
+        r.style.display = (nm.includes(nf) && sc >= ms) ? '' : 'none';
+      });
+    }
+
+    let sd = {};
+    function sortTable(ci) {
+      const tb = document.getElementById('classTableBody');
+      const rs = Array.from(tb.querySelectorAll('tr'));
+      const ia = !sd[ci] || sd[ci] === 'desc';
+      sd[ci] = ia ? 'asc' : 'desc';
+      rs.sort((a, b) => {
+        let av = a.cells[ci].textContent.trim();
+        let bv = b.cells[ci].textContent.trim();
+        const an = parseInt(av);
+        const bn = parseInt(bv);
+        if (!isNaN(an) && !isNaN(bn)) return ia ? an - bn : bn - an;
+        return ia ? av.localeCompare(bv, 'de') : bv.localeCompare(av, 'de');
+      });
+      tb.innerHTML = rs.map(r => r.outerHTML).join('');
+    }
+
+    function renderCompetencies() {
+      const s = loadData();
+      if (s.length === 0) {
+        document.getElementById('competenciesContainer').innerHTML = '<p style="color: var(--text-secondary);">Keine Daten.</p>';
+        return;
+      }
+      let html = '';
+      let ci = 0;
+      s.slice(0, 5).forEach(st => {
+        const cc = Object.fromEntries(Object.keys(COMPETENCIES).map(k => [k, 0]));
+        const mc = Object.keys(st.modules || {}).length;
+        if (mc === 0) return;
+        Object.entries(st.modules || {}).forEach(([mid, md]) => {
+          const sc = md.score || 0;
+          if (sc >= 70) { cc['K1']++; cc['K3']++; }
+          if (sc >= 60) { cc['K2']++; cc['K4']++; }
+          if (sc >= 50) { cc['K5']++; cc['K6']++; }
+        });
+        const rid = 'radar_' + ci;
+        ci++;
+        html += `<div style="margin-bottom: 2rem;"><h4>${st.name}</h4><div class="radar-container"><canvas id="${rid}"></canvas></div></div>`;
+        window[rid + '_data'] = {labels: Object.values(COMPETENCIES), data: Object.values(cc).map(v => Math.min(100, v * 20))};
+      });
+      if (html === '') html = '<p style="color: var(--text-secondary);">Nicht genug Daten.</p>';
+      document.getElementById('competenciesContainer').innerHTML = html;
+      setTimeout(() => {
+        for (let i = 0; i < ci; i++) {
+          const rid = 'radar_' + i;
+          const ca = document.getElementById(rid);
+          if (ca) {
+            const c = ca.getContext('2d');
+            const cs = ['#5B6CF0', '#FF6B8A', '#10B981', '#F59E0B', '#EF4444'];
+            new Chart(c, {
+              type: 'radar',
+              data: {labels: window[rid + '_data'].labels, datasets: [{label: 'Kompetenzen', data: window[rid + '_data'].data, borderColor: cs[i % 5], backgroundColor: cs[i % 5] + '20', borderWidth: 2, fill: true, pointRadius: 5, pointBackgroundColor: cs[i % 5], pointBorderColor: 'white', pointBorderWidth: 2}]},
+              options: {responsive: true, maintainAspectRatio: false, plugins: {legend: {display: false}}, scales: {r: {beginAtZero: true, max: 100, grid: {color: 'rgba(0,0,0,0.05)'}, ticks: {color: 'var(--text-secondary)', font: {size: 11}}}}}
+            });
+          }
+        }
+      }, 0);
+    }
+
+    function renderHeatmap() {
+      const s = loadData();
+      const container = document.getElementById('heatmapContainer');
+      if (s.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-secondary);">Keine Daten. Bitte zuerst Schülerdaten importieren.</p>';
+        return;
+      }
+
+      // Collect all MV codes and their frequency across students
+      const mvFreq = {};   // code → count of students who have it
+      const mvTitles = {}; // code → display title
+      const mvModules = {}; // code → set of moduleIds
+      const studentMVCounts = {}; // studentName → { mvCode: count }
+
+      s.forEach(st => {
+        studentMVCounts[st.name] = {};
+        (st.fehlvorstellungen || []).forEach(f => {
+          const k = f.code;
+          mvTitles[k] = f.title || k;
+          if (!mvModules[k]) mvModules[k] = new Set();
+          if (f.moduleId) mvModules[k].add(f.moduleId);
+          mvFreq[k] = (mvFreq[k] || 0);
+          studentMVCounts[st.name][k] = (studentMVCounts[st.name][k] || 0) + 1;
+        });
+        Object.keys(studentMVCounts[st.name]).forEach(k => {
+          mvFreq[k] = (mvFreq[k] || 0) + 1;
+        });
+      });
+
+      // Sort MVs by frequency desc, limit to top 20 for readability
+      const sortedMVs = Object.entries(mvFreq)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 20)
+        .map(([code]) => code);
+
+      if (sortedMVs.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-secondary);">Keine Fehlvorstellungen in den Daten gefunden.</p>';
+        renderHotspots({}, 0);
+        return;
+      }
+
+      // Sort students by total MV count desc (most problematic first)
+      const sortedStudents = [...s].sort((a, b) =>
+        Object.keys(studentMVCounts[b.name] || {}).length -
+        Object.keys(studentMVCounts[a.name] || {}).length
+      );
+
+      // Build matrix HTML
+      const cellSize = '36px';
+      let html = `<table style="border-collapse:collapse;font-size:0.78rem;min-width:100%;">`;
+
+      // Header row: MV codes
+      html += `<thead><tr>`;
+      html += `<th style="text-align:left;padding:6px 10px;position:sticky;left:0;background:var(--surface);z-index:2;font-weight:700;min-width:120px;border-bottom:2px solid var(--border);">Schüler / MV</th>`;
+      sortedMVs.forEach(code => {
+        const shortCode = code.replace(/^mv_/, '').replace(/_/g, ' ').substring(0, 12);
+        const freq = mvFreq[code] || 0;
+        const pct = Math.round((freq / s.length) * 100);
+        const mods = mvModules[code] ? Array.from(mvModules[code]).join(', ') : '';
+        html += `<th style="padding:4px 2px;writing-mode:vertical-rl;text-orientation:mixed;height:90px;vertical-align:bottom;border-bottom:2px solid var(--border);cursor:pointer;" onclick="openHeatmapColDetail('${code}')" title="${mvTitles[code]}&#10;${freq}/${s.length} Schüler (${pct}%)&#10;Module: ${mods}">
+          <span style="display:inline-block;transform:rotate(180deg);font-weight:600;color:var(--text);padding-bottom:4px;">${shortCode}</span>
+          <div style="font-size:0.72rem;font-weight:400;color:var(--text-secondary);margin-top:2px;">${pct}%</div>
+        </th>`;
+      });
+      html += `<th style="padding:6px 8px;border-bottom:2px solid var(--border);text-align:center;min-width:50px;">∑ MVs</th>`;
+      html += `</tr></thead>`;
+
+      // Student rows
+      html += `<tbody>`;
+      sortedStudents.forEach((st, idx) => {
+        const rowBg = idx % 2 === 0 ? '' : 'background:var(--surface-alt);';
+        const totalMVs = Object.keys(studentMVCounts[st.name] || {}).length;
+        html += `<tr style="${rowBg}">`;
+        html += `<td style="padding:4px 10px;position:sticky;left:0;${rowBg}z-index:1;font-weight:600;color:var(--text);border-right:1px solid var(--border);cursor:pointer;" onclick="openProfile('${st.name}')" title="Schülerprofil öffnen">${st.name}</td>`;
+        sortedMVs.forEach(code => {
+          const count = (studentMVCounts[st.name] || {})[code] || 0;
+          let bg, title;
+          if (count === 0) {
+            bg = 'background:#f0f9ff;';
+            title = 'Nicht erkannt';
+          } else if (count === 1) {
+            bg = 'background:#fee2e2;';
+            title = '1× erkannt';
+          } else if (count <= 3) {
+            bg = 'background:#fca5a5;';
+            title = count + '× erkannt';
+          } else {
+            bg = 'background:#ef4444;color:#fff;';
+            title = count + '× erkannt — persistente MV!';
+          }
+          const icon = count === 0 ? '' : (count > 3 ? '⚠' : '●');
+          html += `<td style="text-align:center;width:${cellSize};height:${cellSize};${bg}border:1px solid rgba(0,0,0,0.06);cursor:pointer;" onclick="openHeatmapCellDetail('${st.name}','${code}')" title="${mvTitles[code]}&#10;${title}">${icon}</td>`;
+        });
+        // MV count badge
+        const badgeColor = totalMVs === 0 ? '#10b981' : totalMVs <= 3 ? '#f59e0b' : '#ef4444';
+        html += `<td style="text-align:center;font-weight:700;color:${badgeColor};border-left:1px solid var(--border);">${totalMVs}</td>`;
+        html += `</tr>`;
+      });
+
+      // Footer row: total per MV column
+      html += `<tr style="border-top:2px solid var(--border);">`;
+      html += `<td style="padding:4px 10px;position:sticky;left:0;background:var(--surface);font-weight:700;font-size:0.75rem;color:var(--text-secondary);">Klasse gesamt</td>`;
+      sortedMVs.forEach(code => {
+        const freq = mvFreq[code] || 0;
+        const pct = Math.round((freq / s.length) * 100);
+        const color = pct >= 60 ? '#ef4444' : pct >= 30 ? '#f59e0b' : '#10b981';
+        html += `<td style="text-align:center;font-weight:700;color:${color};font-size:0.8rem;padding:4px 2px;">${freq}</td>`;
+      });
+      html += `<td></td></tr>`;
+      html += `</tbody></table>`;
+
+      container.innerHTML = html;
+      renderHotspots(mvFreq, s.length);
+    }
+
+    function openHeatmapColDetail(mvCode) {
+      const s = loadData();
+      const affected = s.filter(st => (st.fehlvorstellungen || []).some(f => f.code === mvCode));
+      const title = affected.length > 0 ? (affected[0].fehlvorstellungen.find(f => f.code === mvCode)?.title || mvCode) : mvCode;
+      let html = `<p style="margin-bottom:1rem;"><strong>${title}</strong><br><span style="color:var(--text-secondary);">${affected.length}/${s.length} Schüler</span></p><ul class="mv-list">`;
+      affected.forEach(st => {
+        const count = (st.fehlvorstellungen || []).filter(f => f.code === mvCode).length;
+        html += `<li class="mv-item" onclick="openProfile('${st.name}'); closeModal('heatmapModal');" style="cursor:pointer;"><strong style="color:var(--primary);">${st.name}</strong><div class="mv-module">${count}× erkannt</div></li>`;
+      });
+      html += `</ul>`;
+      document.getElementById('heatmapModalTitle').textContent = mvCode;
+      document.getElementById('heatmapModalBody').innerHTML = html;
+      document.getElementById('heatmapModal').classList.add('active');
+    }
+
+    function openHeatmapCellDetail(studentName, mvCode) {
+      const s = loadData();
+      const st = s.find(x => x.name === studentName);
+      if (!st) return;
+      const instances = (st.fehlvorstellungen || []).filter(f => f.code === mvCode);
+      const title = instances[0]?.title || mvCode;
+      let html = `<p style="margin-bottom:1rem;"><strong>${studentName}</strong> · <em>${title}</em></p>`;
+      if (instances.length === 0) {
+        html += `<p style="color:var(--text-secondary);">Nicht erkannt.</p>`;
+      } else {
+        html += `<ul class="mv-list">`;
+        instances.forEach(f => {
+          html += `<li class="mv-item"><strong>${f.moduleId || 'Unbekanntes Modul'}</strong><div class="mv-module">${f.detectedAt ? new Date(f.detectedAt).toLocaleDateString('de-DE') : ''}</div></li>`;
+        });
+        html += `</ul>`;
+      }
+      document.getElementById('heatmapModalTitle').textContent = `${studentName} – ${mvCode}`;
+      document.getElementById('heatmapModalBody').innerHTML = html;
+      document.getElementById('heatmapModal').classList.add('active');
+    }
+
+    function renderHotspots(mc, ts) {
+      if (ts === 0) return;
+      // Build title lookup from actual student data
+      const s = loadData();
+      const titleMap = {};
+      s.forEach(st => (st.fehlvorstellungen || []).forEach(f => { if (!titleMap[f.code]) titleMap[f.code] = f.title || f.code; }));
+
+      const hs = Object.entries(mc).filter(([vc, ct]) => (ct / ts) * 100 > 50).sort((a, b) => b[1] - a[1]);
+      const hd = document.getElementById('hotspots');
+      if (hs.length === 0) {
+        hd.innerHTML = '<p style="color: var(--text-secondary);">Keine MV bei >50%.</p>';
+      } else {
+        hd.innerHTML = hs.map(([vc, ct]) => {
+          const pc = Math.round((ct / ts) * 100);
+          const title = titleMap[vc] || vc;
+          const bg = pc >= 75 ? '#FEF2F2' : '#FFFBEB';
+          const border = pc >= 75 ? '#FECACA' : '#FDE68A';
+          const icon = pc >= 75 ? '🔴' : '🟡';
+          return `<div style="padding:10px 14px;border-radius:8px;border:1px solid ${border};background:${bg};margin-bottom:10px;cursor:pointer;" onclick="openHeatmapColDetail('${vc}')">
+            <div style="font-weight:700;font-size:0.9rem;">${icon} ${vc}: ${title}</div>
+            <div style="color:var(--text-secondary);font-size:0.82rem;margin-top:4px;">${ct}/${ts} Schüler (${pc}%) — Klicken für Details</div>
+          </div>`;
+        }).join('');
+      }
+    }
+
+    function openHeatmapDetail(vc, mid) {
+      const s = loadData();
+      const af = s.filter(st => (st.fehlvorstellungen || []).some(f => f.code === vc && f.moduleId === mid));
+      let html = `<p style="margin-bottom: 1rem;"><strong>${vc}</strong> in <strong>${MODULES[mid]}</strong> (${af.length}):</p>`;
+      html += '<ul class="mv-list">';
+      af.forEach(st => html += `<li class="mv-item" onclick="openProfile('${st.name}'); closeModal('heatmapModal');" style="cursor: pointer;"><strong style="color: var(--primary);">${st.name}</strong><div class="mv-module">Modul: ${MODULES[mid]}</div></li>`);
+      html += '</ul>';
+      document.getElementById('heatmapModalTitle').textContent = `MV-Details: ${vc}`;
+      document.getElementById('heatmapModalBody').innerHTML = html;
+      document.getElementById('heatmapModal').classList.add('active');
+    }
+
+    function renderRecommendations() {
+      const s = loadData();
+      if (s.length === 0) {
+        document.getElementById('recommendationsContainer').innerHTML = '<p style="color: var(--text-secondary);">Keine Daten.</p>';
+        return;
+      }
+      const rcs = [];
+      const mc = {};
+      s.forEach(st => {
+        (st.fehlvorstellungen || []).forEach(f => {
+          mc[f.code] = (mc[f.code] || 0) + 1;
+        });
+      });
+      Object.entries(mc).forEach(([vc, ct]) => {
+        const pc = Math.round((ct / s.length) * 100);
+        if (pc > 30) {
+          rcs.push({priority: pc > 50 ? 'high' : 'medium', title: `${vc}: ${FEHLVORSTELLUNGEN[vc].title}`, desc: `${ct}/${s.length} (${pc}%). Intervention empfohlen.`, impact: ct});
+        }
+      });
+      s.forEach(st => {
+        const ms = Object.entries(st.modules || {});
+        const wm = ms.filter(([, d]) => (d.score || 0) < 50);
+        if (wm.length > 0) {
+          const tls = wm.map(([mid]) => MODULES[mid]);
+          rcs.push({priority: 'medium', title: `${st.name}: ${wm.length} schwache Modul(e)`, desc: `${tls.join(', ')}. Unterstützung empfohlen.`, impact: 1});
+        }
+      });
+      rcs.sort((a, b) => (a.priority === 'high' ? -1 : 1) || b.impact - a.impact);
+      if (rcs.length === 0) {
+        document.getElementById('recommendationsContainer').innerHTML = '<p style="color: var(--success); font-weight: 600;">✅ Keine Schwachstellen!</p>';
+        return;
+      }
+      const html = rcs.slice(0, 10).map(r => `<div class="recommendation ${r.priority === 'high' ? 'priority-high' : ''}">${r.priority === 'high' ? '<span class="priority-badge">HOCH</span>' : ''}<div class="recommendation-title">${r.title}</div><div class="recommendation-desc">${r.desc}</div></div>`).join('');
+      document.getElementById('recommendationsContainer').innerHTML = html;
+    }
+
+    function openProfile(sn) {
+      const s = loadData();
+      const st = s.find(x => x.name === sn);
+      if (!st) return;
+      document.getElementById('profileName').textContent = `📋 ${st.name}`;
+      const ms = Object.values(st.modules || {}).map(m => m.score || 0);
+      const as = ms.length > 0 ? Math.round(ms.reduce((a, b) => a + b, 0) / ms.length) : 0;
+      let html = `<div class="profile-stats">
+        <div class="stat-box"><div class="stat-value">${st.totalXP}</div><div class="stat-label">XP</div></div>
+        <div class="stat-box"><div class="stat-value">${Object.keys(st.modules).length}</div><div class="stat-label">Module</div></div>
+        <div class="stat-box"><div class="stat-value">${(st.fehlvorstellungen || []).length}</div><div class="stat-label">MVs</div></div>
+        <div class="stat-box"><div class="stat-value">${as}% / ${getGradeFromScore(as)}</div><div class="stat-label">Ø</div></div>
+      </div>
+      <div class="profile-section"><h4>📊 Module</h4><div class="table-wrapper"><table><thead><tr><th>Modul</th><th>Score</th><th>Note</th><th>XP</th></tr></thead><tbody>`;
+      Object.entries(st.modules).forEach(([mid, md]) => {
+        const sc = md.score || 0;
+        const gr = getGradeFromScore(sc);
+        const bdc = sc >= 70 ? 'score-green' : sc >= 45 ? 'score-yellow' : 'score-red';
+        html += `<tr><td>${MODULES[mid]}</td><td><span class="score-badge ${bdc}">${sc}%</span></td><td><span class="score-badge ${bdc}">${gr}</span></td><td>${md.xp || 0}</td></tr>`;
+      });
+      html += `</tbody></table></div></div>`;
+      if ((st.fehlvorstellungen || []).length > 0) {
+        html += `<div class="profile-section"><h4>⚠️ MVs</h4><ul class="mv-list">`;
+        (st.fehlvorstellungen || []).forEach(f => {
+          html += `<li class="mv-item"><div class="mv-code">${f.code}</div><div class="mv-title">${f.title}</div><div class="mv-module">${MODULES[f.moduleId]}</div></li>`;
+        });
+        html += `</ul></div>`;
+      }
+      html += `<div class="foerder-box"><div class="foerder-label">📝 Förderempfehlung:</div><div class="foerder-text" id="foerderText">${genFoerderText(st)}</div><button class="copy-btn" onclick="copyFoerderText()">📋 Kopieren</button></div>`;
+      document.getElementById('profileContent').innerHTML = html;
+      document.getElementById('profileModal').classList.add('active');
+    }
+
+    function genFoerderText(st) {
+      const ms = Object.entries(st.modules || {});
+      const wm = ms.filter(([, d]) => (d.score || 0) < 50).map(([mid]) => MODULES[mid]);
+      const as = ms.length > 0 ? Math.round(ms.reduce((s, [, d]) => s + (d.score || 0), 0) / ms.length) : 0;
+      const gr = getGradeFromScore(as);
+      let t = `Förder-Empfehlung für ${st.name}\nDatum: ${new Date().toLocaleDateString('de-DE')}\n\nNotenschlüssel (NRW ZP10):\n≥87%→1, ≥73%→2, ≥59%→3, ≥45%→4, ≥18%→5, <18%→6\n\nDurchschnitt: ${as}% → Note ${gr}\n`;
+      if (wm.length > 0) t += `\nSchwach: ${wm.join(', ')}\n`;
+      if ((st.fehlvorstellungen || []).length > 0) {
+        t += `\nMVs:\n`;
+        (st.fehlvorstellungen || []).forEach(f => t += `• ${f.code}: ${f.title}\n`);
+      }
+      return t;
+    }
+
+    function copyFoerderText() {
+      navigator.clipboard.writeText(document.getElementById('foerderText').textContent).then(() => alert('✅ Kopiert!')).catch(() => alert('❌ Fehler'));
+    }
+
+    function exportCSV() {
+      const s = loadData();
+      if (s.length === 0) { alert('Keine Daten.'); return; }
+      let csv = 'Name,Ø Score,Note,Module,XP,MVs\n';
+      s.forEach(st => {
+        const ms = Object.values(st.modules || {}).map(m => m.score || 0);
+        const as = ms.length > 0 ? Math.round(ms.reduce((a, b) => a + b, 0) / ms.length) : 0;
+        const gr = getGradeFromScore(as);
+        csv += `"${st.name}",${as},${gr},${Object.keys(st.modules).length},${st.totalXP || 0},${(st.fehlvorstellungen || []).length}\n`;
+      });
+      const b = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+      const l = document.createElement('a');
+      l.href = URL.createObjectURL(b);
+      l.download = `zp10-${new Date().toISOString().split('T')[0]}.csv`;
+      l.click();
+    }
+
+    function loadDemo() {
+      if (confirm('Demo laden?')) {
+        const s = loadData();
+        const d = [
+          {name: 'Anna Müller', modules: {'M1': {score: 85, xp: 250, attemptCount: 1, lastAttempt: new Date().toISOString()}, 'M4': {score: 72, xp: 210, attemptCount: 2, lastAttempt: new Date().toISOString()}, 'M8': {score: 65, xp: 180, attemptCount: 1, lastAttempt: new Date().toISOString()}}, fehlvorstellungen: [{code: 'MV4', title: 'Steigung falsch', moduleId: 'M4', detectedAt: new Date().toISOString()}], totalXP: 640, lastActivity: new Date().toISOString()},
+          {name: 'Benjamin Schmidt', modules: {'M1': {score: 45, xp: 120, attemptCount: 3, lastAttempt: new Date().toISOString()}, 'M4': {score: 38, xp: 95, attemptCount: 2, lastAttempt: new Date().toISOString()}, 'M11': {score: 42, xp: 110, attemptCount: 1, lastAttempt: new Date().toISOString()}}, fehlvorstellungen: [{code: 'MV1', title: 'Äquivalenz falsch', moduleId: 'M1', detectedAt: new Date().toISOString()}, {code: 'MV7', title: 'Prozent falsch', moduleId: 'M11', detectedAt: new Date().toISOString()}], totalXP: 325, lastActivity: new Date().toISOString()},
+          {name: 'Clara Weber', modules: {'M1': {score: 78, xp: 220, attemptCount: 1, lastAttempt: new Date().toISOString()}, 'M4': {score: 88, xp: 270, attemptCount: 1, lastAttempt: new Date().toISOString()}, 'M8': {score: 92, xp: 300, attemptCount: 1, lastAttempt: new Date().toISOString()}, 'M6': {score: 75, xp: 200, attemptCount: 2, lastAttempt: new Date().toISOString()}}, fehlvorstellungen: [], totalXP: 990, lastActivity: new Date().toISOString()}
+        ];
+        s.push(...d);
+        saveData(s);
+        renderAllTables();
+        alert('✅ Demo (3 Schüler) geladen!');
+      }
+    }
+
+    function switchTab(tn) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(tn).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    function closeModal(mi) { document.getElementById(mi).classList.remove('active'); }
+
+    // ===== SERVER-SYNC =====
+    function openServerConfig() {
+      document.getElementById('serverUrl').value = localStorage.getItem('zp10_server_url') || '';
+      document.getElementById('serverKey').value = localStorage.getItem('zp10_server_key') || '';
+      document.getElementById('serverStatus').innerHTML = '';
+      document.getElementById('serverModal').classList.add('active');
+    }
+
+    function saveServerConfig() {
+      const url = document.getElementById('serverUrl').value.trim().replace(/\/$/, '');
+      const key = document.getElementById('serverKey').value.trim();
+      if (!url || !key) { setServerStatus('⚠️ Bitte URL und Schlüssel eingeben.', 'warning'); return; }
+      localStorage.setItem('zp10_server_url', url);
+      localStorage.setItem('zp10_server_key', key);
+      setServerStatus('✅ Gespeichert. Klicke "Daten jetzt laden" zum Testen.', 'success');
+    }
+
+    function clearServerConfig() {
+      localStorage.removeItem('zp10_server_url');
+      localStorage.removeItem('zp10_server_key');
+      document.getElementById('serverUrl').value = '';
+      document.getElementById('serverKey').value = '';
+      setServerStatus('🗑️ Verbindung entfernt.', 'info');
+    }
+
+    async function loadFromServer() {
+      const url = (localStorage.getItem('zp10_server_url') || document.getElementById('serverUrl').value.trim()).replace(/\/$/, '');
+      const key = localStorage.getItem('zp10_server_key') || document.getElementById('serverKey').value.trim();
+      if (!url || !key) { setServerStatus('⚠️ Bitte zuerst speichern.', 'warning'); return; }
+
+      setServerStatus('⏳ Lade Daten vom Server…', 'info');
+      try {
+        const res = await fetch(`${url}/results.php?key=${encodeURIComponent(key)}`);
+        if (res.status === 401) { setServerStatus('❌ Falscher API-Schlüssel.', 'error'); return; }
+        if (!res.ok) { setServerStatus(`❌ Server-Fehler: ${res.status}`, 'error'); return; }
+        const serverData = await res.json();
+        if (!Array.isArray(serverData)) { setServerStatus('❌ Unerwartetes Datenformat.', 'error'); return; }
+
+        // Vorhandene lokale Daten mit Server-Daten zusammenführen
+        const local = loadData();
+        serverData.forEach(serverSt => {
+          const existing = local.find(st => st.code === serverSt.code || st.name === serverSt.name);
+          if (existing) {
+            // Module zusammenführen (neuestes gewinnt)
+            Object.entries(serverSt.modules || {}).forEach(([mid, mod]) => {
+              if (!existing.modules[mid] || mod.lastAttempt > (existing.modules[mid].lastAttempt || '')) {
+                existing.modules[mid] = mod;
+              }
+            });
+            existing.totalXP = Math.max(existing.totalXP || 0, serverSt.totalXP || 0);
+          } else {
+            local.push(serverSt);
+          }
+        });
+        saveData(local);
+        renderAllTables();
+        setServerStatus(`✅ ${serverData.length} Schüler geladen und zusammengeführt.`, 'success');
+      } catch (e) {
+        setServerStatus(`❌ Verbindungsfehler: ${e.message}`, 'error');
+      }
+    }
+
+    function setServerStatus(msg, type) {
+      const colors = { success: '#10b981', warning: '#f59e0b', error: '#ef4444', info: '#6366f1' };
+      document.getElementById('serverStatus').innerHTML =
+        `<span style="color:${colors[type] || '#666'};font-weight:600;">${msg}</span>`;
+    }
+
+    // Beim Laden: Server-URL in zp10-storage.js eintragen (falls vorhanden)
+    (function initServerSync() {
+      const url = localStorage.getItem('zp10_server_url');
+      const key = localStorage.getItem('zp10_server_key');
+      if (url && key && typeof ZP10Storage !== 'undefined') {
+        ZP10Storage.SERVER_URL = url;
+        ZP10Storage.API_KEY = key;
+        ZP10Storage.flushSyncQueue?.();
+      }
+    })();
+
+    function clearData() {
+      if (confirm('⚠️ Alle Daten löschen?')) { localStorage.removeItem('zp10_lehrer_data'); renderAllTables(); alert('✅ Gelöscht.'); }
+    }
+
+    function renderAllTables() { renderClassTable(); renderHeatmap(); renderRecommendations(); renderCompetencies(); renderReasoningTab(); }
+
+    // ===== BEGRÜNDUNGEN BEWERTEN =====
+    function renderReasoningTab() {
+      const container = document.getElementById('reasoningList');
+      const reasoning = JSON.parse(localStorage.getItem('zp10_escape_reasoning') || '[]');
+      const results = JSON.parse(localStorage.getItem('zp10_escape_results') || '{}');
+
+      if (!reasoning.length) {
+        container.innerHTML = '<p style="color:var(--text-secondary);font-style:italic;">Noch keine Begründungen vorhanden. Schüler müssen zuerst den Escape Room absolvieren.</p>';
+        return;
+      }
+
+      const studentName = results.studentName || 'Unbekannt';
+      const grades = JSON.parse(localStorage.getItem('zp10_reasoning_grades') || '{}');
+
+      container.innerHTML = `<div style="background:var(--primary-light);padding:1rem;border-radius:12px;margin-bottom:1rem;">
+        <strong>Schüler:</strong> ${studentName} | <strong>Gesamt-XP:</strong> ${results.totalXP || 0} | <strong>Abgeschlossen:</strong> ${results.completedAt || '-'}
+      </div>` + reasoning.map((item, idx) => {
+        const saved = grades[item.puzzleId] || {};
+        return `<div style="background:var(--surface);border:2px solid var(--border);border-radius:16px;padding:1.5rem;position:relative;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.75rem;">
+            <div>
+              <span style="background:linear-gradient(135deg,#FF6B8A,#8B5CF6);color:white;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:700;">Raum ${item.roomId + 1}</span>
+              <span style="background:var(--primary-light);color:var(--primary);padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:700;margin-left:8px;">${item.type === 'reason' ? 'Begründung' : 'Fehleranalyse'}</span>
+            </div>
+            <span style="font-size:0.8rem;color:var(--text-secondary);">${item.competencies?.join(', ') || ''}</span>
+          </div>
+          <h4 style="margin-bottom:0.5rem;font-family:'Nunito Sans',sans-serif;">${item.title}</h4>
+          <div style="background:var(--bg);padding:1rem;border-radius:10px;margin-bottom:1rem;font-size:0.9rem;line-height:1.6;">${item.question}</div>
+          <div style="font-weight:600;margin-bottom:0.5rem;color:var(--primary);">Schüler-Antwort:</div>
+          <div style="background:#FFF8E1;border-left:4px solid var(--warning);padding:1rem;border-radius:0 10px 10px 0;margin-bottom:1rem;font-size:0.95rem;line-height:1.6;white-space:pre-wrap;">${item.answer || '<em>Keine Antwort</em>'}</div>
+          ${item.expectedAnswer ? `<details style="margin-bottom:1rem;"><summary style="cursor:pointer;font-weight:600;color:var(--success);">Erwartete Antwort anzeigen</summary><div style="background:var(--success-light);padding:1rem;border-radius:10px;margin-top:0.5rem;font-size:0.9rem;line-height:1.6;">${item.expectedAnswer}</div></details>` : ''}
+          <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+            <label style="font-weight:600;">Bewertung:</label>
+            <select id="grade_${item.puzzleId}" onchange="saveReasoningGrade('${item.puzzleId}', this.value)" style="padding:8px 16px;border-radius:10px;border:2px solid var(--border);font-size:1rem;background:var(--surface);">
+              <option value="">-- Punkte --</option>
+              ${[0,1,2,3,4,5,6,7,8,9,10].map(n => `<option value="${n}" ${saved.grade == n ? 'selected' : ''}>${n}/10</option>`).join('')}
+            </select>
+            <input type="text" id="comment_${item.puzzleId}" value="${saved.comment || ''}" placeholder="Kommentar (optional)" onchange="saveReasoningComment('${item.puzzleId}', this.value)" style="flex:1;min-width:200px;padding:8px 16px;border-radius:10px;border:2px solid var(--border);font-size:0.9rem;">
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function saveReasoningGrade(puzzleId, grade) {
+      const grades = JSON.parse(localStorage.getItem('zp10_reasoning_grades') || '{}');
+      if (!grades[puzzleId]) grades[puzzleId] = {};
+      grades[puzzleId].grade = parseInt(grade);
+      grades[puzzleId].gradedAt = new Date().toISOString();
+      localStorage.setItem('zp10_reasoning_grades', JSON.stringify(grades));
+    }
+
+    function saveReasoningComment(puzzleId, comment) {
+      const grades = JSON.parse(localStorage.getItem('zp10_reasoning_grades') || '{}');
+      if (!grades[puzzleId]) grades[puzzleId] = {};
+      grades[puzzleId].comment = comment;
+      localStorage.setItem('zp10_reasoning_grades', JSON.stringify(grades));
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadTheme();
+      renderAllTables();
+      document.addEventListener('click', e => { if (e.target.classList.contains('student-name')) openProfile(e.target.textContent); });
+    });
+  </script>
+</body>
+</html>

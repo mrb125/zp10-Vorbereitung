@@ -1,0 +1,1843 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exponentialfunktionen – Klassenarbeitsvorbereitung Klasse 10</title>
+<style>
+  :root {
+    --blue: #2563eb; --blue-light: #dbeafe; --blue-dark: #1e40af;
+    --green: #16a34a; --green-light: #dcfce7;
+    --red: #dc2626; --red-light: #fee2e2;
+    --yellow: #ca8a04; --yellow-light: #fef9c3;
+    --purple: #7c3aed; --purple-light: #ede9fe;
+    --gray: #6b7280; --gray-light: #f3f4f6; --gray-dark: #1f2937;
+    --orange: #ea580c; --orange-light: #fff7ed;
+    --radius: 10px; --shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: var(--gray-dark); min-height: 100vh; }
+
+  /* Header */
+  header { background: linear-gradient(135deg, var(--blue-dark), var(--blue)); color: white; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 12px rgba(0,0,0,0.2); }
+  header h1 { font-size: 1.3rem; }
+  header h1 span { font-size: 0.9rem; opacity: 0.8; display: block; }
+  .xp-bar { text-align: right; }
+  .xp-bar .xp-num { font-size: 1.4rem; font-weight: bold; }
+  .xp-bar .xp-label { font-size: 0.75rem; opacity: 0.8; }
+  .xp-bar .level-badge { background: var(--yellow); color: #1a1a1a; border-radius: 20px; padding: 2px 10px; font-size: 0.8rem; font-weight: bold; margin-top: 4px; display: inline-block; }
+  .xp-bar .streak-hdr { background: #f59e0b; color: white; border-radius: 20px; padding: 2px 10px; font-size: 0.75rem; font-weight: bold; margin-top: 4px; display: none; }
+  .xp-bar .streak-hdr.show { display: inline-block; }
+
+  /* Tabs */
+  nav { background: white; display: flex; overflow-x: auto; box-shadow: var(--shadow); border-bottom: 2px solid #e5e7eb; }
+  nav button { flex-shrink: 0; padding: 12px 16px; border: none; background: none; cursor: pointer; font-size: 0.85rem; font-weight: 500; color: var(--gray); border-bottom: 3px solid transparent; transition: all 0.2s; white-space: nowrap; }
+  nav button:hover { background: var(--blue-light); color: var(--blue-dark); }
+  nav button.active { color: var(--blue-dark); border-bottom-color: var(--blue); background: var(--blue-light); font-weight: 600; }
+  nav button .tab-icon { margin-right: 4px; }
+
+  /* Main */
+  main { max-width: 960px; margin: 0 auto; padding: 20px 16px 40px; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* Cards */
+  .card { background: white; border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; margin-bottom: 16px; }
+  .card h2 { font-size: 1.15rem; color: var(--blue-dark); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid var(--blue-light); }
+  .card h3 { font-size: 1rem; color: var(--gray-dark); margin: 12px 0 8px; }
+
+  /* Formula Box */
+  .formula-box { background: linear-gradient(135deg, var(--blue-light), #e0f2fe); border: 2px solid var(--blue); border-radius: var(--radius); padding: 16px 20px; margin: 12px 0; text-align: center; }
+  .formula-box .main-formula { font-size: 1.6rem; font-weight: bold; color: var(--blue-dark); font-family: 'Georgia', serif; margin-bottom: 8px; }
+  .formula-box .formula-desc { font-size: 0.85rem; color: #374151; }
+  .formula-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 10px 0; }
+  .formula-item { background: var(--gray-light); border-radius: 8px; padding: 10px; text-align: center; border-left: 3px solid var(--blue); }
+  .formula-item .fi-formula { font-size: 1.1rem; font-weight: bold; font-family: 'Georgia', serif; color: var(--blue-dark); }
+  .formula-item .fi-desc { font-size: 0.75rem; color: var(--gray); margin-top: 4px; }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.9rem; }
+  th { background: var(--blue-dark); color: white; padding: 10px 12px; text-align: left; }
+  td { padding: 9px 12px; border-bottom: 1px solid #e5e7eb; }
+  tr:hover td { background: var(--blue-light); }
+  tr:nth-child(even) td { background: #f9fafb; }
+  tr:nth-child(even):hover td { background: var(--blue-light); }
+
+  /* Algorithm Box */
+  .algo-box { background: var(--purple-light); border: 1px solid #a78bfa; border-radius: var(--radius); padding: 16px; }
+  .algo-step { display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start; }
+  .algo-step:last-child { margin-bottom: 0; }
+  .step-num { background: var(--purple); color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.85rem; flex-shrink: 0; }
+  .step-text { flex: 1; }
+  .step-formula { font-family: 'Georgia', serif; background: white; border-radius: 6px; padding: 4px 10px; display: inline-block; margin-top: 4px; font-size: 0.95rem; border: 1px solid #c4b5fd; }
+
+  /* Power rules grid */
+  .power-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+  .power-rule { background: var(--orange-light); border: 1px solid #fed7aa; border-radius: 8px; padding: 12px; }
+  .power-rule .pr-formula { font-family: 'Georgia', serif; font-size: 1.05rem; font-weight: bold; color: var(--orange); text-align: center; margin-bottom: 6px; }
+  .power-rule .pr-name { font-size: 0.75rem; color: var(--gray); text-align: center; }
+
+  /* Alert / Info boxes */
+  .info-box { border-radius: 8px; padding: 12px 16px; margin: 12px 0; display: flex; gap: 10px; }
+  .info-box.blue { background: var(--blue-light); border-left: 4px solid var(--blue); }
+  .info-box.green { background: var(--green-light); border-left: 4px solid var(--green); }
+  .info-box.yellow { background: var(--yellow-light); border-left: 4px solid var(--yellow); }
+  .info-box.red { background: var(--red-light); border-left: 4px solid var(--red); }
+  .info-box .ib-icon { font-size: 1.2rem; }
+
+  /* Canvas section */
+  #graph-canvas { border: 2px solid #d1d5db; border-radius: 8px; background: white; display: block; }
+  .slider-row { display: flex; align-items: center; gap: 12px; margin: 8px 0; }
+  .slider-row label { min-width: 80px; font-weight: 600; font-size: 0.9rem; }
+  .slider-row input[type=range] { flex: 1; accent-color: var(--blue); }
+  .slider-val { min-width: 50px; text-align: center; font-weight: bold; background: var(--blue-light); border-radius: 6px; padding: 3px 8px; font-size: 0.9rem; color: var(--blue-dark); }
+  .toggle-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .toggle-btn { padding: 6px 14px; border: 2px solid #d1d5db; border-radius: 20px; cursor: pointer; font-size: 0.82rem; background: white; transition: all 0.2s; font-weight: 500; }
+  .toggle-btn.active { border-color: var(--blue); background: var(--blue); color: white; }
+  .graph-info { background: var(--gray-light); border-radius: 8px; padding: 12px; margin-top: 12px; font-family: 'Georgia', serif; font-size: 0.95rem; }
+
+  /* Exercise cards */
+  .exercise-card { background: white; border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; margin-bottom: 16px; border-left: 4px solid var(--blue); }
+  .exercise-card.easy { border-left-color: var(--green); }
+  .exercise-card.medium { border-left-color: var(--yellow); }
+  .exercise-card.hard { border-left-color: var(--red); }
+  .exercise-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+  .exercise-title { font-weight: 600; color: var(--gray-dark); }
+  .diff-badge { font-size: 0.72rem; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+  .diff-badge.easy { background: var(--green-light); color: var(--green); }
+  .diff-badge.medium { background: var(--yellow-light); color: var(--yellow); }
+  .diff-badge.hard { background: var(--red-light); color: var(--red); }
+  .xp-badge { font-size: 0.72rem; padding: 2px 8px; border-radius: 10px; font-weight: 600; background: var(--purple-light); color: var(--purple); margin-left: 6px; }
+  .question-text { margin-bottom: 12px; line-height: 1.5; }
+  .mc-options { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+  .mc-option { display: flex; align-items: center; gap: 10px; padding: 9px 14px; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+  .mc-option:hover { border-color: var(--blue); background: var(--blue-light); }
+  .mc-option.selected { border-color: var(--blue); background: var(--blue-light); }
+  .mc-option.correct { border-color: var(--green); background: var(--green-light); }
+  .mc-option.wrong { border-color: var(--red); background: var(--red-light); }
+  .mc-option input[type=radio] { accent-color: var(--blue); }
+  .input-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+  .input-row input[type=text], .input-row input[type=number] { border: 2px solid #d1d5db; border-radius: 8px; padding: 8px 12px; font-size: 0.95rem; width: 160px; transition: border-color 0.2s; }
+  .input-row input:focus { outline: none; border-color: var(--blue); }
+  .input-row input.correct { border-color: var(--green); background: var(--green-light); }
+  .input-row input.wrong { border-color: var(--red); background: var(--red-light); }
+  .btn { padding: 8px 18px; border: none; border-radius: 8px; cursor: pointer; font-size: 0.88rem; font-weight: 600; transition: all 0.2s; }
+  .btn-primary { background: var(--blue); color: white; }
+  .btn-primary:hover { background: var(--blue-dark); }
+  .btn-secondary { background: var(--gray-light); color: var(--gray-dark); }
+  .btn-secondary:hover { background: #e5e7eb; }
+  .btn-hint { background: var(--yellow-light); color: var(--yellow); border: 1px solid var(--yellow); }
+  .feedback-box { border-radius: 8px; padding: 12px 16px; margin-top: 10px; display: none; }
+  .feedback-box.show { display: block; }
+  .feedback-box.correct { background: var(--green-light); border: 1px solid var(--green); color: #14532d; }
+  .feedback-box.wrong { background: var(--red-light); border: 1px solid var(--red); color: #7f1d1d; }
+  .step-by-step { margin-top: 8px; }
+  .step-by-step details summary { cursor: pointer; font-weight: 600; color: var(--blue-dark); margin-top: 6px; }
+  .step-by-step ol { margin: 8px 0 0 20px; }
+  .step-by-step li { margin-bottom: 4px; font-family: 'Georgia', serif; }
+
+  /* Progress / XP */
+  .progress-bar-wrap { background: #e5e7eb; border-radius: 10px; height: 12px; margin: 6px 0; overflow: hidden; }
+  .progress-bar-fill { height: 100%; border-radius: 10px; background: linear-gradient(90deg, var(--blue), var(--purple)); transition: width 0.5s; }
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+  .stat-card { background: var(--blue-light); border-radius: 8px; padding: 14px; text-align: center; }
+  .stat-card .stat-num { font-size: 1.8rem; font-weight: bold; color: var(--blue-dark); }
+  .stat-card .stat-label { font-size: 0.75rem; color: var(--gray); }
+
+  /* Achievements */
+  .achievement { display: flex; gap: 12px; align-items: center; padding: 10px 14px; border-radius: 8px; margin-bottom: 8px; }
+  .achievement.unlocked { background: var(--yellow-light); border: 1px solid var(--yellow); }
+  .achievement.locked { background: var(--gray-light); border: 1px solid #e5e7eb; opacity: 0.6; }
+  .achievement .ach-icon { font-size: 1.6rem; }
+  .achievement .ach-title { font-weight: 600; }
+  .achievement .ach-desc { font-size: 0.78rem; color: var(--gray); }
+
+  /* Toast notification */
+  #toast { position: fixed; bottom: 20px; right: 20px; background: var(--gray-dark); color: white; padding: 12px 20px; border-radius: 10px; font-size: 0.9rem; z-index: 9999; transform: translateY(100px); opacity: 0; transition: all 0.3s; pointer-events: none; }
+  #toast.show { transform: translateY(0); opacity: 1; }
+  #toast.green { background: var(--green); }
+  #toast.red { background: var(--red); }
+  #toast.yellow { background: #b45309; }
+
+  /* KLP Tags */
+  .klp-tag { font-size: 0.68rem; font-weight: 700; border-radius: 12px; padding: 2px 8px; display: inline-block; }
+  .klp-tag.K1 { background: #ccfbf1; color: #0f766e; }
+  .klp-tag.K2 { background: var(--purple-light); color: var(--purple); }
+  .klp-tag.K3 { background: var(--orange-light); color: var(--orange); }
+  .klp-tag.K4 { background: #e0f2fe; color: #0369a1; }
+  .klp-tag.K5 { background: var(--green-light); color: var(--green); }
+  .klp-tag.K6 { background: #fce7f3; color: #9d174d; }
+  .klp-info-box { background: #f0fdfa; border: 1px solid #99f6e4; border-radius: var(--radius); padding: 14px 16px; margin-bottom: 14px; }
+  .klp-info-box h3 { color: #0d9488; font-size: 0.88rem; margin-bottom: 8px; }
+  .klp-mini-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px,1fr)); gap: 6px; }
+  .klp-mini-item { background: white; border-radius: 6px; padding: 6px 10px; font-size: 0.75rem; border-left: 3px solid #0d9488; }
+  /* Streak badge */
+  .streak-live { background: #f59e0b; color: white; border-radius: 20px; padding: 2px 10px; font-size: 0.75rem; font-weight: 700; display: none; }
+  .streak-live.show { display: inline-block; }
+
+  /* Diagnosis */
+  .kompetenz-section { margin-bottom: 20px; }
+  .kompetenz-header { font-weight: 700; color: var(--blue-dark); margin-bottom: 8px; padding: 6px 12px; background: var(--blue-light); border-radius: 6px; }
+
+  /* Applications */
+  .app-card { background: white; border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 16px; }
+  .app-card-header { padding: 14px 18px; color: white; display: flex; align-items: center; gap: 10px; font-weight: 600; }
+  .app-card-header.zerfall { background: linear-gradient(135deg, #7c3aed, #5b21b6); }
+  .app-card-header.bakterien { background: linear-gradient(135deg, #16a34a, #14532d); }
+  .app-card-header.zins { background: linear-gradient(135deg, #ca8a04, #854d0e); }
+  .app-card-header.medikament { background: linear-gradient(135deg, #0891b2, #0e7490); }
+  .app-card-header.bevoelkerung { background: linear-gradient(135deg, #ea580c, #9a3412); }
+  .app-card-header.akku { background: linear-gradient(135deg, #2563eb, #1e3a8a); }
+  .app-card-body { padding: 16px 18px; }
+  .context-text { font-size: 0.92rem; color: #4b5563; margin-bottom: 14px; line-height: 1.6; background: var(--gray-light); padding: 10px 14px; border-radius: 8px; }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    header { flex-direction: column; gap: 8px; text-align: center; }
+    .formula-box .main-formula { font-size: 1.3rem; }
+    main { padding: 12px 8px 40px; }
+    .input-row input[type=text], .input-row input[type=number] { width: 120px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>📈 Exponentialfunktionen <span>Klassenarbeitsvorbereitung · NRW Gymnasium Klasse 10</span></h1>
+  </div>
+  <div class="xp-bar">
+    <div class="xp-num" id="xp-display">0 XP</div>
+    <div class="xp-label">Gesamtpunkte</div>
+    <div class="level-badge" id="level-display">Einsteiger</div>
+    <div class="streak-hdr" id="streak-display">🔥 0er-Serie</div>
+  </div>
+</header>
+
+<nav id="main-nav">
+  <button class="active" onclick="showTab('theorie',this)"><span class="tab-icon">📚</span>Theorie</button>
+  <button onclick="showTab('graph',this)"><span class="tab-icon">📊</span>Graph-Labor</button>
+  <button onclick="showTab('grundaufgaben',this)"><span class="tab-icon">🔢</span>Grundaufgaben</button>
+  <button onclick="showTab('gleichungen',this)"><span class="tab-icon">✏️</span>Gleichungen</button>
+  <button onclick="showTab('anwendungen',this)"><span class="tab-icon">🌍</span>Anwendungen</button>
+  <button onclick="showTab('diagnose',this)"><span class="tab-icon">🔍</span>Diagnose</button>
+  <button onclick="showTab('fortschritt',this)"><span class="tab-icon">🏆</span>Fortschritt</button>
+  <button onclick="showTab('erweitert',this)"><span class="tab-icon">🎯</span>Erweitert</button>
+</nav>
+
+<main>
+
+<!-- ===================== TAB 1: THEORIE ===================== -->
+<div id="tab-theorie" class="tab-content active">
+  <div class="card">
+    <h2>📐 Grundform der Exponentialfunktion</h2>
+    <div class="formula-box">
+      <div class="main-formula">f(x) = a · b<sup>x</sup></div>
+      <div class="formula-desc">
+        <strong>a</strong> = Anfangswert (y-Achsenabschnitt, da f(0) = a · b⁰ = a) &nbsp;|&nbsp;
+        <strong>b</strong> = Basis / Wachstumsfaktor &nbsp;|&nbsp;
+        <strong>b > 0, b ≠ 1</strong>
+      </div>
+    </div>
+    <div class="formula-grid">
+      <div class="formula-item"><div class="fi-formula">b > 1</div><div class="fi-desc">Exponentielles Wachstum</div></div>
+      <div class="formula-item"><div class="fi-formula">0 &lt; b &lt; 1</div><div class="fi-desc">Exponentieller Zerfall</div></div>
+      <div class="formula-item"><div class="fi-formula">a > 0</div><div class="fi-desc">Graph oberhalb x-Achse</div></div>
+      <div class="formula-item"><div class="fi-formula">a &lt; 0</div><div class="fi-desc">Graph unterhalb x-Achse</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📋 Eigenschaften im Überblick</h2>
+    <table>
+      <tr><th>Eigenschaft</th><th>b > 1 (Wachstum)</th><th>0 &lt; b &lt; 1 (Zerfall)</th></tr>
+      <tr><td>Monotonie</td><td>Streng monoton steigend</td><td>Streng monoton fallend</td></tr>
+      <tr><td>Y-Achsenabschnitt</td><td>f(0) = a</td><td>f(0) = a</td></tr>
+      <tr><td>Nullstellen</td><td>Keine (falls a ≠ 0)</td><td>Keine (falls a ≠ 0)</td></tr>
+      <tr><td>Asymptote</td><td>x-Achse (y = 0), waagerecht</td><td>x-Achse (y = 0), waagerecht</td></tr>
+      <tr><td>Definitionsmenge</td><td>ℝ (alle reellen Zahlen)</td><td>ℝ (alle reellen Zahlen)</td></tr>
+      <tr><td>Wertemenge (a>0)</td><td>(0; +∞)</td><td>(0; +∞)</td></tr>
+      <tr><td>Wertemenge (a&lt;0)</td><td>(−∞; 0)</td><td>(−∞; 0)</td></tr>
+      <tr><td>Verlauf für x→+∞</td><td>f(x) → +∞</td><td>f(x) → 0</td></tr>
+      <tr><td>Verlauf für x→−∞</td><td>f(x) → 0</td><td>f(x) → +∞</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>🔄 Wachstumsrate ↔ Wachstumsfaktor</h2>
+    <div class="formula-grid">
+      <div class="formula-item">
+        <div class="fi-formula">b = 1 + p/100</div>
+        <div class="fi-desc">Faktor aus Rate berechnen</div>
+      </div>
+      <div class="formula-item">
+        <div class="fi-formula">p = (b − 1) · 100</div>
+        <div class="fi-desc">Rate aus Faktor berechnen</div>
+      </div>
+    </div>
+    <table style="margin-top:10px;">
+      <tr><th>Wachstumsrate p</th><th>Wachstumsfaktor b</th><th>Bedeutung</th></tr>
+      <tr><td>+5 %</td><td>1,05</td><td>5 % Wachstum pro Einheit</td></tr>
+      <tr><td>−20 %</td><td>0,8</td><td>20 % Abnahme pro Einheit</td></tr>
+      <tr><td>+100 %</td><td>2</td><td>Verdoppelung</td></tr>
+      <tr><td>−50 %</td><td>0,5</td><td>Halbierung</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>🔬 Zwei-Punkte-Methode (Algorithmus)</h2>
+    <p style="margin-bottom:12px; color: #4b5563;">Gegeben: Zwei Punkte P₁(x₁|y₁) und P₂(x₂|y₂) – gesucht: f(x) = a · bˣ</p>
+    <div class="algo-box">
+      <div class="algo-step">
+        <div class="step-num">1</div>
+        <div class="step-text">
+          <strong>Gleichungssystem aufstellen:</strong>
+          <div class="step-formula">y₁ = a · b<sup>x₁</sup> &nbsp;&nbsp; und &nbsp;&nbsp; y₂ = a · b<sup>x₂</sup></div>
+        </div>
+      </div>
+      <div class="algo-step">
+        <div class="step-num">2</div>
+        <div class="step-text">
+          <strong>Dividieren (a kürzt sich heraus):</strong>
+          <div class="step-formula">y₂/y₁ = b<sup>x₂−x₁</sup></div>
+        </div>
+      </div>
+      <div class="algo-step">
+        <div class="step-num">3</div>
+        <div class="step-text">
+          <strong>b berechnen durch Potenzieren:</strong>
+          <div class="step-formula">b = (y₂/y₁)<sup>1/(x₂−x₁)</sup></div>
+        </div>
+      </div>
+      <div class="algo-step">
+        <div class="step-num">4</div>
+        <div class="step-text">
+          <strong>a rückwärts einsetzen:</strong>
+          <div class="step-formula">a = y₁ / b<sup>x₁</sup></div>
+        </div>
+      </div>
+      <div class="algo-step">
+        <div class="step-num">5</div>
+        <div class="step-text">
+          <strong>Probe: Beide Punkte einsetzen!</strong>
+          <div class="step-formula">f(x₁) = y₁ ✓ &nbsp;&nbsp; f(x₂) = y₂ ✓</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📏 Potenzregeln (Taschenrechner-Wissen)</h2>
+    <div class="power-grid">
+      <div class="power-rule"><div class="pr-formula">aˣ · aʸ = aˣ⁺ʸ</div><div class="pr-name">Produktregel</div></div>
+      <div class="power-rule"><div class="pr-formula">aˣ / aʸ = aˣ⁻ʸ</div><div class="pr-name">Quotientenregel</div></div>
+      <div class="power-rule"><div class="pr-formula">(aˣ)ʸ = aˣ·ʸ</div><div class="pr-name">Potenzregel</div></div>
+      <div class="power-rule"><div class="pr-formula">a⁰ = 1</div><div class="pr-name">Nullte Potenz</div></div>
+      <div class="power-rule"><div class="pr-formula">a⁻ˣ = 1/aˣ</div><div class="pr-name">Negative Exponenten</div></div>
+      <div class="power-rule"><div class="pr-formula">a^(1/n) = ⁿ√a</div><div class="pr-name">Bruchexponent</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>⏱️ Halbwertszeit &amp; Verdoppelungszeit</h2>
+    <div class="info-box blue">
+      <span class="ib-icon">ℹ️</span>
+      <div><strong>Halbwertszeit T½</strong>: Zeit, nach der der Wert auf die Hälfte gesunken ist<br>
+      Gesucht: x, sodass f(x) = a/2, also a · b<sup>T½</sup> = a/2</div>
+    </div>
+    <div class="formula-box">
+      <div class="main-formula">T½ = log(0,5) / log(b)</div>
+      <div class="formula-desc">Oder gleichwertig: T½ = ln(0,5) / ln(b) &nbsp;|&nbsp; Achtung: log(0,5) ist <strong>negativ</strong>!</div>
+    </div>
+    <div class="formula-box" style="background: linear-gradient(135deg, #dcfce7, #bbf7d0); border-color: var(--green);">
+      <div class="main-formula" style="color: var(--green);">T₂ = log(2) / log(b)</div>
+      <div class="formula-desc" style="color:#14532d;">Verdopplungszeit: Zeit, nach der sich der Wert verdoppelt hat</div>
+    </div>
+    <div class="info-box yellow">
+      <span class="ib-icon">⚠️</span>
+      <div><strong>Häufiger Fehler:</strong> T½ ist <em>nicht</em> der Exponent, sondern muss über Logarithmus berechnet werden. Beispiel: f(x) = 2 · 0,8ˣ → T½ = log(0,5)/log(0,8) ≈ 3,11</div>
+    </div>
+    <div class="info-box red">
+      <span class="ib-icon">❌</span>
+      <div><strong>Fehlvorstellungen, die in Klassenarbeiten verloren gehen:</strong><br>
+      1. "Eine Exponentialfunktion hat Nullstellen" – Falsch! (Asymptote y=0)<br>
+      2. "b=2 bedeutet 200% Wachstum" – Falsch! b=2 bedeutet 100% Wachstum (p=100)<br>
+      3. "f(−1) ist negativ" – Falsch für b>0! (b⁻¹ = 1/b > 0)<br>
+      4. "a ist der y-Achsenabschnitt nur wenn x=1" – Falsch! a = f(0) immer<br>
+      5. "Die Halbwertszeit ist 1/b" – Falsch! Logarithmus notwendig<br>
+      6. "Wachstumsfaktor 0,95 bedeutet 95% Wachstum" – Falsch! 5% Abnahme</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== TAB 2: GRAPH-LABOR ===================== -->
+<div id="tab-graph" class="tab-content">
+  <div class="card">
+    <h2>📊 Interaktives Graph-Labor</h2>
+    <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start;">
+      <div style="flex: 1; min-width: 300px;">
+        <canvas id="graph-canvas" width="460" height="380"></canvas>
+      </div>
+      <div style="flex: 0 0 220px;">
+        <div class="slider-row">
+          <label>a =</label>
+          <input type="range" id="slider-a" min="-4" max="4" step="0.1" value="1" oninput="updateGraph()">
+          <span class="slider-val" id="val-a">1.0</span>
+        </div>
+        <div class="slider-row">
+          <label>b =</label>
+          <input type="range" id="slider-b" min="0.1" max="4" step="0.05" value="2" oninput="updateGraph()">
+          <span class="slider-val" id="val-b">2.00</span>
+        </div>
+        <div class="toggle-row">
+          <button class="toggle-btn" id="toggle-asymptote" onclick="toggleOption('asymptote')">Asymptote</button>
+          <button class="toggle-btn active" id="toggle-grid" onclick="toggleOption('grid')">Gitterlinien</button>
+          <button class="toggle-btn" id="toggle-tangent" onclick="toggleOption('tangent')">f(0)-Punkt</button>
+          <button class="toggle-btn" id="toggle-mirror" onclick="toggleOption('mirror')">Spiegelung</button>
+        </div>
+        <div class="graph-info" id="graph-info">
+          f(x) = 1 · 2ˣ
+        </div>
+        <div style="margin-top: 10px; background: var(--gray-light); border-radius: 8px; padding: 10px; font-size: 0.82rem; color: #4b5563;">
+          <strong>Ablesehilfe:</strong><br>
+          • Y-Achsenabschnitt: f(0) = a<br>
+          • Asymptote: y = 0<br>
+          • Wachstumsfaktor ablesen: f(x+1)/f(x) = b
+        </div>
+        <div style="margin-top: 10px;">
+          <strong style="font-size: 0.85rem;">Graph ablesen – Übung:</strong>
+          <div id="read-task" style="margin-top: 8px; padding: 10px; background: var(--blue-light); border-radius: 8px; font-size: 0.85rem;"></div>
+          <div style="margin-top: 6px; display: flex; gap: 6px;">
+            <input type="text" id="read-a-input" placeholder="a = ?" style="width:80px; border:2px solid #d1d5db; border-radius:6px; padding:5px 8px; font-size:0.85rem;">
+            <input type="text" id="read-b-input" placeholder="b = ?" style="width:80px; border:2px solid #d1d5db; border-radius:6px; padding:5px 8px; font-size:0.85rem;">
+            <button class="btn btn-primary" onclick="checkReadTask()" style="padding:5px 10px; font-size:0.82rem;">✓</button>
+          </div>
+          <div id="read-feedback" style="margin-top:6px; font-size:0.82rem;"></div>
+          <button class="btn btn-secondary" onclick="newReadTask()" style="margin-top:6px; font-size:0.78rem; padding:4px 10px;">Neue Aufgabe</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== TAB 3: GRUNDAUFGABEN ===================== -->
+<div id="tab-grundaufgaben" class="tab-content">
+  <div class="card" style="background: var(--blue-light); border: 1px solid var(--blue);">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div><strong>Grundaufgaben:</strong> Teste dein Basiswissen zu Exponentialfunktionen</div>
+      <div id="grund-score" style="font-weight: bold; color: var(--blue-dark);">0 / 10 gelöst</div>
+    </div>
+  </div>
+  <div id="grundaufgaben-container"></div>
+</div>
+
+<!-- ===================== TAB 4: GLEICHUNGEN BESTIMMEN ===================== -->
+<div id="tab-gleichungen" class="tab-content">
+  <div class="card" style="background: var(--purple-light); border: 1px solid #a78bfa;">
+    <strong>Zwei-Punkte-Methode:</strong> Bestimme die Gleichung f(x) = a · bˣ aus zwei gegebenen Punkten.
+  </div>
+  <div id="gleichungen-container"></div>
+</div>
+
+<!-- ===================== TAB 5: ANWENDUNGEN ===================== -->
+<div id="tab-anwendungen" class="tab-content">
+  <div class="card" style="background: var(--green-light); border: 1px solid var(--green);">
+    <strong>Anwendungsaufgaben:</strong> Reale Kontexte mit Exponentialfunktionen modellieren und berechnen.
+  </div>
+  <div id="anwendungen-container"></div>
+</div>
+
+<!-- ===================== TAB 6: DIAGNOSE ===================== -->
+<div id="tab-diagnose" class="tab-content">
+  <div class="card" style="background: var(--orange-light); border: 1px solid #fed7aa;">
+    <strong>🔍 Kompetenz-Diagnose:</strong> Prüfe gezielt 6 Kompetenzbereiche. Erhalte eine Auswertung mit Empfehlungen.
+  </div>
+  <div id="diagnose-container"></div>
+  <div id="diagnose-result" style="display:none;"></div>
+</div>
+
+<!-- ===================== TAB 7: FORTSCHRITT ===================== -->
+<div id="tab-fortschritt" class="tab-content">
+  <div class="card">
+    <h2>🏆 Dein Fortschritt</h2>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-num" id="stat-xp">0</div><div class="stat-label">Gesamt-XP</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-solved">0</div><div class="stat-label">Aufgaben gelöst</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-correct">0</div><div class="stat-label">Richtige Antworten</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-streak">0</div><div class="stat-label">Aktuelle Serie</div></div>
+    </div>
+    <div style="margin-top: 16px;">
+      <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 4px;">
+        <span>Level-Fortschritt: <strong id="level-name-display">Einsteiger</strong></span>
+        <span id="level-progress-text">0 / 50 XP</span>
+      </div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" id="level-bar" style="width: 0%"></div></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>🎖️ Errungenschaften</h2>
+    <div id="achievements-container"></div>
+  </div>
+  <div class="card">
+    <h2>📊 Kompetenz-Übersicht</h2>
+    <p style="font-size:0.8rem;color:var(--gray);margin-bottom:12px">Zugeordnet nach prozessbezogenen Kompetenzen des <strong>KLP NRW Mathematik Gymnasium Sek I</strong> (Inhaltsbereich 4: Funktionen, Jg. 9/10)</p>
+    <div id="kompetenz-overview"></div>
+  </div>
+  <div class="card klp-info-box" style="background:#f0fdfa;border:1px solid #99f6e4">
+    <h3 style="color:#0d9488;font-size:0.9rem;margin-bottom:10px">📜 Kernlehrplan NRW · Prozessbezogene Kompetenzen</h3>
+    <div class="klp-mini-grid">
+      <div class="klp-mini-item"><strong class="klp-tag K1">K1</strong> Argumentieren &amp; Beweisen</div>
+      <div class="klp-mini-item"><strong class="klp-tag K2">K2</strong> Problemlösen &amp; Erkunden</div>
+      <div class="klp-mini-item"><strong class="klp-tag K3">K3</strong> Modellieren</div>
+      <div class="klp-mini-item"><strong class="klp-tag K4">K4</strong> Darstellungen nutzen</div>
+      <div class="klp-mini-item"><strong class="klp-tag K5">K5</strong> Kommunizieren</div>
+      <div class="klp-mini-item"><strong class="klp-tag K6">K6</strong> Werkzeuge nutzen</div>
+    </div>
+    <p style="font-size:0.73rem;color:#134e4a;margin-top:8px">Jede Aufgabe in dieser App ist einem dieser Kompetenzbereiche zugeordnet (Tag sichtbar auf der Aufgabenkarte).</p>
+  </div>
+  <div class="card" style="text-align: center;">
+    <button class="btn btn-secondary" onclick="resetProgress()">🔄 Fortschritt zurücksetzen</button>
+  </div>
+</div>
+
+<!-- ===================== TAB 8: ERWEITERT ===================== -->
+<div id="tab-erweitert" class="tab-content">
+
+  <!-- Textaufgaben -->
+  <div class="card" style="background:var(--purple-light);border:1px solid #a78bfa;">
+    <strong>📝 Textaufgaben:</strong> Modelliere und berechne reale Situationen – lies genau und lies zweimal.
+  </div>
+  <div id="text-container"></div>
+
+  <!-- Begründungen wählen -->
+  <div class="card" style="background:var(--orange-light);border:1px solid #fed7aa;margin-top:8px;">
+    <strong>💬 Begründungen wählen:</strong> Wähle die mathematisch korrekte Begründung aus – typische Prüfungsaufgabe!
+  </div>
+  <div id="begruendung-container"></div>
+
+  <!-- Graphenaufgaben -->
+  <div class="card" style="background:var(--green-light);border:1px solid var(--green);margin-top:8px;">
+    <strong>📈 Graphenaufgaben:</strong> Lies Eigenschaften aus Graphen ab und ordne Gleichungen zu.
+  </div>
+  <div id="graph-aufgaben-container"></div>
+
+  <!-- Links -->
+  <div class="card" style="margin-top:8px;">
+    <h2>🔗 Weiterüben – Externe Ressourcen</h2>
+    <p style="font-size:0.85rem;color:var(--gray);margin-bottom:14px">Kostenlose Übungsaufgaben zu Exponentialfunktionen auf vertrauenswürdigen Bildungsplattformen:</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;">
+      <a href="https://de.serlo.org/mathe/funktionen/exponentialfunktionen" target="_blank" rel="noopener"
+         style="display:block;background:var(--blue-light);border:1px solid var(--blue);border-radius:10px;padding:14px;text-decoration:none;color:var(--blue-dark);">
+        <div style="font-weight:700;font-size:0.95rem;">🌱 Serlo</div>
+        <div style="font-size:0.78rem;margin-top:4px;color:var(--gray)">Kostenlose Lernplattform · Aufgaben mit Lösungen · de.serlo.org</div>
+      </a>
+      <a href="https://www.mathebibel.de/exponentialfunktion" target="_blank" rel="noopener"
+         style="display:block;background:var(--green-light);border:1px solid var(--green);border-radius:10px;padding:14px;text-decoration:none;color:var(--green-dark);">
+        <div style="font-weight:700;font-size:0.95rem;">📚 Mathebibel</div>
+        <div style="font-size:0.78rem;margin-top:4px;color:var(--gray)">Theorie + Aufgaben + Lösungen · mathebibel.de</div>
+      </a>
+      <a href="https://www.mathe-online.at/galerie/expo/expo.html" target="_blank" rel="noopener"
+         style="display:block;background:var(--yellow-light);border:1px solid var(--yellow);border-radius:10px;padding:14px;text-decoration:none;color:#713f12;">
+        <div style="font-weight:700;font-size:0.95rem;">🔢 Mathe-Online</div>
+        <div style="font-size:0.78rem;margin-top:4px;color:var(--gray)">Interaktive Galerie zu Exponentialfunktionen · AT</div>
+      </a>
+      <a href="https://www.khanacademy.org/math/algebra/x2f8bb11595b61c86:exponential-growth-decay" target="_blank" rel="noopener"
+         style="display:block;background:var(--orange-light);border:1px solid #fed7aa;border-radius:10px;padding:14px;text-decoration:none;color:#7c2d12;">
+        <div style="font-weight:700;font-size:0.95rem;">🎓 Khan Academy</div>
+        <div style="font-size:0.78rem;margin-top:4px;color:var(--gray)">Englisch · Videos + Aufgaben · Exponential growth & decay</div>
+      </a>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<div id="toast"></div>
+
+<script>
+// ===================== STATE =====================
+let state = {
+  xp: 0, solved: 0, correct: 0, streak: 0, maxStreak: 0,
+  answered: {}, // taskId -> {correct: bool, attempts: int}
+  kompetenz: { // KLP NRW K1-K6 (prozessbezogen)
+    K1: {name:'K1 · Argumentieren', sub:'Eigenschaften begründen', right:0, total:0},
+    K2: {name:'K4 · Darstellungen', sub:'Graph lesen & skizzieren', right:0, total:0},
+    K3: {name:'K2 · Problemlösen', sub:'Zwei-Punkte-Methode', right:0, total:0},
+    K4: {name:'K6 · Werkzeuge', sub:'Halbwertszeit / Logarithmus', right:0, total:0},
+    K5: {name:'K3 · Modellieren', sub:'Reale Anwendungen', right:0, total:0},
+    K6: {name:'K5 · Kommunizieren', sub:'Rate ↔ Faktor', right:0, total:0}
+  }
+};
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem('expo10_state');
+    if (saved) state = JSON.parse(saved);
+  } catch(e) {}
+}
+function saveState() {
+  localStorage.setItem('expo10_state', JSON.stringify(state));
+}
+
+// ===================== XP + LEVEL =====================
+const LEVELS = [
+  {name:'Einsteiger', min:0, max:50},
+  {name:'Lernender', min:50, max:150},
+  {name:'Fortgeschritten', min:150, max:300},
+  {name:'Experte', min:300, max:500},
+  {name:'Meister', min:500, max:Infinity}
+];
+
+function getLevel() {
+  return LEVELS.find(l => state.xp >= l.min && state.xp < l.max) || LEVELS[LEVELS.length-1];
+}
+
+function addXP(amount, taskId) {
+  if (state.answered[taskId]?.correct) return 0; // already correctly answered
+  const bonus = state.streak >= 4 ? 5 : state.streak >= 2 ? 2 : 0;
+  const total = amount + bonus;
+  state.xp += total;
+  state.solved++;
+  state.correct++;
+  state.streak++;
+  if (state.streak > state.maxStreak) state.maxStreak = state.streak;
+  if (!state.answered[taskId]) state.answered[taskId] = {correct: true, attempts: 1};
+  else { state.answered[taskId].correct = true; }
+  saveState();
+  updateXPDisplay();
+  checkAchievements();
+  if (bonus > 0) showToast(`🔥 Streak-Bonus! +${bonus} XP`, 'yellow');
+  return total;
+}
+
+function trackWrong(taskId) {
+  state.streak = 0;
+  if (!state.answered[taskId]) state.answered[taskId] = {correct: false, attempts: 1};
+  else state.answered[taskId].attempts++;
+  saveState();
+  updateXPDisplay();
+}
+
+function updateXPDisplay() {
+  document.getElementById('xp-display').textContent = state.xp + ' XP';
+  const lv = getLevel();
+  document.getElementById('level-display').textContent = lv.name;
+  document.getElementById('stat-xp').textContent = state.xp;
+  document.getElementById('stat-solved').textContent = state.solved;
+  document.getElementById('stat-correct').textContent = state.correct;
+  document.getElementById('stat-streak').textContent = state.streak;
+  const sd = document.getElementById('streak-display');
+  if (sd) { if (state.streak >= 2) { sd.textContent = `🔥 ${state.streak}er-Serie`; sd.classList.add('show'); } else { sd.classList.remove('show'); } }
+  document.getElementById('level-name-display').textContent = lv.name;
+  const lvIdx = LEVELS.indexOf(lv);
+  const nextLv = LEVELS[lvIdx + 1];
+  if (nextLv) {
+    const progress = ((state.xp - lv.min) / (nextLv.min - lv.min)) * 100;
+    document.getElementById('level-bar').style.width = Math.min(100, progress) + '%';
+    document.getElementById('level-progress-text').textContent = state.xp + ' / ' + nextLv.min + ' XP';
+  } else {
+    document.getElementById('level-bar').style.width = '100%';
+    document.getElementById('level-progress-text').textContent = 'Max. Level erreicht!';
+  }
+  // Grund score
+  const grundCount = Object.keys(state.answered).filter(k => k.startsWith('g') && state.answered[k]?.correct).length;
+  const el = document.getElementById('grund-score');
+  if (el) el.textContent = grundCount + ' / 10 gelöst';
+  // Kompetenz overview
+  renderKompetenzOverview();
+}
+
+// ===================== TOAST =====================
+function showToast(msg, type='', duration=2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show ' + type;
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => { t.className = ''; }, duration);
+}
+
+// ===================== TABS =====================
+function showTab(id, btn) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+  if (id === 'fortschritt') { updateXPDisplay(); renderAchievements(); renderKompetenzOverview(); }
+  if (id === 'graph') { setTimeout(updateGraph, 50); }
+}
+
+// ===================== GRAPH LABOR =====================
+let graphOptions = { asymptote: false, grid: true, tangent: false, mirror: false };
+let readTask = null;
+
+function toggleOption(key) {
+  graphOptions[key] = !graphOptions[key];
+  document.getElementById('toggle-' + key).classList.toggle('active');
+  updateGraph();
+}
+
+function updateGraph() {
+  const a = parseFloat(document.getElementById('slider-a').value);
+  const b = parseFloat(document.getElementById('slider-b').value);
+  document.getElementById('val-a').textContent = a.toFixed(1);
+  document.getElementById('val-b').textContent = b.toFixed(2);
+
+  // Update info
+  let info = `f(x) = ${a.toFixed(1)} · ${b.toFixed(2)}ˣ`;
+  info += `\nf(0) = ${a.toFixed(2)}`;
+  if (b !== 1) {
+    const ht = Math.log(0.5) / Math.log(b);
+    if (b < 1) info += `\nT½ ≈ ${ht.toFixed(3)}`;
+    else { const vd = Math.log(2) / Math.log(b); info += `\nT₂ ≈ ${vd.toFixed(3)}`; }
+  }
+  info += `\nAsymptote: y = 0`;
+  info += `\nMonotonie: ${b > 1 ? 'steigend' : b < 1 ? 'fallend' : 'konstant'}`;
+  document.getElementById('graph-info').textContent = info;
+
+  drawGraph(a, b);
+}
+
+function drawGraph(a, b) {
+  const canvas = document.getElementById('graph-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const cx = W / 2, cy = H / 2;
+  const scale = 50;
+
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, W, H);
+
+  // Grid
+  if (graphOptions.grid) {
+    ctx.strokeStyle = '#e5e7eb';
+    ctx.lineWidth = 1;
+    for (let x = -W; x < W; x += scale) {
+      ctx.beginPath(); ctx.moveTo(cx + x, 0); ctx.lineTo(cx + x, H); ctx.stroke();
+    }
+    for (let y = -H; y < H; y += scale) {
+      ctx.beginPath(); ctx.moveTo(0, cy + y); ctx.lineTo(W, cy + y); ctx.stroke();
+    }
+  }
+
+  // Axes
+  ctx.strokeStyle = '#374151'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(W, cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, H); ctx.stroke();
+
+  // Axis labels
+  ctx.fillStyle = '#374151'; ctx.font = '11px Segoe UI';
+  ctx.textAlign = 'center';
+  for (let i = -Math.floor(cx/scale); i <= Math.floor(cx/scale); i++) {
+    if (i === 0) continue;
+    ctx.fillText(i, cx + i*scale, cy + 15);
+    ctx.beginPath(); ctx.moveTo(cx + i*scale, cy-3); ctx.lineTo(cx + i*scale, cy+3);
+    ctx.strokeStyle = '#374151'; ctx.lineWidth = 1; ctx.stroke();
+  }
+  ctx.textAlign = 'right';
+  for (let j = -Math.floor(cy/scale); j <= Math.floor(cy/scale); j++) {
+    if (j === 0) continue;
+    ctx.fillText(-j, cx - 5, cy + j*scale + 4);
+    ctx.beginPath(); ctx.moveTo(cx-3, cy + j*scale); ctx.lineTo(cx+3, cy + j*scale);
+    ctx.strokeStyle = '#374151'; ctx.lineWidth = 1; ctx.stroke();
+  }
+  ctx.textAlign = 'left';
+  ctx.fillText('x', W - 15, cy - 8);
+  ctx.fillText('y', cx + 8, 12);
+
+  // Asymptote
+  if (graphOptions.asymptote) {
+    ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 1.5;
+    ctx.setLineDash([6, 4]);
+    ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(W, cy);
+    ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = '#dc2626'; ctx.font = 'bold 11px Segoe UI';
+    ctx.fillText('y = 0 (Asymptote)', 8, cy - 6);
+  }
+
+  // Mirror function
+  if (graphOptions.mirror) {
+    const aMirror = a, bMirror = 1 / b;
+    ctx.strokeStyle = '#7c3aed'; ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 4]);
+    drawFunctionCurve(ctx, aMirror, bMirror, cx, cy, scale, W);
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#7c3aed'; ctx.font = '10px Segoe UI';
+    ctx.fillText(`f(-x) gespiegelt`, 8, 24);
+  }
+
+  // Main function
+  ctx.strokeStyle = '#2563eb'; ctx.lineWidth = 2.5;
+  drawFunctionCurve(ctx, a, b, cx, cy, scale, W);
+
+  // f(0) point
+  if (graphOptions.tangent) {
+    const px = cx, py = cy - a * scale;
+    if (py >= 0 && py <= H) {
+      ctx.fillStyle = '#ea580c';
+      ctx.beginPath(); ctx.arc(px, py, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ea580c'; ctx.font = 'bold 11px Segoe UI';
+      ctx.fillText(`f(0) = ${a.toFixed(1)}`, px + 8, py - 6);
+    }
+  }
+}
+
+function drawFunctionCurve(ctx, a, b, cx, cy, scale, W) {
+  ctx.beginPath();
+  let started = false;
+  for (let px = 0; px <= W; px++) {
+    const xVal = (px - cx) / scale;
+    const yVal = a * Math.pow(b, xVal);
+    const py = cy - yVal * scale;
+    if (isFinite(py) && py > -1000 && py < 2000) {
+      if (!started) { ctx.moveTo(px, py); started = true; }
+      else ctx.lineTo(px, py);
+    } else { started = false; }
+  }
+  ctx.stroke();
+}
+
+// Read task
+function newReadTask() {
+  const aVals = [1, 2, 3, 0.5, -1, -2, 0.25];
+  const bVals = [2, 3, 0.5, 0.25, 1.5, 4];
+  const a = aVals[Math.floor(Math.random() * aVals.length)];
+  const b = bVals[Math.floor(Math.random() * bVals.length)];
+  readTask = {a, b};
+  document.getElementById('slider-a').value = a;
+  document.getElementById('slider-b').value = b;
+  updateGraph();
+  document.getElementById('read-task').innerHTML = `
+    <strong>Lies ab:</strong> Welche Werte haben a und b?<br>
+    <small>(Tipp: Y-Achsenabschnitt = a; vergleiche f(0) und f(1))</small>`;
+  document.getElementById('read-a-input').value = '';
+  document.getElementById('read-b-input').value = '';
+  document.getElementById('read-feedback').textContent = '';
+}
+
+function checkReadTask() {
+  if (!readTask) return;
+  const inputA = parseFloat(document.getElementById('read-a-input').value.replace(',', '.'));
+  const inputB = parseFloat(document.getElementById('read-b-input').value.replace(',', '.'));
+  const fb = document.getElementById('read-feedback');
+  const aOk = Math.abs(inputA - readTask.a) < 0.05;
+  const bOk = Math.abs(inputB - readTask.b) < 0.05;
+  if (aOk && bOk) {
+    fb.innerHTML = `<span style="color:var(--green)">✅ Richtig! a=${readTask.a}, b=${readTask.b}</span>`;
+    addXP(5, 'read_' + readTask.a + '_' + readTask.b);
+    showToast('✅ Graph richtig abgelesen! +5 XP', 'green');
+  } else {
+    fb.innerHTML = `<span style="color:var(--red)">❌ a=${readTask.a}, b=${readTask.b} — ${!aOk?'a falsch ':''}${!bOk?'b falsch':''}</span>`;
+  }
+}
+
+// ===================== GRUNDAUFGABEN =====================
+const grundaufgaben = [
+  {
+    id: 'g1', diff: 'easy', xp: 5, komp: 'K1',
+    title: 'Aufgabe 1: Wachstum oder Zerfall?',
+    text: 'Welche Funktion beschreibt exponentielles Wachstum?',
+    type: 'mc',
+    options: ['f(x) = 2 · 0,8ˣ', 'f(x) = 3 · 1,2ˣ', 'f(x) = 5 · 0,5ˣ', 'f(x) = −1 · 2ˣ'],
+    answer: 1,
+    explanation: 'Wachstum: b > 1. Nur b = 1,2 ist größer als 1. Alle anderen haben b < 1 (Zerfall) oder negativen Anfangswert.',
+    steps: ['Prüfe den Basiswert b', 'b = 0,8 → Zerfall', 'b = 1,2 → Wachstum ✓', 'b = 0,5 → Zerfall', 'a = −1 ändert nichts am Wachstumsfaktor']
+  },
+  {
+    id: 'g2', diff: 'easy', xp: 5, komp: 'K1',
+    title: 'Aufgabe 2: Y-Achsenabschnitt',
+    text: 'Was ist der y-Achsenabschnitt von f(x) = 3 · 2ˣ?',
+    type: 'mc',
+    options: ['2', '3', '6', '1'],
+    answer: 1,
+    explanation: 'f(0) = 3 · 2⁰ = 3 · 1 = 3. Der y-Achsenabschnitt ist immer a.',
+    steps: ['Setze x = 0 ein', 'f(0) = 3 · 2⁰', '2⁰ = 1', 'f(0) = 3 · 1 = 3']
+  },
+  {
+    id: 'g3', diff: 'easy', xp: 5, komp: 'K6',
+    title: 'Aufgabe 3: Wachstumsfaktor → Wachstumsrate',
+    text: 'Ein Wachstumsfaktor von b = 1,07 entspricht einer Wachstumsrate von:',
+    type: 'mc',
+    options: ['0,07 %', '107 %', '7 %', '1,07 %'],
+    answer: 2,
+    explanation: 'p = (b − 1) · 100 = (1,07 − 1) · 100 = 0,07 · 100 = 7 %',
+    steps: ['p = (b − 1) · 100', 'p = (1,07 − 1) · 100', 'p = 0,07 · 100', 'p = 7 %']
+  },
+  {
+    id: 'g4', diff: 'easy', xp: 5, komp: 'K6',
+    title: 'Aufgabe 4: Wachstumsrate → Faktor',
+    text: 'Eine jährliche Abnahme von 15 % hat den Wachstumsfaktor:',
+    type: 'input',
+    answer: '0.85',
+    tolerance: 0.001,
+    unit: '',
+    placeholder: 'b = ?',
+    explanation: 'b = 1 + p/100 = 1 + (−15)/100 = 1 − 0,15 = 0,85',
+    steps: ['b = 1 + p/100', 'p = −15 (Abnahme!)', 'b = 1 + (−15)/100', 'b = 1 − 0,15 = 0,85']
+  },
+  {
+    id: 'g5', diff: 'medium', xp: 10, komp: 'K1',
+    title: 'Aufgabe 5: Funktionswert berechnen',
+    text: 'Berechne f(3) für f(x) = 4 · 0,5ˣ',
+    type: 'input',
+    answer: '0.5',
+    tolerance: 0.001,
+    unit: '',
+    placeholder: 'f(3) = ?',
+    explanation: 'f(3) = 4 · 0,5³ = 4 · 0,125 = 0,5',
+    steps: ['f(3) = 4 · 0,5³', '0,5³ = 0,5 · 0,5 · 0,5 = 0,125', 'f(3) = 4 · 0,125', 'f(3) = 0,5']
+  },
+  {
+    id: 'g6', diff: 'medium', xp: 10, komp: 'K1',
+    title: 'Aufgabe 6: Asymptote',
+    text: 'Welche Gleichung beschreibt die Asymptote von f(x) = 5 · 2ˣ?',
+    type: 'mc',
+    options: ['x = 0', 'y = 5', 'y = 0', 'x = 5'],
+    answer: 2,
+    explanation: 'Exponentialfunktionen haben immer die x-Achse als waagerechte Asymptote: y = 0. Für x → −∞ nähert sich f(x) = 5 · 2ˣ der 0.',
+    steps: ['Asymptote = Gerade, an die der Graph heranläuft', 'Für x → −∞: 2ˣ → 0', 'f(x) = 5 · 2ˣ → 0', 'Asymptote: y = 0']
+  },
+  {
+    id: 'g7', diff: 'medium', xp: 10, komp: 'K4',
+    title: 'Aufgabe 7: Halbwertszeit (Logarithmus)',
+    text: 'Berechne die Halbwertszeit von f(x) = 100 · 0,8ˣ. (Runde auf 2 Dezimalstellen)',
+    type: 'input',
+    answer: '3.11',
+    tolerance: 0.02,
+    unit: '',
+    placeholder: 'T½ ≈ ?',
+    explanation: 'T½ = log(0,5) / log(0,8) = (−0,301) / (−0,097) ≈ 3,11',
+    steps: ['T½ = log(0,5) / log(b)', 'log(0,5) ≈ −0,3010', 'log(0,8) ≈ −0,0969', 'T½ = −0,3010 / −0,0969 ≈ 3,11']
+  },
+  {
+    id: 'g8', diff: 'medium', xp: 10, komp: 'K1',
+    title: 'Aufgabe 8: Monotonie',
+    text: 'Welche Aussage über f(x) = 2 · (1/3)ˣ ist FALSCH?',
+    type: 'mc',
+    options: [
+      'f ist streng monoton fallend',
+      'Die Asymptote ist y = 0',
+      'f hat keine Nullstelle',
+      'f(−1) < 0'
+    ],
+    answer: 3,
+    explanation: 'f(−1) = 2 · (1/3)⁻¹ = 2 · 3 = 6 > 0. Da a = 2 > 0 und die Basis positiv ist, ist f immer positiv!',
+    steps: ['f(−1) = 2 · (1/3)⁻¹', '(1/3)⁻¹ = 3/1 = 3', 'f(−1) = 2 · 3 = 6', 'Ergebnis: f(−1) = 6 > 0 (nicht negativ)']
+  },
+  {
+    id: 'g9', diff: 'hard', xp: 15, komp: 'K1',
+    title: 'Aufgabe 9: Gleichung aufstellen',
+    text: 'f(x) = a · bˣ mit f(0) = 5 und f(1) = 10. Welche Gleichung ist korrekt?',
+    type: 'mc',
+    options: ['f(x) = 5 · 2ˣ', 'f(x) = 10 · 2ˣ', 'f(x) = 5 · 0,5ˣ', 'f(x) = 2 · 5ˣ'],
+    answer: 0,
+    explanation: 'f(0) = a = 5. Dann: f(1) = 5 · b = 10, also b = 2. Ergebnis: f(x) = 5 · 2ˣ',
+    steps: ['f(0) = a · b⁰ = a = 5', 'f(1) = 5 · b¹ = 10', '5 · b = 10', 'b = 2', 'f(x) = 5 · 2ˣ']
+  },
+  {
+    id: 'g10', diff: 'hard', xp: 15, komp: 'K4',
+    title: 'Aufgabe 10: Verdopplungszeit',
+    text: 'Eine Bakterienkultur wächst mit f(x) = 100 · 1,5ˣ (x in Stunden). Nach wie vielen Stunden hat sich die Anzahl verdoppelt? (Auf 2 Stellen runden)',
+    type: 'input',
+    answer: '1.71',
+    tolerance: 0.02,
+    unit: 'h',
+    placeholder: 'T₂ ≈ ?',
+    explanation: 'T₂ = log(2) / log(1,5) ≈ 0,3010 / 0,1761 ≈ 1,71 Stunden',
+    steps: ['T₂ = log(2) / log(b)', 'log(2) ≈ 0,3010', 'log(1,5) ≈ 0,1761', 'T₂ ≈ 0,3010 / 0,1761 ≈ 1,71 h']
+  }
+];
+
+// ===================== GLEICHUNGEN BESTIMMEN =====================
+const gleichungsAufgaben = [
+  {
+    id: 'eq1', xp: 15, komp: 'K3',
+    title: 'Gleichung 1: Einfacher Fall',
+    points: [{x:0, y:3}, {x:1, y:6}],
+    a_exact: 3, b_exact: 2,
+    hint: 'Da x₁=0 ist, gilt direkt a=y₁. Dann b aus der zweiten Gleichung.'
+  },
+  {
+    id: 'eq2', xp: 15, komp: 'K3',
+    title: 'Gleichung 2: Zerfall',
+    points: [{x:0, y:80}, {x:2, y:20}],
+    a_exact: 80, b_exact: 0.5,
+    hint: 'a = f(0) = 80. Dann: 80 · b² = 20 → b² = 0,25 → b = 0,5'
+  },
+  {
+    id: 'eq3', xp: 20, komp: 'K3',
+    title: 'Gleichung 3: Kein Nullpunkt',
+    points: [{x:1, y:6}, {x:3, y:54}],
+    a_exact: 2, b_exact: 3,
+    hint: 'Teile die Gleichungen: 54/6 = b³⁻¹ = b² = 9 → b = 3. Dann a aus erster Gleichung.'
+  },
+  {
+    id: 'eq4', xp: 20, komp: 'K3',
+    title: 'Gleichung 4: Gebrochene Werte',
+    points: [{x:0, y:100}, {x:5, y:50}],
+    a_exact: 100, b_exact: 0.87,
+    hint: 'a = 100. Dann: b⁵ = 0,5 → b = 0,5^(1/5) ≈ 0,8706'
+  },
+  {
+    id: 'eq5', xp: 25, komp: 'K3',
+    title: 'Gleichung 5: Beide Punkte ≠ 0',
+    points: [{x:2, y:12}, {x:4, y:48}],
+    a_exact: 3, b_exact: 2,
+    hint: '48/12 = b^(4-2) = b² = 4 → b = 2. Dann: 12 = a · 4 → a = 3'
+  },
+  {
+    id: 'eq6', xp: 25, komp: 'K3',
+    title: 'Gleichung 6: Realkontext',
+    points: [{x:0, y:200}, {x:3, y:25}],
+    a_exact: 200, b_exact: 0.5,
+    hint: 'a = 200. b³ = 25/200 = 0,125 → b = 0,125^(1/3) = 0,5'
+  }
+];
+
+// ===================== ANWENDUNGSAUFGABEN =====================
+const anwendungsAufgaben = [
+  {
+    id: 'app1', komp: 'K5', xp: 20,
+    header: 'zerfall', icon: '☢️', title: 'Radioaktiver Zerfall',
+    context: 'Ein radioaktives Präparat hat zur Zeit t=0 eine Aktivität von 800 Bq. Nach 10 Stunden beträgt die Aktivität noch 100 Bq.',
+    questions: [
+      { text: 'Stelle die Gleichung f(t) = a · bᵗ auf.', type: 'multi', answers: ['a=800, b≈0.794', 'f(t)=800·0.794^t', '800·(1/8)^(1/10)', 'a=800 b=0.794'],
+        explanation: 'f(0)=800=a. f(10)=100=800·b¹⁰ → b¹⁰=1/8 → b=(1/8)^(0.1)≈0.794',
+        id: 'app1q1' },
+      { text: 'Berechne die Halbwertszeit T½.', type: 'input', answer: '3.33', tolerance: 0.05, unit: 'h', id: 'app1q2',
+        explanation: 'T½ = log(0,5)/log(0,794) ≈ −0,3010/(−0,1002) ≈ 3,33 h' }
+    ]
+  },
+  {
+    id: 'app2', komp: 'K5', xp: 20,
+    header: 'bakterien', icon: '🦠', title: 'Bakterienwachstum',
+    context: 'Eine Bakterienkultur startet mit 500 Bakterien. Die Anzahl verdoppelt sich alle 3 Stunden.',
+    questions: [
+      { text: 'Berechne den Wachstumsfaktor b pro Stunde.', type: 'input', answer: '1.26', tolerance: 0.01, unit: '', id: 'app2q1',
+        explanation: 'Verdoppelung in 3 h: b³ = 2 → b = 2^(1/3) ≈ 1,2599 ≈ 1,26' },
+      { text: 'Wie viele Bakterien gibt es nach 9 Stunden?', type: 'input', answer: '4000', tolerance: 5, unit: '', id: 'app2q2',
+        explanation: 'f(9) = 500 · 2^(9/3) = 500 · 2³ = 500 · 8 = 4000' }
+    ]
+  },
+  {
+    id: 'app3', komp: 'K5', xp: 20,
+    header: 'zins', icon: '💰', title: 'Zinseszins',
+    context: 'Ein Kapital von 2.000 € wird zu 4 % p.a. angelegt (Zinseszins).',
+    questions: [
+      { text: 'Stelle die Funktion K(t) auf (t in Jahren).', type: 'multi', answers: ['K(t)=2000·1.04^t', '2000·1,04^t', 'a=2000 b=1.04'],
+        explanation: 'b = 1 + 4/100 = 1,04. K(t) = 2000 · 1,04ᵗ', id: 'app3q1' },
+      { text: 'Nach wie vielen Jahren ist das Kapital auf 4.000 € gestiegen? (Verdopplungszeit, auf 1 Stelle)', type: 'input', answer: '17.7', tolerance: 0.2, unit: 'Jahre', id: 'app3q2',
+        explanation: 'T₂ = log(2)/log(1,04) ≈ 0,3010/0,0170 ≈ 17,7 Jahre' }
+    ]
+  },
+  {
+    id: 'app4', komp: 'K5', xp: 20,
+    header: 'medikament', icon: '💊', title: 'Medikamentenabbau',
+    context: 'Ein Medikament wird mit 200 mg eingenommen. Der Körper baut es mit einer Abbaurate von 25 % pro Stunde ab.',
+    questions: [
+      { text: 'Wie viel mg sind nach 4 Stunden noch im Körper? (Runde auf ganze Zahlen)', type: 'input', answer: '63', tolerance: 2, unit: 'mg', id: 'app4q1',
+        explanation: 'b = 1 − 0,25 = 0,75. f(4) = 200 · 0,75⁴ = 200 · 0,3164 ≈ 63 mg' },
+      { text: 'Berechne die Halbwertszeit T½ (auf 2 Stellen).', type: 'input', answer: '2.41', tolerance: 0.05, unit: 'h', id: 'app4q2',
+        explanation: 'T½ = log(0,5)/log(0,75) ≈ −0,3010/(−0,1249) ≈ 2,41 h' }
+    ]
+  },
+  {
+    id: 'app5', komp: 'K5', xp: 20,
+    header: 'bevoelkerung', icon: '👥', title: 'Bevölkerungswachstum',
+    context: 'Eine Stadt hat 2024 genau 150.000 Einwohner. Die Bevölkerung wächst jährlich um 2,5 %.',
+    questions: [
+      { text: 'Wie viele Einwohner hat die Stadt 2034 (nach 10 Jahren)? (Runde auf ganze Zahlen)', type: 'input', answer: '192', tolerance: 3, unit: 'Tsd.', id: 'app5q1',
+        explanation: 'b = 1,025. f(10) = 150.000 · 1,025¹⁰ ≈ 150.000 · 1,2801 ≈ 192.000 ≈ 192 Tsd.' },
+      { text: 'In welchem Jahr hat die Stadt 200.000 Einwohner? (Tipp: Logarithmus, Antwort als Jahr)', type: 'input', answer: '2036', tolerance: 1, unit: '', id: 'app5q2',
+        explanation: '200/150 = 1,025^t → log(4/3)/log(1,025) ≈ 0,1249/0,01072 ≈ 11,65 → ca. 2036' }
+    ]
+  },
+  {
+    id: 'app6', komp: 'K5', xp: 20,
+    header: 'akku', icon: '🔋', title: 'Akkuentladung',
+    context: 'Ein Akku wird entladen. Zur Zeit t=0 beträgt die Spannung 12 V. Nach 2 Stunden sind es noch 9,6 V.',
+    questions: [
+      { text: 'Bestimme den Entladefaktor b (auf 4 Stellen).', type: 'input', answer: '0.894', tolerance: 0.002, unit: '', id: 'app6q1',
+        explanation: '9,6 = 12 · b² → b² = 0,8 → b = √0,8 ≈ 0,8944' },
+      { text: 'Wann ist die Spannung auf 6 V gesunken? (auf 2 Stellen)', type: 'input', answer: '6.21', tolerance: 0.1, unit: 'h', id: 'app6q2',
+        explanation: '6 = 12 · 0,894^t → 0,5 = 0,894^t → t = log(0,5)/log(0,894) ≈ 6,21 h' }
+    ]
+  }
+];
+
+// ===================== DIAGNOSE =====================
+const diagnoseItems = [
+  { id: 'd1', komp: 'K1', text: 'Was ist der y-Achsenabschnitt von f(x) = 7 · 3ˣ?',
+    type: 'mc', options: ['3', '7', '21', '1'], answer: 1, xp: 5,
+    explanation: 'f(0) = 7 · 3⁰ = 7 · 1 = 7' },
+  { id: 'd2', komp: 'K6', text: 'Ein Wachstumsfaktor b = 0,9 entspricht einer Wachstumsrate von:',
+    type: 'mc', options: ['−10 %', '90 %', '10 %', '−90 %'], answer: 0, xp: 5,
+    explanation: 'p = (0,9 − 1) · 100 = −10 % (also 10% Abnahme)' },
+  { id: 'd3', komp: 'K2', text: 'Ein Graph geht durch P(0|4) und P(1|12). Welche Gleichung passt?',
+    type: 'mc', options: ['f(x)=4·3ˣ', 'f(x)=3·4ˣ', 'f(x)=12·3ˣ', 'f(x)=4·2ˣ'], answer: 0, xp: 5,
+    explanation: 'a = f(0) = 4. b = f(1)/f(0) = 12/4 = 3. Also f(x) = 4 · 3ˣ' },
+  { id: 'd4', komp: 'K3', text: 'f(x) = a · bˣ verläuft durch P₁(0|2) und P₂(3|16). Dann gilt:',
+    type: 'mc', options: ['b=2', 'b=8', 'b≈1.26', 'b≈2.52'], answer: 0, xp: 5,
+    explanation: 'a=2. 16=2·b³ → b³=8 → b=2' },
+  { id: 'd5', komp: 'K4', text: 'f(x) = 100 · 0,9ˣ. Berechne T½ (auf 2 Stellen):',
+    type: 'input', answer: '6.58', tolerance: 0.05, xp: 10,
+    explanation: 'T½ = log(0,5)/log(0,9) ≈ −0,3010/(−0,0458) ≈ 6,58' },
+  { id: 'd6', komp: 'K5', text: 'Ein Kapital verdoppelt sich in 10 Jahren. Welcher Jahresfaktor liegt vor? (auf 4 Stellen)',
+    type: 'input', answer: '1.0718', tolerance: 0.0005, xp: 10,
+    explanation: 'b¹⁰ = 2 → b = 2^(1/10) = 2^0.1 ≈ 1,0718' },
+  { id: 'd7', komp: 'K2', text: 'Welche Eigenschaft hat JEDE Exponentialfunktion f(x) = a · bˣ mit a > 0?',
+    type: 'mc', options: ['Hat genau eine Nullstelle', 'Ist immer steigend', 'Hat keine Nullstelle', 'Ist gerade Funktion'], answer: 2, xp: 5,
+    explanation: 'Da b > 0 ist bˣ immer positiv. Für a > 0 ist also f(x) = a · bˣ > 0 für alle x → keine Nullstelle.' },
+  { id: 'd8', komp: 'K1', text: 'Für welche Basis b "nähert sich" der Graph für x → +∞ der x-Achse an?',
+    type: 'mc', options: ['b > 1', '0 < b < 1', 'b = 1', 'b < 0'], answer: 1, xp: 5,
+    explanation: 'Für 0 < b < 1: bˣ → 0 wenn x → +∞, also f(x) = a·bˣ → 0 (Asymptote)' }
+];
+
+// ===================== RENDER FUNCTIONS =====================
+
+function renderGrundaufgaben() {
+  const container = document.getElementById('grundaufgaben-container');
+  container.innerHTML = '';
+  grundaufgaben.forEach(aufg => {
+    const card = document.createElement('div');
+    card.className = `exercise-card ${aufg.diff}`;
+    card.id = 'card-' + aufg.id;
+    card.innerHTML = buildExerciseHTML(aufg, 'grund');
+    container.appendChild(card);
+  });
+}
+
+function renderGleichungen() {
+  const container = document.getElementById('gleichungen-container');
+  container.innerHTML = '';
+  gleichungsAufgaben.forEach(aufg => {
+    const card = document.createElement('div');
+    card.className = 'exercise-card medium';
+    card.id = 'card-' + aufg.id;
+    const solved = state.answered[aufg.id]?.correct;
+    card.innerHTML = `
+      <div class="exercise-header">
+        <div class="exercise-title">${aufg.title}</div>
+        <div><span class="diff-badge medium">Mittel</span><span class="xp-badge">+${aufg.xp} XP</span>${solved?'<span style="color:var(--green);margin-left:8px">✅</span>':''}</div>
+      </div>
+      <div class="question-text">
+        Gegeben: P₁(${aufg.points[0].x} | ${aufg.points[0].y}) und P₂(${aufg.points[1].x} | ${aufg.points[1].y})<br>
+        Bestimme die Gleichung f(x) = a · bˣ.
+      </div>
+      <div class="input-row">
+        <span>a =</span>
+        <input type="text" id="${aufg.id}-a" placeholder="a = ?" style="width:100px">
+        <span>b ≈</span>
+        <input type="text" id="${aufg.id}-b" placeholder="b = ?" style="width:100px">
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="checkGleichung('${aufg.id}')">Prüfen</button>
+        <button class="btn btn-hint" onclick="showHint('${aufg.id}', '${aufg.hint.replace(/'/g,"\\'")}')">💡 Tipp</button>
+      </div>
+      <div id="hint-${aufg.id}" style="display:none; margin-top:8px; background:var(--yellow-light); border-radius:8px; padding:10px; font-size:0.88rem; color:#92400e;"></div>
+      <div class="feedback-box" id="fb-${aufg.id}"></div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function renderAnwendungen() {
+  const container = document.getElementById('anwendungen-container');
+  container.innerHTML = '';
+  anwendungsAufgaben.forEach(aufg => {
+    const card = document.createElement('div');
+    card.className = 'app-card';
+    let qHTML = aufg.questions.map((q, qi) => buildAppQuestion(aufg.id, q, qi)).join('');
+    card.innerHTML = `
+      <div class="app-card-header ${aufg.header}">
+        <span style="font-size:1.5rem">${aufg.icon}</span>
+        <span>${aufg.title}</span>
+        <span class="xp-badge" style="margin-left:auto;background:rgba(255,255,255,0.3);color:white">+${aufg.xp} XP</span>
+      </div>
+      <div class="app-card-body">
+        <div class="context-text">${aufg.context}</div>
+        ${qHTML}
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function buildAppQuestion(appId, q, qi) {
+  const solved = state.answered[q.id]?.correct;
+  if (q.type === 'multi') {
+    return `
+      <div style="margin-bottom:14px;" id="aq-${q.id}">
+        <div style="font-weight:600; margin-bottom:6px; font-size:0.92rem;">${qi+1}. ${q.text}</div>
+        <div class="input-row">
+          <input type="text" id="inp-${q.id}" placeholder="Gleichung eingeben..." style="width:240px">
+          <button class="btn btn-primary" onclick="checkAppQuestion('${appId}','${q.id}','${qi}')">Prüfen</button>
+        </div>
+        <div class="feedback-box" id="fb-${q.id}"></div>
+        ${solved?'<div style="color:var(--green); margin-top:4px; font-size:0.85rem;">✅ Richtig beantwortet</div>':''}
+      </div>
+    `;
+  } else {
+    return `
+      <div style="margin-bottom:14px;" id="aq-${q.id}">
+        <div style="font-weight:600; margin-bottom:6px; font-size:0.92rem;">${qi+1}. ${q.text}</div>
+        <div class="input-row">
+          <input type="text" id="inp-${q.id}" placeholder="Ergebnis eingeben...">
+          <span style="color:var(--gray)">${q.unit||''}</span>
+          <button class="btn btn-primary" onclick="checkAppQuestion('${appId}','${q.id}','${qi}')">Prüfen</button>
+        </div>
+        <div class="feedback-box" id="fb-${q.id}"></div>
+        ${solved?'<div style="color:var(--green); margin-top:4px; font-size:0.85rem;">✅ Richtig beantwortet</div>':''}
+      </div>
+    `;
+  }
+}
+
+function renderDiagnose() {
+  const container = document.getElementById('diagnose-container');
+  container.innerHTML = '';
+  const kategorien = {K1:'Eigenschaften', K2:'Graph lesen', K3:'Zwei-Punkte-Methode', K4:'Halbwertszeit', K5:'Anwendung', K6:'Umrechnung b↔p'};
+  Object.entries(kategorien).forEach(([k, name]) => {
+    const items = diagnoseItems.filter(d => d.komp === k);
+    const section = document.createElement('div');
+    section.className = 'kompetenz-section';
+    section.innerHTML = `<div class="kompetenz-header">📌 ${name} (${k})</div>`;
+    items.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'exercise-card medium';
+      card.id = 'card-' + item.id;
+      card.innerHTML = buildExerciseHTML(item, 'diagnose');
+      section.appendChild(card);
+    });
+    container.appendChild(section);
+  });
+  // Auswertung-Button
+  const btn = document.createElement('div');
+  btn.innerHTML = `<button class="btn btn-primary" style="margin:16px 0" onclick="showDiagnoseResult()">📊 Auswertung anzeigen</button>`;
+  container.appendChild(btn);
+}
+
+function buildExerciseHTML(aufg, prefix) {
+  const solved = state.answered[aufg.id]?.correct;
+  let body = '';
+  if (aufg.type === 'mc') {
+    body = `<div class="mc-options" id="mc-${aufg.id}">` +
+      aufg.options.map((opt, i) =>
+        `<label class="mc-option" id="mc-opt-${aufg.id}-${i}">
+          <input type="radio" name="mc-${aufg.id}" value="${i}" onchange="checkMC('${aufg.id}',${i})"> ${opt}
+        </label>`
+      ).join('') + '</div>';
+  } else {
+    body = `<div class="input-row">
+      <input type="text" id="inp-${aufg.id}" placeholder="${aufg.placeholder || 'Antwort'}" onkeydown="if(event.key==='Enter')checkInput('${aufg.id}')">
+      ${aufg.unit ? `<span style="color:var(--gray)">${aufg.unit}</span>` : ''}
+      <button class="btn btn-primary" onclick="checkInput('${aufg.id}')">Prüfen</button>
+    </div>`;
+  }
+  const diff = aufg.diff || 'medium';
+  const diffLabel = {easy:'Leicht',medium:'Mittel',hard:'Schwer'}[diff] || 'Mittel';
+  const klpMap = {K1:'K1',K2:'K4',K3:'K2',K4:'K6',K5:'K3',K6:'K5'};
+  const klpNames = {K1:'Argumentieren',K2:'Darstellungen',K3:'Problemlösen',K4:'Werkzeuge',K5:'Modellieren',K6:'Kommunizieren'};
+  const klpCode = klpMap[aufg.komp] || '';
+  const klpLabel = klpNames[aufg.komp] || '';
+  return `
+    <div class="exercise-header">
+      <div class="exercise-title">${aufg.title || aufg.text}</div>
+      <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
+        ${klpCode ? `<span class="klp-tag ${aufg.komp}" title="KLP NRW: ${klpCode} – ${klpLabel}">${klpCode}</span>` : ''}
+        <span class="diff-badge ${diff}">${diffLabel}</span>
+        <span class="xp-badge">+${aufg.xp} XP</span>
+        ${solved?'<span style="color:var(--green)">✅</span>':''}
+      </div>
+    </div>
+    ${aufg.text ? `<div class="question-text">${aufg.text}</div>` : ''}
+    ${body}
+    <div class="feedback-box" id="fb-${aufg.id}"></div>
+  `;
+}
+
+// ===================== CHECK FUNCTIONS =====================
+
+function checkMC(id, selected) {
+  const aufg = [...grundaufgaben, ...diagnoseItems].find(a => a.id === id);
+  if (!aufg) return;
+  if (state.answered[id]?.correct) return;
+  const fb = document.getElementById('fb-' + id);
+  const correct = selected === aufg.answer;
+  // Mark options
+  aufg.options.forEach((_, i) => {
+    const opt = document.getElementById('mc-opt-' + id + '-' + i);
+    if (opt) {
+      if (i === aufg.answer) opt.classList.add('correct');
+      else if (i === selected && !correct) opt.classList.add('wrong');
+    }
+  });
+  // Disable
+  document.querySelectorAll(`input[name="mc-${id}"]`).forEach(r => r.disabled = true);
+  fb.className = 'feedback-box show ' + (correct ? 'correct' : 'wrong');
+  fb.innerHTML = (correct ? '✅ Richtig! ' : '❌ Leider falsch. ') + aufg.explanation +
+    `<div class="step-by-step"><details><summary>📋 Lösungsweg</summary><ol>${aufg.steps?.map(s=>`<li>${s}</li>`).join('')||''}</ol></details></div>`;
+  if (correct) {
+    addXP(aufg.xp, id);
+    updateKomp(aufg.komp, true);
+    showToast(`✅ +${aufg.xp} XP!`, 'green');
+  } else {
+    trackWrong(id);
+    updateKomp(aufg.komp, false);
+    showToast('❌ Nicht ganz – schau dir die Erklärung an!', 'red');
+  }
+  updateXPDisplay();
+}
+
+function checkInput(id) {
+  const aufg = [...grundaufgaben, ...diagnoseItems].find(a => a.id === id);
+  if (!aufg) return;
+  if (state.answered[id]?.correct) return;
+  const input = document.getElementById('inp-' + id);
+  const val = parseFloat(input.value.replace(',', '.'));
+  const fb = document.getElementById('fb-' + id);
+  const correct = Math.abs(val - parseFloat(aufg.answer)) <= (aufg.tolerance || 0.01);
+  input.classList.remove('correct','wrong');
+  input.classList.add(correct ? 'correct' : 'wrong');
+  fb.className = 'feedback-box show ' + (correct ? 'correct' : 'wrong');
+  fb.innerHTML = (correct ? `✅ Richtig! ` : `❌ Falsch. Richtig: ${aufg.answer} ${aufg.unit||''}. `) + aufg.explanation +
+    `<div class="step-by-step"><details><summary>📋 Lösungsweg</summary><ol>${aufg.steps?.map(s=>`<li>${s}</li>`).join('')||''}</ol></details></div>`;
+  if (correct) {
+    addXP(aufg.xp, id);
+    updateKomp(aufg.komp, true);
+    showToast(`✅ +${aufg.xp} XP!`, 'green');
+  } else {
+    trackWrong(id);
+    updateKomp(aufg.komp, false);
+    showToast('❌ Versuche es nochmal oder sieh dir den Tipp an!', 'red');
+  }
+  updateXPDisplay();
+}
+
+function checkGleichung(id) {
+  const aufg = gleichungsAufgaben.find(a => a.id === id);
+  if (!aufg) return;
+  const aVal = parseFloat(document.getElementById(id + '-a').value.replace(',', '.'));
+  const bVal = parseFloat(document.getElementById(id + '-b').value.replace(',', '.'));
+  const aOk = Math.abs(aVal - aufg.a_exact) <= 0.02;
+  const bOk = Math.abs(bVal - aufg.b_exact) <= 0.01;
+  const correct = aOk && bOk;
+  const fb = document.getElementById('fb-' + id);
+  fb.className = 'feedback-box show ' + (correct ? 'correct' : 'wrong');
+  if (correct) {
+    fb.innerHTML = `✅ Richtig! f(x) = ${aufg.a_exact} · ${aufg.b_exact}ˣ`;
+    addXP(aufg.xp, id);
+    updateKomp('K3', true);
+    showToast(`✅ Gleichung korrekt! +${aufg.xp} XP`, 'green');
+  } else {
+    fb.innerHTML = `❌ ${!aOk?'a falsch ('+aufg.a_exact+')':''} ${!bOk?'b falsch ('+aufg.b_exact.toFixed(4)+')':''}. Nutze die Zwei-Punkte-Methode!`;
+    trackWrong(id);
+    updateKomp('K3', false);
+  }
+  updateXPDisplay();
+}
+
+function showHint(id, hint) {
+  const el = document.getElementById('hint-' + id);
+  el.textContent = '💡 ' + hint;
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function checkAppQuestion(appId, qId, qi) {
+  const app = anwendungsAufgaben.find(a => a.id === appId);
+  if (!app) return;
+  const q = app.questions[qi];
+  if (!q) return;
+  const input = document.getElementById('inp-' + qId);
+  const fb = document.getElementById('fb-' + qId);
+  let correct = false;
+  if (q.type === 'multi') {
+    const val = (input.value || '').toLowerCase().replace(/\s/g,'');
+    correct = q.answers.some(a => val.includes(a.replace(/\s/g,'').toLowerCase()) ||
+      Math.abs(parseFloat(val) - parseFloat(a)) < 0.05);
+    // More specific check
+    if (!correct) {
+      const numVal = parseFloat(val.replace(',','.'));
+      if (!isNaN(numVal)) {
+        correct = q.answers.some(a => Math.abs(numVal - parseFloat(a)) < 0.1);
+      }
+    }
+  } else {
+    const val = parseFloat(input.value.replace(',', '.'));
+    correct = Math.abs(val - parseFloat(q.answer)) <= (q.tolerance || 0.1);
+  }
+  fb.className = 'feedback-box show ' + (correct ? 'correct' : 'wrong');
+  fb.innerHTML = (correct ? '✅ Richtig! ' : `❌ Lösung: ${q.answer} ${q.unit||''}. `) + q.explanation;
+  if (correct) {
+    addXP(app.xp / app.questions.length, qId);
+    updateKomp('K5', true);
+    showToast(`✅ +${Math.round(app.xp/app.questions.length)} XP!`, 'green');
+  } else {
+    trackWrong(qId);
+    updateKomp('K5', false);
+  }
+  updateXPDisplay();
+}
+
+function updateKomp(k, correct) {
+  if (!state.kompetenz[k]) return;
+  state.kompetenz[k].total++;
+  if (correct) state.kompetenz[k].right++;
+  saveState();
+}
+
+// ===================== DIAGNOSE RESULT =====================
+function showDiagnoseResult() {
+  const resultDiv = document.getElementById('diagnose-result');
+  resultDiv.style.display = 'block';
+  resultDiv.scrollIntoView({ behavior: 'smooth' });
+
+  // Sync result to hub
+  let totalRight = 0, totalQuestions = 0;
+  Object.entries(state.kompetenz).forEach(([k, data]) => {
+    totalRight += data.right || 0;
+    totalQuestions += data.total || 0;
+  });
+  const totalPct = totalQuestions > 0 ? Math.round((totalRight / totalQuestions) * 100) : 0;
+  const hubData = JSON.parse(localStorage.getItem('zp10_hub_data') || '{"extras":{}}');
+  if (!hubData.extras) hubData.extras = {};
+  hubData.extras['exponentialfunktionen-2'] = {lastScore: totalPct, lastDate: new Date().toISOString(), attempts: (hubData.extras['exponentialfunktionen-2']?.attempts || 0) + 1};
+  localStorage.setItem('zp10_hub_data', JSON.stringify(hubData));
+
+  let html = '<div class="card"><h2>📊 Diagnose-Auswertung</h2>';
+  const empfehlungen = {
+    K1: 'Wiederhole Tab 1 – Eigenschaften und Eigenschaften-Tabelle.',
+    K2: 'Nutze das Graph-Labor (Tab 2) und übe das Ablesen.',
+    K3: 'Gehe nochmal die Zwei-Punkte-Methode im Algorithmus durch.',
+    K4: 'Lerne die Halbwertszeit-Formel: T½ = log(0,5)/log(b)',
+    K5: 'Bearbeite alle Anwendungsaufgaben in Tab 5.',
+    K6: 'Übe b = 1 + p/100 und p = (b-1)·100 mit eigenen Beispielen.'
+  };
+  Object.entries(state.kompetenz).forEach(([k, data]) => {
+    if (data.total === 0) return;
+    const pct = Math.round((data.right / data.total) * 100);
+    const color = pct >= 70 ? 'var(--green)' : pct >= 40 ? 'var(--yellow)' : 'var(--red)';
+    const icon = pct >= 70 ? '✅' : pct >= 40 ? '⚠️' : '❌';
+    html += `<div style="margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+        <span>${icon} <strong>${data.name}</strong></span>
+        <span style="color:${color}">${data.right}/${data.total} (${pct}%)</span>
+      </div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+      ${pct < 70 ? `<div style="font-size:0.8rem;color:var(--gray);margin-top:4px;">💡 ${empfehlungen[k]}</div>` : ''}
+    </div>`;
+  });
+  html += '</div>';
+  resultDiv.innerHTML = html;
+}
+
+// ===================== ACHIEVEMENTS =====================
+const ACHIEVEMENTS = [
+  { id: 'first', icon: '🌟', title: 'Erste Schritte', desc: 'Erste Aufgabe richtig beantwortet', check: () => state.correct >= 1 },
+  { id: 'streak3', icon: '🔥', title: 'Heiße Serie', desc: '3 Aufgaben in Folge richtig', check: () => state.maxStreak >= 3 },
+  { id: 'streak5', icon: '⚡', title: 'Blitzserie', desc: '5 Aufgaben in Folge richtig', check: () => state.maxStreak >= 5 },
+  { id: 'xp100', icon: '💯', title: 'Fleißig', desc: '100 XP gesammelt', check: () => state.xp >= 100 },
+  { id: 'xp300', icon: '🏅', title: 'Profi', desc: '300 XP gesammelt', check: () => state.xp >= 300 },
+  { id: 'allGrund', icon: '📚', title: 'Grundlagen-Meister', desc: 'Alle Grundaufgaben gelöst', check: () => grundaufgaben.every(g => state.answered[g.id]?.correct) },
+  { id: 'allGleich', icon: '✏️', title: 'Gleichungs-Experte', desc: 'Alle Gleichungen bestimmt', check: () => gleichungsAufgaben.every(g => state.answered[g.id]?.correct) },
+  { id: 'halbwert', icon: '⏱️', title: 'Halbwertszeit-Kenner', desc: 'Beide Halbwertszeit-Aufgaben richtig', check: () => state.answered['g7']?.correct && state.answered['g10']?.correct }
+];
+
+function checkAchievements() {
+  ACHIEVEMENTS.forEach(a => {
+    if (!state.answered['ach_' + a.id] && a.check()) {
+      state.answered['ach_' + a.id] = { correct: true };
+      saveState();
+      showToast(`🎖️ Errungenschaft: ${a.title}!`, 'yellow', 3500);
+    }
+  });
+}
+
+function renderAchievements() {
+  const c = document.getElementById('achievements-container');
+  if (!c) return;
+  c.innerHTML = ACHIEVEMENTS.map(a => {
+    const unlocked = !!state.answered['ach_' + a.id];
+    return `<div class="achievement ${unlocked ? 'unlocked' : 'locked'}">
+      <div class="ach-icon">${a.icon}</div>
+      <div><div class="ach-title">${a.title}${unlocked ? ' ✅' : ' 🔒'}</div><div class="ach-desc">${a.desc}</div></div>
+    </div>`;
+  }).join('');
+}
+
+function renderKompetenzOverview() {
+  const c = document.getElementById('kompetenz-overview');
+  if (!c) return;
+  const klpMap = {K1:'K1',K2:'K4',K3:'K2',K4:'K6',K5:'K3',K6:'K5'};
+  c.innerHTML = Object.entries(state.kompetenz).map(([k, data]) => {
+    const pct = data.total > 0 ? Math.round((data.right / data.total) * 100) : 0;
+    const color = pct >= 70 ? 'var(--green)' : pct >= 40 ? 'var(--yellow)' : 'var(--blue)';
+    const klpCode = klpMap[k] || k;
+    return `<div style="margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.85rem;margin-bottom:3px;">
+        <span><span class="klp-tag ${k}" style="margin-right:6px">${klpCode}</span><strong>${data.name}</strong> <span style="font-size:0.73rem;color:var(--gray)">${data.sub||''}</span></span>
+        <span style="color:${color};font-weight:600">${data.total > 0 ? data.right + '/' + data.total + ' (' + pct + '%)' : '–'}</span>
+      </div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function resetProgress() {
+  if (!confirm('Willst du wirklich deinen gesamten Fortschritt zurücksetzen?')) return;
+  state = {
+    xp: 0, solved: 0, correct: 0, streak: 0, maxStreak: 0, answered: {},
+    kompetenz: { K1:{name:'K1 · Argumentieren',sub:'Eigenschaften begründen',right:0,total:0}, K2:{name:'K4 · Darstellungen',sub:'Graph lesen & skizzieren',right:0,total:0},
+      K3:{name:'K2 · Problemlösen',sub:'Zwei-Punkte-Methode',right:0,total:0}, K4:{name:'K6 · Werkzeuge',sub:'Halbwertszeit / Logarithmus',right:0,total:0},
+      K5:{name:'K3 · Modellieren',sub:'Reale Anwendungen',right:0,total:0}, K6:{name:'K5 · Kommunizieren',sub:'Rate ↔ Faktor',right:0,total:0} }
+  };
+  saveState();
+  updateXPDisplay();
+  renderGrundaufgaben();
+  renderGleichungen();
+  renderAnwendungen();
+  renderDiagnose();
+  renderErweitert();
+  renderAchievements();
+  showToast('🔄 Fortschritt zurückgesetzt', '');
+}
+
+// ===================== TEXTAUFGABEN =====================
+const textaufgaben = [
+  {
+    id:'tx1', xp:20, diff:'medium', komp:'K5',
+    title:'T1: Radioaktiver Zerfall',
+    context:'Ein radioaktives Präparat hat zur Zeit t=0 eine Masse von 640 g. Die Masse halbiert sich alle 5 Jahre.',
+    questions:[
+      {id:'tx1a', text:'Stelle die Funktion M(t) auf (t in Jahren).',
+       type:'mc', opts:['M(t)=640·0,5^t','M(t)=640·0,5^(t/5)','M(t)=320·0,5^t','M(t)=640·2^t'], answer:1,
+       explanation:'Pro 5 Jahre halbiert sich der Wert: M(t)=640·0,5^(t/5). Oder äquivalent: b=(0,5)^(1/5)≈0,87 pro Jahr.'},
+      {id:'tx1b', text:'Welche Masse hat das Präparat nach 15 Jahren?',
+       type:'input', answer:'80', tolerance:1, unit:'g',
+       explanation:'M(15)=640·0,5^(15/5)=640·0,5³=640·0,125=80 g'}
+    ]
+  },
+  {
+    id:'tx2', xp:20, diff:'medium', komp:'K5',
+    title:'T2: Zinseszins',
+    context:'Frau Müller legt 5.000 € zu einem Zinssatz von 3 % p.a. (Zinseszins) an.',
+    questions:[
+      {id:'tx2a', text:'Welchen Wachstumsfaktor hat das Kapital pro Jahr?',
+       type:'mc', opts:['b=3','b=1,03','b=0,97','b=1,3'], answer:1,
+       explanation:'b=1+3/100=1,03. Pro Jahr wächst das Kapital um 3%.'},
+      {id:'tx2b', text:'Nach wie vielen Jahren hat Frau Müller mehr als 6.000 €? (ganzzahlige Jahreszahl)',
+       type:'input', answer:'7', tolerance:0.5, unit:'Jahre',
+       explanation:'5000·1,03^t > 6000 → 1,03^t > 1,2 → t > log(1,2)/log(1,03) ≈ 6,17 → nach 7 vollen Jahren'}
+    ]
+  },
+  {
+    id:'tx3', xp:25, diff:'hard', komp:'K5',
+    title:'T3: Medikament im Blut',
+    context:'Ein Medikament wird mit 400 mg eingenommen. Der Körper baut 30 % pro Stunde ab. Ein zweites Medikament startet mit 200 mg und baut 20 % pro Stunde ab.',
+    questions:[
+      {id:'tx3a', text:'Nach wie vielen Stunden haben beide Medikamente die gleiche Konzentration? (Auf 2 Stellen, nutze Logarithmus oder schätze)',
+       type:'input', answer:'3.59', tolerance:0.15, unit:'h',
+       explanation:'400·0,7^t=200·0,8^t → 2=(0,8/0,7)^t → t=log(2)/log(8/7)≈3,59 h'}
+    ]
+  },
+  {
+    id:'tx4', xp:20, diff:'medium', komp:'K5',
+    title:'T4: Bakterienwachstum',
+    context:'In einem Experiment starten 1.000 Bakterien. Alle 2 Stunden verdoppelt sich die Anzahl.',
+    questions:[
+      {id:'tx4a', text:'Wie viele Bakterien gibt es nach 8 Stunden?',
+       type:'input', answer:'16000', tolerance:50, unit:'',
+       explanation:'f(8)=1000·2^(8/2)=1000·2^4=1000·16=16.000'},
+      {id:'tx4b', text:'Nach wie vielen Stunden überschreitet die Anzahl 1 Million? (auf ganze Stunden, aufrunden)',
+       type:'input', answer:'20', tolerance:1, unit:'h',
+       explanation:'1000·2^(t/2)>1.000.000 → 2^(t/2)>1000 → t/2>log(1000)/log(2)≈9,97 → t>19,93 → nach 20 h'}
+    ]
+  },
+  {
+    id:'tx5', xp:25, diff:'hard', komp:'K5',
+    title:'T5: Bevölkerungsmodell',
+    context:'Eine Stadt hatte 2010 genau 200.000 Einwohner. Durch Zuzug wächst die Bevölkerung mit 1,8 % p.a.',
+    questions:[
+      {id:'tx5a', text:'Wie viele Einwohner (gerundet auf Tausend) hat die Stadt im Jahr 2030?',
+       type:'input', answer:'282', tolerance:3, unit:'Tsd.',
+       explanation:'f(20)=200·1,018^20≈200·1,4282≈285,6 Tsd. (exakt: 285,6 Tsd., Wert kann leicht variieren)'},
+      {id:'tx5b', text:'In welchem Jahr (ab 2010) hat die Stadt 300.000 Einwohner? (auf das nächste volle Jahr)',
+       type:'input', answer:'2027', tolerance:1, unit:'',
+       explanation:'200·1,018^t=300 → 1,018^t=1,5 → t=log(1,5)/log(1,018)≈22,6 → 2010+23=2033. Hinweis: Lösung ca. 2033.'}
+    ]
+  }
+];
+
+// Fix tx5b
+textaufgaben[4].questions[1].answer = '2033';
+textaufgaben[4].questions[1].explanation = '200·1,018^t=300 → 1,018^t=1,5 → t=log(1,5)/log(1,018)≈22,6 → nächstes volles Jahr: 23 → 2010+23=2033';
+
+// ===================== BEGRÜNDUNGEN WÄHLEN =====================
+const begruendungsAufgaben = [
+  {
+    id:'bg1', xp:10, diff:'medium', komp:'K1',
+    title:'B1: Keine Nullstellen',
+    text:'Warum hat f(x) = 5 · 2ˣ keine Nullstellen?',
+    opts:[
+      'Weil 2ˣ negativ werden kann und sich mit 5 ausgleicht.',
+      'Weil 2ˣ > 0 für alle x ∈ ℝ und 5 ≠ 0, ist f(x) = 5·2ˣ > 0 immer.',
+      'Weil Exponentialfunktionen immer positive Basen haben.',
+      'Weil f(0) = 5 ≠ 0 und damit keine Nullstelle bei x = 0 liegt.'
+    ],
+    answer:1,
+    explanation:'Die vollständige Begründung: Da 2ˣ > 0 für alle x ∈ ℝ (positive Basis) und a = 5 > 0, gilt f(x) = 5·2ˣ > 0 für alle x. Daher gibt es kein x mit f(x) = 0.'
+  },
+  {
+    id:'bg2', xp:10, diff:'medium', komp:'K1',
+    title:'B2: Asymptote y = 0',
+    text:'Begründe: Warum ist y = 0 die Asymptote von f(x) = 3 · 0,5ˣ?',
+    opts:[
+      'Weil f(0) = 3 ist und der Graph von 3 auf 0 fällt.',
+      'Weil 0,5 < 1, fällt der Graph, erreicht aber nie y = 0, da 0,5ˣ > 0 für alle x.',
+      'Weil der Graph die x-Achse bei x = 3 schneidet.',
+      'Weil die Funktion für x = ∞ den Wert 0 annimmt.'
+    ],
+    answer:1,
+    explanation:'Korrekt: Für 0 < b < 1 gilt bˣ → 0 wenn x → +∞, aber bˣ > 0 immer. Der Graph nähert sich y = 0 beliebig nahe, erreicht ihn aber nie. Option D ist falsch: "x = ∞" existiert nicht.'
+  },
+  {
+    id:'bg3', xp:10, diff:'easy', komp:'K1',
+    title:'B3: Monotonie',
+    text:'Warum ist f(x) = 2 · 3ˣ streng monoton steigend?',
+    opts:[
+      'Weil a = 2 > 0 und die Ableitung f\'(x) = 2 · 3ˣ · ln(3) > 0 für alle x.',
+      'Weil 3 > 1 ist.',
+      'Weil f(1) > f(0).',
+      'Weil der Graph nach oben zeigt.'
+    ],
+    answer:0,
+    explanation:'Die vollständige Begründung nutzt die Ableitung f\'(x) = 2·3ˣ·ln(3). Da 3ˣ > 0 und ln(3) > 0 und 2 > 0, ist f\'(x) > 0 für alle x – streng monoton steigend. Option B ist unvollständig (fehlt a > 0).'
+  },
+  {
+    id:'bg4', xp:10, diff:'medium', komp:'K1',
+    title:'B4: Definitionsmenge ℝ',
+    text:'Warum ist die Definitionsmenge von f(x) = 4 · 1,5ˣ die Menge ℝ aller reellen Zahlen?',
+    opts:[
+      'Weil 1,5 eine positive rationale Zahl ist und für alle x > 0 definiert ist.',
+      'Weil 1,5ˣ für jede reelle Zahl x berechnet werden kann (z.B. über 1,5ˣ = eˣ·ln(1,5)).',
+      'Weil Exponentialfunktionen nur für natürliche Zahlen definiert sind.',
+      'Weil f(0) = 4 existiert.'
+    ],
+    answer:1,
+    explanation:'1,5ˣ = eˣ·ln(1,5) ist für jedes x ∈ ℝ definiert, da die e-Funktion für alle reellen Zahlen definiert ist. Damit ist D = ℝ. Option A ist falsch: auch negative x sind erlaubt.'
+  },
+  {
+    id:'bg5', xp:15, diff:'hard', komp:'K1',
+    title:'B5: Halbwertszeit-Formel',
+    text:'Welche Begründung erklärt korrekt, warum T½ = log(0,5)/log(b) gilt?',
+    opts:[
+      'Man setzt f(T½) = 0,5 und erhält T½ = 0,5/b.',
+      'Man setzt f(T½) = a/2, kürzt a und löst b^T½ = 0,5 durch Logarithmieren: T½ = log(0,5)/log(b).',
+      'Man dividiert die Gleichung durch 2 und erhält T½ = b/2.',
+      'Die Halbwertszeit ist immer der Kehrwert von b.'
+    ],
+    answer:1,
+    explanation:'Korrekter Lösungsweg: a·b^T½ = a/2 → b^T½ = 0,5 → T½·log(b) = log(0,5) → T½ = log(0,5)/log(b). Der Logarithmus ist nötig, um den Exponenten T½ zu isolieren.'
+  }
+];
+
+// ===================== GRAPHENAUFGABEN =====================
+const graphAufgaben = [
+  {
+    id:'gr1', xp:15, diff:'easy', komp:'K2',
+    title:'G1: Funktion dem Graph zuordnen',
+    text:'Ein Graph geht durch P(0|2) und ist streng monoton steigend. Er hat die Asymptote y=0. Welche Gleichung passt?',
+    opts:['f(x)=2·0,5ˣ','f(x)=2·2ˣ','f(x)=−2·2ˣ','f(x)=2·1ˣ'],
+    answer:1,
+    explanation:'P(0|2): a=2. Steigend → b>1 → b=2. Also f(x)=2·2ˣ. Option A fällt, C liegt unter x-Achse, D ist konstant.',
+    graphParams:null
+  },
+  {
+    id:'gr2', xp:15, diff:'easy', komp:'K2',
+    title:'G2: Eigenschaften ablesen',
+    text:'Ein Graph hat f(0)=3, f(1)=1,5 und fällt streng monoton. Welche Aussage ist RICHTIG?',
+    opts:['b=2, Wachstum','b=0,5, Zerfall','b=1,5, Wachstum','b=0,5, kein Zerfall'],
+    answer:1,
+    explanation:'b=f(1)/f(0)=1,5/3=0,5. Da 0<b<1, handelt es sich um Zerfall. a=f(0)=3. Also f(x)=3·0,5ˣ.',
+    graphParams:null
+  },
+  {
+    id:'gr3', xp:20, diff:'medium', komp:'K2',
+    title:'G3: Wachstumsfaktor aus Wertetabelle',
+    text:'Aus einer Wertetabelle: f(0)=4, f(2)=1. Bestimme b (auf 2 Stellen).',
+    opts:['b=0,50','b=0,25','b=0,75','b=2,00'],
+    answer:0,
+    explanation:'f(0)=a=4. f(2)=4·b²=1 → b²=0,25 → b=0,5. Also f(x)=4·0,5ˣ.',
+    graphParams:null
+  },
+  {
+    id:'gr4', xp:20, diff:'medium', komp:'K2',
+    title:'G4: Graph skizzieren – Beschreibung',
+    text:'f(x) = 0,5 · 4ˣ. Welche Beschreibung passt zum Graphen?',
+    opts:[
+      'Verläuft durch (0|0,5), steigt für x>0 stark an, nähert sich y=0 für x→−∞',
+      'Verläuft durch (0|2), fällt monoton, Asymptote y=1',
+      'Verläuft durch (0|0,5), fällt monoton, keine Asymptote',
+      'Verläuft durch (1|0,5), steigt für x>0, Asymptote y=0,5'
+    ],
+    answer:0,
+    explanation:'f(0)=0,5·4⁰=0,5 → Punkt (0|0,5). b=4>1 → steigt für x>0 stark (Wachstum). Für x→−∞: 4ˣ→0, Asymptote y=0.'
+  },
+  {
+    id:'gr5', xp:25, diff:'hard', komp:'K2',
+    title:'G5: Zwei Graphen vergleichen',
+    text:'f(x)=2·3ˣ und g(x)=2·(1/3)ˣ. Welche Aussage ist RICHTIG?',
+    opts:[
+      'Beide Graphen schneiden sich bei (0|2) und sind zueinander gespiegelt an der y-Achse',
+      'f und g sind identisch, da beide a=2 haben',
+      'g ist die Spiegelung von f an der x-Achse',
+      'Beide Graphen haben unterschiedliche Asymptoten'
+    ],
+    answer:0,
+    explanation:'f(0)=g(0)=2 → gleicher y-Achsenabschnitt. Außerdem gilt (1/3)ˣ=3⁻ˣ, also g(x)=f(−x). Die Graphen sind an der y-Achse gespiegelt und schneiden sich bei (0|2). Asymptote bei beiden: y=0.'
+  }
+];
+
+// ===================== RENDER ERWEITERT =====================
+function renderErweitert() {
+  renderTextaufgaben();
+  renderBegruendungen();
+  renderGraphAufgaben();
+}
+
+function renderTextaufgaben() {
+  const c = document.getElementById('text-container');
+  if (!c) return;
+  c.innerHTML = '';
+  textaufgaben.forEach(aufg => {
+    const card = document.createElement('div');
+    card.className = 'exercise-card medium';
+    card.id = 'card-' + aufg.id;
+    const diff = aufg.diff || 'medium';
+    const diffLabel = {easy:'Leicht',medium:'Mittel',hard:'Schwer'}[diff];
+    const klpMap = {K1:'K1',K2:'K4',K3:'K2',K4:'K6',K5:'K3',K6:'K5'};
+    const klpCode = klpMap[aufg.komp] || '';
+    let qHtml = aufg.questions.map((q,qi) => {
+      const solved = state.answered[q.id]?.correct;
+      let inputHtml = '';
+      if (q.type === 'mc') {
+        const letters = ['A','B','C','D'];
+        inputHtml = `<div class="mc-options" id="mc-${q.id}">` +
+          q.opts.map((o,i) => `<label class="mc-option" id="mc-opt-${q.id}-${i}"><input type="radio" name="mc-${q.id}" value="${i}" onchange="checkTxMC('${q.id}',${i},'${aufg.komp}')"> ${letters[i]}) ${o}</label>`).join('') + '</div>';
+      } else {
+        inputHtml = `<div class="input-row">
+          <input type="text" id="inp-${q.id}" placeholder="Antwort" onkeydown="if(event.key==='Enter')checkTxInput('${q.id}','${aufg.komp}')">
+          <span style="color:var(--gray)">${q.unit}</span>
+          <button class="btn btn-primary" onclick="checkTxInput('${q.id}','${aufg.komp}')">Prüfen</button>
+        </div>`;
+      }
+      return `<div style="margin-bottom:12px;">
+        <div style="font-weight:600;font-size:0.9rem;margin-bottom:6px;">${qi+1}. ${q.text} ${solved?'✅':''}</div>
+        ${inputHtml}
+        <div class="feedback-box" id="fb-${q.id}"></div>
+      </div>`;
+    }).join('');
+    card.innerHTML = `
+      <div class="exercise-header">
+        <div class="exercise-title">${aufg.title}</div>
+        <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
+          <span class="klp-tag ${aufg.komp}">${klpCode}</span>
+          <span class="diff-badge ${diff}">${diffLabel}</span>
+          <span class="xp-badge">+${aufg.xp} XP</span>
+        </div>
+      </div>
+      <div class="context-text">${aufg.context}</div>
+      ${qHtml}
+    `;
+    c.appendChild(card);
+  });
+}
+
+function checkTxMC(qId, selected, komp) {
+  const q = textaufgaben.flatMap(a=>a.questions).find(q=>q.id===qId);
+  const aufg = textaufgaben.find(a=>a.questions.some(q=>q.id===qId));
+  if (!q || state.answered[qId]?.correct) return;
+  const correct = selected === q.answer;
+  q.opts.forEach((_,i) => {
+    const opt = document.getElementById('mc-opt-'+qId+'-'+i);
+    if (opt) { if(i===q.answer) opt.classList.add('correct'); else if(i===selected&&!correct) opt.classList.add('wrong'); }
+  });
+  document.querySelectorAll(`input[name="mc-${qId}"]`).forEach(r=>r.disabled=true);
+  const fb = document.getElementById('fb-'+qId);
+  fb.className = 'feedback-box show ' + (correct?'correct':'wrong');
+  fb.innerHTML = (correct?'✅ Richtig! ':'❌ Falsch. ') + q.explanation;
+  if (correct) { addXP(Math.round(aufg.xp/aufg.questions.length), qId); updateKomp(komp, true); showToast(`✅ +${Math.round(aufg.xp/aufg.questions.length)} XP`,'green'); }
+  else { trackWrong(qId); updateKomp(komp, false); }
+  updateXPDisplay();
+}
+
+function checkTxInput(qId, komp) {
+  const q = textaufgaben.flatMap(a=>a.questions).find(q=>q.id===qId);
+  const aufg = textaufgaben.find(a=>a.questions.some(q=>q.id===qId));
+  if (!q || state.answered[qId]?.correct) return;
+  const val = parseFloat((document.getElementById('inp-'+qId)?.value||'').replace(',','.'));
+  const correct = Math.abs(val - parseFloat(q.answer)) <= (q.tolerance||0.5);
+  const inp = document.getElementById('inp-'+qId);
+  if (inp) inp.classList.add(correct?'correct':'wrong');
+  const fb = document.getElementById('fb-'+qId);
+  fb.className = 'feedback-box show ' + (correct?'correct':'wrong');
+  fb.innerHTML = (correct?'✅ Richtig! ':`❌ Lösung: ${q.answer} ${q.unit||''}. `) + q.explanation;
+  if (correct) { addXP(Math.round(aufg.xp/aufg.questions.length), qId); updateKomp(komp, true); showToast(`✅ +${Math.round(aufg.xp/aufg.questions.length)} XP`,'green'); }
+  else { trackWrong(qId); updateKomp(komp, false); }
+  updateXPDisplay();
+}
+
+function renderBegruendungen() {
+  const c = document.getElementById('begruendung-container');
+  if (!c) return;
+  c.innerHTML = '';
+  begruendungsAufgaben.forEach(aufg => {
+    const card = document.createElement('div');
+    card.className = `exercise-card ${aufg.diff}`;
+    card.id = 'card-' + aufg.id;
+    card.innerHTML = buildExerciseHTML({
+      id: aufg.id, diff: aufg.diff, xp: aufg.xp, komp: aufg.komp,
+      title: aufg.title, text: aufg.text,
+      type: 'mc', options: aufg.opts, answer: aufg.answer,
+      explanation: aufg.explanation, steps: []
+    }, 'begruendung');
+    c.appendChild(card);
+  });
+}
+
+function renderGraphAufgaben() {
+  const c = document.getElementById('graph-aufgaben-container');
+  if (!c) return;
+  c.innerHTML = '';
+  graphAufgaben.forEach(aufg => {
+    const card = document.createElement('div');
+    card.className = `exercise-card ${aufg.diff}`;
+    card.id = 'card-' + aufg.id;
+    // Build mini canvas for visual hint
+    const canvasId = 'mini-canvas-' + aufg.id;
+    card.innerHTML = buildExerciseHTML({
+      id: aufg.id, diff: aufg.diff, xp: aufg.xp, komp: aufg.komp,
+      title: aufg.title, text: aufg.text,
+      type: 'mc', options: aufg.opts, answer: aufg.answer,
+      explanation: aufg.explanation, steps: []
+    }, 'graph');
+    c.appendChild(card);
+  });
+}
+
+// ===================== INIT =====================
+loadState();
+renderGrundaufgaben();
+renderGleichungen();
+renderAnwendungen();
+renderDiagnose();
+renderErweitert();
+updateXPDisplay();
+updateGraph();
+newReadTask();
+checkAchievements();
+renderAchievements();
+</script>
+</body>
+</html>

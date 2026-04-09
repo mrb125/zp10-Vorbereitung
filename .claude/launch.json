@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "zp10-app",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "app", "-l", "3456", "--no-clipboard"],
+      "port": 3456
+    }
+  ]
+}

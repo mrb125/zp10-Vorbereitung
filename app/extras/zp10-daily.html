@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#5B6CF0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Daily Challenge">
+    <meta name="description" content="ZP10 Daily Challenge - 5 Minuten Training">
+    <title>ZP10 - Daily Challenge</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="zp10-daily.css">
+</head>
+<body>
+    <button class="icon-btn" id="themeToggle" aria-label="Theme toggle">☀️</button>
+
+    <div class="container">
+        <!-- START SCREEN -->
+        <div id="startScreen" class="start-screen">
+            <div class="card">
+                <div class="streak-badge" id="streakBadge">🔥 0 Tage Streak</div>
+                <h1>Tägliche Challenge</h1>
+                <p style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 2rem;">
+                    Trainiere 5 Minuten täglich mit intelligenten Aufgaben
+                </p>
+
+                <div id="motivationalBox" class="motivational-message">
+                    "Du schaffst das! Jede Übung bringt dich näher zur Bestnote." 💪
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <h3 id="todayStats">0</h3>
+                        <p>Heute gelöst</p>
+                    </div>
+                    <div class="stat-box">
+                        <h3 id="totalStats">0</h3>
+                        <p>Insgesamt</p>
+                    </div>
+                    <div class="stat-box">
+                        <h3 id="accuracyStats">0%</h3>
+                        <p>Genauigkeit</p>
+                    </div>
+                </div>
+
+                <button class="btn btn--primary btn--lg" id="startBtn">Challenge starten</button>
+            </div>
+        </div>
+
+        <!-- QUESTION SCREEN -->
+        <div id="questionScreen" class="question-screen">
+            <div class="progress-container">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span id="questionNumber" style="font-weight: 600;">Frage 1 von 5</span>
+                    <span id="timerDisplay" style="font-weight: 600; color: var(--primary);">5:00</span>
+                </div>
+                <div class="progress-bar">
+                    <div id="progressFill" class="progress-fill" style="width: 0%;"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div id="timerAlert" class="timer" style="display: none;"></div>
+
+                <div class="question-header">
+                    <span class="question-topic" id="questionTopic">Algebra</span>
+                    <div class="question-title" id="questionText"></div>
+                </div>
+
+                <div class="question-options" id="optionsContainer"></div>
+
+                <div id="feedback" class="feedback"></div>
+
+                <div id="explanation" class="explanation" style="display: none;"></div>
+
+                <div class="button-group">
+                    <button class="btn btn--secondary" id="skipBtn" style="display: none;">Überspringen</button>
+                    <button class="btn btn--primary" id="submitBtn">Antwort prüfen</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- RESULTS SCREEN -->
+        <div id="resultsScreen" class="results-screen">
+            <div class="results-summary">
+                <div id="achievementBadge" class="achievement-badge" style="display: none;"></div>
+                <div class="results-score" id="finalScore">0/5</div>
+                <div class="results-message" id="resultMessage"></div>
+            </div>
+
+            <div class="result-details">
+                <div class="result-item">
+                    <span class="result-item-label">Richtige Antworten</span>
+                    <span class="result-item-value" id="correctCount">0</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-item-label">Genauigkeit</span>
+                    <span class="result-item-value" id="accuracyPercentage">0%</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-item-label">Zeit gespart</span>
+                    <span class="result-item-value" id="timeSaved">0s</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-item-label">Neuer Streak</span>
+                    <span class="result-item-value" id="newStreak">0 Tage</span>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn--secondary btn--lg" id="backBtn">Zurück zur Startseite</button>
+                <button class="btn btn--primary btn--lg" id="retryBtn">Erneut versuchen</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== QUESTION BANK WITH 50+ QUESTIONS ACROSS 13 TOPICS =====
+        const questionBank = {
+            'Terme & Gleichungen': [
+                { question: '(a + b)² = ?', options: ['a² + b²', 'a² + 2ab + b²', 'a² + ab + b²', 'a + b'], correct: 1, explanation: 'Das ist die erste binomische Formel: (a + b)² = a² + 2ab + b²' },
+                { question: 'Löse: 3x + 7 = 22', options: ['x = 5', 'x = 10', 'x = 3', 'x = 15'], correct: 0, explanation: '3x + 7 = 22 → 3x = 15 → x = 5' },
+                { question: '(a - b)² = ?', options: ['a² - b²', 'a² - 2ab + b²', 'a² - ab + b²', 'a - b'], correct: 1, explanation: '(a - b)² = a² - 2ab + b²' },
+                { question: 'Vereinfache: 5x + 3x - 2x', options: ['6x', '8x', '10x', 'x'], correct: 0, explanation: '5x + 3x - 2x = 6x' },
+                { question: 'Löse: 2(x - 3) = 10', options: ['x = 8', 'x = 5', 'x = 13', 'x = 2'], correct: 0, explanation: '2(x - 3) = 10 → 2x - 6 = 10 → 2x = 16 → x = 8' },
+            ],
+            'Terme & Muster': [
+                { question: 'Zahlenfolge: 2, 4, 6, 8, ... Das nächste Glied?', options: ['9', '10', '11', '12'], correct: 1, explanation: 'Dies ist eine arithmetische Folge mit Differenz 2. Das nächste Glied ist 10.' },
+                { question: 'Bildmuster-Folge: 1, 4, 9, 16, ... Was ist die Regel?', options: ['n + 3', 'n²', '2n', 'n + 5'], correct: 1, explanation: 'Dies sind Quadratzahlen: 1² = 1, 2² = 4, 3² = 9, 4² = 16' },
+                { question: 'Folge: 3, 6, 9, 12, ... Das 5. Glied?', options: ['15', '16', '18', '20'], correct: 0, explanation: 'Dies ist eine Folge mit +3. Das 5. Glied ist 15.' },
+                { question: 'Zahlenfolge: 1, 1, 2, 3, 5, 8, ... (Fibonacci) Das nächste Glied?', options: ['11', '12', '13', '14'], correct: 2, explanation: 'Fibonacci-Folge: Jedes Glied ist die Summe der beiden vorherigen. 5 + 8 = 13' },
+            ],
+            'Terme vereinfachen': [
+                { question: 'Vereinfache: 3a + 2a', options: ['5a', '6a', 'a', '5'], correct: 0, explanation: '3a + 2a = 5a (gleiche Variablen zusammenfassen)' },
+                { question: 'Ausmultiplizieren: 2(x + 3)', options: ['2x + 6', 'x + 6', '2x + 3', '2x + 5'], correct: 0, explanation: '2(x + 3) = 2·x + 2·3 = 2x + 6' },
+                { question: 'Ausklammern: 6x + 9', options: ['3(2x + 3)', '6(x + 9)', '2(3x + 4)', 'x(6 + 9)'], correct: 0, explanation: '6x + 9 = 3(2x + 3), da ggT(6, 9) = 3' },
+                { question: 'Vereinfache: 4x² + 2x + 3x²', options: ['7x² + 2x', '5x² + 2x', '6x² + 2x', '9x'], correct: 0, explanation: '4x² + 2x + 3x² = 7x² + 2x (nur gleiche Potenzen zusammenfassen)' },
+                { question: 'Ausmultiplizieren: (x + 2)(x + 3)', options: ['x² + 5x + 6', 'x² + 6x + 6', 'x² + 5x + 5', 'x + 5'], correct: 0, explanation: '(x + 2)(x + 3) = x² + 3x + 2x + 6 = x² + 5x + 6' },
+            ],
+            'Lineare Funktionen': [
+                { question: 'Die Steigung m der Gerade y = 2x + 3 ist:', options: ['2', '3', '1', '-2'], correct: 0, explanation: 'In y = mx + n ist m die Steigung. Hier m = 2.' },
+                { question: 'Der y-Achsenabschnitt von y = 3x - 5 ist:', options: ['3', '5', '-5', '0'], correct: 2, explanation: 'Der y-Achsenabschnitt (n) ist der Schnittpunkt mit der y-Achse: -5' },
+                { question: 'Welche Gerade geht durch (0, 2)?', options: ['y = x + 2', 'y = 2x', 'y = x - 2', 'y = 2'], correct: 0, explanation: 'Bei x = 0 muss y = 2 sein. y = x + 2: y = 0 + 2 = 2 ✓' },
+                { question: 'Steigung zwischen (1, 2) und (3, 6)?', options: ['1', '2', '3', '4'], correct: 1, explanation: 'm = (6-2)/(3-1) = 4/2 = 2' },
+                { question: 'Welche Gerade hat Steigung 0?', options: ['y = x', 'y = 0', 'y = 5', 'x = 1'], correct: 1, explanation: 'Eine waagerechte Gerade hat Steigung m = 0, z.B. y = 5' },
+            ],
+            'Quadratische Funktionen': [
+                { question: 'Der Scheitelpunkt von y = (x - 2)² + 3 ist:', options: ['(2, 3)', '(-2, 3)', '(2, -3)', '(3, 2)'], correct: 0, explanation: 'Scheitelpunktform: y = (x - h)² + k → Scheitelpunkt (h, k) = (2, 3)' },
+                { question: 'Wie viele Nullstellen hat y = x² + 1?', options: ['0', '1', '2', '3'], correct: 0, explanation: 'x² + 1 = 0 → x² = -1. Keine reelle Lösung, also 0 Nullstellen.' },
+                { question: 'Die Parabel y = -x² öffnet sich:', options: ['nach oben', 'nach unten', 'zur Seite', 'gar nicht'], correct: 1, explanation: 'Wenn der Koeffizient von x² negativ ist (a < 0), öffnet sich die Parabel nach unten.' },
+                { question: 'Nullstelle von y = x² - 4:', options: ['x = 2', 'x = ±2', 'x = 4', 'keine'], correct: 1, explanation: 'x² - 4 = 0 → x² = 4 → x = ±2' },
+                { question: 'Der Scheitelpunkt von y = x² - 4x + 4:', options: ['(2, 0)', '(0, 4)', '(-2, 0)', '(4, 0)'], correct: 0, explanation: 'y = (x - 2)² → Scheitelpunkt (2, 0)' },
+            ],
+            'Potenzen & Wurzeln': [
+                { question: 'Vereinfache: a² · a³', options: ['a⁵', 'a⁶', 'a¹', 'a⁸'], correct: 0, explanation: 'Potenzgesetz: a^m · a^n = a^(m+n) → a² · a³ = a⁵' },
+                { question: '√16 = ?', options: ['4', '8', '2', '256'], correct: 0, explanation: '√16 = 4, da 4² = 16' },
+                { question: 'Vereinfache: (x²)³', options: ['x⁵', 'x⁶', 'x³', 'x²'], correct: 1, explanation: 'Potenzgesetz: (a^m)^n = a^(m·n) → (x²)³ = x⁶' },
+                { question: '2⁻² = ?', options: ['4', '-4', '1/4', '1/2'], correct: 2, explanation: '2⁻² = 1/2² = 1/4' },
+                { question: '√(2⁸) = ?', options: ['2⁴', '2²', '2⁸', '16'], correct: 0, explanation: '√(2⁸) = 2^(8/2) = 2⁴ = 16' },
+            ],
+            'Lineare Gleichungssysteme': [
+                { question: 'Löse: x + y = 5, x - y = 1', options: ['x=3, y=2', 'x=2, y=3', 'x=4, y=1', 'x=1, y=4'], correct: 0, explanation: 'Addition: (x+y) + (x-y) = 5+1 → 2x = 6 → x = 3, y = 2' },
+                { question: 'Wie viele Lösungen hat ein lineares System mit parallelen Geraden?', options: ['1', '2', 'unendlich', '0'], correct: 3, explanation: 'Parallele Geraden haben keinen Schnittpunkt, also 0 Lösungen.' },
+                { question: 'Ein System mit identischen Gleichungen hat:', options: ['keine Lösung', 'eine Lösung', 'unendlich viele Lösungen', '2 Lösungen'], correct: 2, explanation: 'Identische Gleichungen stellen die gleiche Gerade dar → unendlich viele Lösungen' },
+            ],
+            'Prozentrechnung': [
+                { question: '20% von 50 = ?', options: ['10', '20', '25', '5'], correct: 0, explanation: '20% von 50 = 0,20 · 50 = 10' },
+                { question: 'Wenn 30 Schüler 25% der Klasse sind, wie viele gibt es insgesamt?', options: ['90', '120', '100', '150'], correct: 1, explanation: '30 = 0,25 · x → x = 30 / 0,25 = 120' },
+                { question: 'Der Preis steigt von 80€ auf 100€. Wie viel Prozent Steigerung?', options: ['20%', '25%', '30%', '15%'], correct: 1, explanation: 'Steigerung = (100-80)/80 = 20/80 = 0,25 = 25%' },
+                { question: '15% Rabatt auf 200€:', options: ['30€', '170€', '190€', '185€'], correct: 1, explanation: '15% von 200 = 30€ Rabatt → 200 - 30 = 170€' },
+            ],
+            'Trigonometrie': [
+                { question: 'sin(90°) = ?', options: ['0', '1', '-1', '0,5'], correct: 1, explanation: 'sin(90°) = 1 (Grundwert)' },
+                { question: 'In einem rechtwinkligen Dreieck: sin(α) = a/c. Was ist a?', options: ['Ankathete', 'Gegenkathete', 'Hypotenuse', 'Winkel'], correct: 1, explanation: 'sin = Gegenkathete/Hypotenuse' },
+                { question: 'cos(0°) = ?', options: ['0', '1', '-1', '0,5'], correct: 1, explanation: 'cos(0°) = 1 (Grundwert)' },
+                { question: 'tan(45°) = ?', options: ['0', '1', '-1', '2'], correct: 1, explanation: 'tan(45°) = 1 (da sin(45°) = cos(45°))' },
+            ],
+            'Exponentialfunktionen': [
+                { question: '2³ = ?', options: ['6', '8', '9', '12'], correct: 1, explanation: '2³ = 2 · 2 · 2 = 8' },
+                { question: 'Die Funktion y = 2ˣ ist:', options: ['linear', 'quadratisch', 'exponentiell', 'rational'], correct: 2, explanation: 'Funktionen der Form y = aˣ sind exponentiell.' },
+                { question: '10⁰ = ?', options: ['0', '1', '10', '-10'], correct: 1, explanation: 'Jede Zahl hoch 0 = 1' },
+                { question: 'Wie viele Bakterien nach 3 Generationen, wenn sich jede verdoppelt?', options: ['3', '6', '8', '12'], correct: 2, explanation: 'Verdopplung pro Generation: 1 → 2 → 4 → 8' },
+            ],
+            'Wahrscheinlichkeit & Statistik': [
+                { question: 'Wie viele Möglichkeiten beim Wurf zweier Würfel?', options: ['6', '12', '36', '72'], correct: 2, explanation: 'Jeder Würfel 6 Möglichkeiten: 6 · 6 = 36' },
+                { question: 'Wahrscheinlichkeit für Zahl beim Münzwurf?', options: ['25%', '50%', '75%', '100%'], correct: 1, explanation: '1 von 2 Möglichkeiten = 1/2 = 50%' },
+                { question: 'Mittelwert von: 2, 4, 6, 8', options: ['4', '5', '6', '20'], correct: 1, explanation: '(2+4+6+8)/4 = 20/4 = 5' },
+                { question: 'Median von: 1, 3, 5, 7, 9?', options: ['3', '5', '7', '9'], correct: 1, explanation: 'Der mittlere Wert ist 5.' },
+            ],
+            'Geometrie': [
+                { question: 'Umfang eines Kreises mit r = 5:', options: ['10π', '25π', '10', '5π'], correct: 0, explanation: 'U = 2πr = 2π·5 = 10π' },
+                { question: 'Fläche eines Rechtecks: 4 × 6 = ?', options: ['10', '20', '24', '30'], correct: 2, explanation: 'A = Länge × Breite = 4 × 6 = 24' },
+                { question: 'Fläche eines Dreiecks mit g=10, h=5:', options: ['15', '25', '50', '10'], correct: 1, explanation: 'A = (g × h)/2 = (10 × 5)/2 = 25' },
+                { question: 'Summe der Innenwinkel eines Dreiecks:', options: ['90°', '180°', '270°', '360°'], correct: 1, explanation: 'Die Summe ist immer 180°' },
+            ],
+            'Rationale Funktionen': [
+                { question: 'Eine Funktion f(x) = 1/x hat eine Definitionslücke bei:', options: ['x = 0', 'x = 1', 'x = -1', 'überall'], correct: 0, explanation: 'Division durch 0 ist nicht definiert.' },
+                { question: 'Die Asymptoten von y = 1/x sind:', options: ['x = 0 und y = 0', 'x = 1 und y = 1', 'x = 0 und y = 1', 'keine'], correct: 0, explanation: 'y = 1/x hat die x-Achse (y=0) und y-Achse (x=0) als Asymptoten.' },
+            ],
+            'Koordinatensystem': [
+                { question: 'Punkt P(3, -2) liegt im:', options: ['1. Quadrant', '2. Quadrant', '3. Quadrant', '4. Quadrant'], correct: 3, explanation: 'x > 0, y < 0 → 4. Quadrant' },
+                { question: 'Entfernung von (0, 0) zu (3, 4):', options: ['5', '7', '1', '12'], correct: 0, explanation: 'd = √(3² + 4²) = √25 = 5' },
+                { question: 'Mittelpunkt von (2, 4) und (6, 8):', options: ['(4, 6)', '(3, 4)', '(2, 2)', '(8, 12)'], correct: 0, explanation: 'M = ((2+6)/2, (4+8)/2) = (4, 6)' },
+            ],
+        };
+
+        // ===== SM-2 SPACED REPETITION =====
+        class SpacedRepetition {
+            constructor() {
+                this.data = JSON.parse(localStorage.getItem('zp10_sr_mvs') || '{}');
+            }
+
+            getQuestion(topic) {
+                if (!this.data[topic]) {
+                    this.data[topic] = {};
+                }
+                const questions = questionBank[topic] || [];
+                const now = Date.now();
+
+                // Priority: questions due for review (interval passed)
+                const dueQuestions = questions.filter((q, idx) => {
+                    const key = `${topic}_${idx}`;
+                    if (!this.data[topic][key]) return true;
+                    const item = this.data[topic][key];
+                    return now >= (item.nextReview || 0);
+                });
+
+                const questions_to_select = dueQuestions.length > 0 ? dueQuestions : questions;
+                return questions_to_select[Math.floor(Math.random() * questions_to_select.length)];
+            }
+
+            updateQuestion(topic, questionIndex, correct) {
+                const key = `${topic}_${questionIndex}`;
+                if (!this.data[topic]) this.data[topic] = {};
+
+                if (!this.data[topic][key]) {
+                    this.data[topic][key] = { ef: 2.5, interval: 1, repetitions: 0 };
+                }
+
+                const item = this.data[topic][key];
+                item.repetitions++;
+                item.lastReview = Date.now();
+
+                if (correct) {
+                    item.ef = Math.max(1.3, item.ef + (0.1 - (5 - 4) * (0.08 + (5 - 4) * (-0.02))));
+                    item.interval = item.repetitions === 1 ? 1 : item.interval * item.ef;
+                } else {
+                    item.ef = Math.max(1.3, item.ef - 0.2);
+                    item.interval = 1;
+                    item.repetitions = 1;
+                }
+
+                item.nextReview = Date.now() + item.interval * 24 * 60 * 60 * 1000;
+                this.save();
+            }
+
+            save() {
+                localStorage.setItem('zp10_sr_mvs', JSON.stringify(this.data));
+            }
+        }
+
+        // ===== MAIN APP =====
+        const sr = new SpacedRepetition();
+        let appState = {
+            currentQuestion: 0,
+            answers: [],
+            correct: 0,
+            startTime: 0,
+            timeLimit: 300000, // 5 minutes
+            questions: [],
+            selectedTopics: []
+        };
+
+        const screens = {
+            start: document.getElementById('startScreen'),
+            question: document.getElementById('questionScreen'),
+            results: document.getElementById('resultsScreen')
+        };
+
+        function loadStats() {
+            const stats = JSON.parse(localStorage.getItem('zp10_daily_stats') || '{"streak": 0, "lastDate": null, "totalSolved": 0, "correct": 0}');
+            return stats;
+        }
+
+        function saveStats(stats) {
+            localStorage.setItem('zp10_daily_stats', JSON.stringify(stats));
+        }
+
+        function updateStreak() {
+            const stats = loadStats();
+            const today = new Date().toDateString();
+
+            if (stats.lastDate !== today) {
+                stats.streak = (stats.lastDate === new Date(Date.now() - 86400000).toDateString()) ? stats.streak + 1 : 1;
+                stats.lastDate = today;
+            }
+
+            return stats;
+        }
+
+        function getMotivationalMessage(streak) {
+            const messages = [
+                "🎯 Kleine Schritte führen zu großen Erfolgen!",
+                "💪 Du bist bereits 1 Schritt näher ans Ziel!",
+                "⚡ Konsistenz ist der Schlüssel zum Erfolg!",
+                "🚀 Jede Aufgabe bringt dich voran!",
+                "🌟 Du packst das heute definitiv!",
+                `🔥 ${streak} Tage Streak - behalte das Momentum!`
+            ];
+            return messages[Math.floor(Math.random() * messages.length)];
+        }
+
+        function selectQuestionsWithInterleaving() {
+            const topics = Object.keys(questionBank);
+            const selectedTopics = [];
+            const selectedQuestions = [];
+
+            // Select 5 topics (with some repetition possible for variety)
+            for (let i = 0; i < 5; i++) {
+                const topic = topics[Math.floor(Math.random() * topics.length)];
+                const topicQuestions = questionBank[topic];
+                const question = topicQuestions[Math.floor(Math.random() * topicQuestions.length)];
+
+                selectedQuestions.push({...question, topic});
+                selectedTopics.push(topic);
+            }
+
+            return { questions: selectedQuestions, topics: selectedTopics };
+        }
+
+        function showStartScreen() {
+            screens.start.classList.add('active');
+            screens.question.classList.remove('active');
+            screens.results.classList.remove('active');
+
+            const stats = loadStats();
+            document.getElementById('streakBadge').textContent = `🔥 ${stats.streak || 0} Tage Streak`;
+            document.getElementById('motivationalBox').textContent = getMotivationalMessage(stats.streak || 0);
+
+            const today = new Date().toDateString();
+            const todaySolved = stats.lastDate === today ? '5' : '0';
+            document.getElementById('todayStats').textContent = todaySolved;
+            document.getElementById('totalStats').textContent = stats.totalSolved || '0';
+            document.getElementById('accuracyStats').textContent = stats.totalSolved > 0 ? Math.round(stats.correct / stats.totalSolved * 100) + '%' : '0%';
+        }
+
+        function startChallenge() {
+            appState.startTime = Date.now();
+            const selection = selectQuestionsWithInterleaving();
+            appState.questions = selection.questions;
+            appState.selectedTopics = selection.topics;
+            appState.currentQuestion = 0;
+            appState.answers = [];
+            appState.correct = 0;
+
+            screens.start.classList.remove('active');
+            screens.question.classList.add('active');
+
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const q = appState.questions[appState.currentQuestion];
+            document.getElementById('questionNumber').textContent = `Frage ${appState.currentQuestion + 1} von 5`;
+            document.getElementById('questionTopic').textContent = q.topic;
+            document.getElementById('questionText').textContent = q.question;
+            document.getElementById('progressFill').style.width = ((appState.currentQuestion) / 5 * 100) + '%';
+
+            const optionsHtml = q.options.map((opt, idx) => `
+                <label class="option">
+                    <input type="radio" name="answer" value="${idx}">
+                    <span>${opt}</span>
+                </label>
+            `).join('');
+            document.getElementById('optionsContainer').innerHTML = optionsHtml;
+            document.getElementById('feedback').classList.remove('show');
+            document.getElementById('explanation').style.display = 'none';
+            document.getElementById('submitBtn').style.display = 'block';
+            document.getElementById('skipBtn').style.display = 'none';
+
+            startTimer();
+        }
+
+        let timerInterval;
+        function startTimer() {
+            clearInterval(timerInterval);
+            const startTime = Date.now();
+
+            timerInterval = setInterval(() => {
+                const elapsed = Date.now() - startTime;
+                const remaining = appState.timeLimit - elapsed;
+
+                if (remaining <= 0) {
+                    clearInterval(timerInterval);
+                    finishChallenge();
+                    return;
+                }
+
+                const minutes = Math.floor(remaining / 60000);
+                const seconds = Math.floor((remaining % 60000) / 1000);
+                document.getElementById('timerDisplay').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+                const timerAlert = document.getElementById('timerAlert');
+                if (remaining < 60000) {
+                    timerAlert.style.display = 'flex';
+                    timerAlert.classList.add('critical');
+                    timerAlert.textContent = `⏰ Nur noch ${seconds} Sekunden!`;
+                } else if (remaining < 120000) {
+                    timerAlert.style.display = 'flex';
+                    timerAlert.classList.remove('critical');
+                    timerAlert.textContent = `⏱️ ${minutes}:${seconds.toString().padStart(2, '0')} verbleibend`;
+                } else {
+                    timerAlert.style.display = 'none';
+                }
+            }, 100);
+        }
+
+        document.getElementById('submitBtn').addEventListener('click', () => {
+            const selected = document.querySelector('input[name="answer"]:checked');
+            if (!selected) return;
+
+            const answerIdx = parseInt(selected.value);
+            const q = appState.questions[appState.currentQuestion];
+            const isCorrect = answerIdx === q.correct;
+
+            appState.answers.push(answerIdx);
+            if (isCorrect) appState.correct++;
+
+            // Update spaced repetition
+            sr.updateQuestion(q.topic, questionBank[q.topic].indexOf(q), isCorrect);
+
+            // Show feedback
+            const feedback = document.getElementById('feedback');
+            feedback.classList.add('show');
+            if (isCorrect) {
+                feedback.classList.add('feedback--success');
+                feedback.classList.remove('feedback--danger');
+                feedback.textContent = '✓ Richtig!';
+            } else {
+                feedback.classList.add('feedback--danger');
+                feedback.classList.remove('feedback--success');
+                feedback.textContent = '✗ Falsch.';
+            }
+
+            document.getElementById('explanation').innerHTML = `<strong>Erklärung:</strong> ${q.explanation}`;
+            document.getElementById('explanation').style.display = 'block';
+
+            // Disable all options
+            document.querySelectorAll('.option input').forEach(inp => inp.disabled = true);
+            document.querySelectorAll('.option').forEach((opt, idx) => {
+                if (idx === q.correct) opt.classList.add('correct');
+                else if (idx === answerIdx && !isCorrect) opt.classList.add('incorrect');
+            });
+
+            document.getElementById('submitBtn').style.display = 'none';
+            document.getElementById('skipBtn').style.display = 'block';
+            document.getElementById('skipBtn').textContent = appState.currentQuestion < 4 ? 'Nächste Frage' : 'Ergebnisse';
+        });
+
+        document.getElementById('skipBtn').addEventListener('click', () => {
+            appState.currentQuestion++;
+            if (appState.currentQuestion < 5) {
+                loadQuestion();
+            } else {
+                finishChallenge();
+            }
+        });
+
+        function finishChallenge() {
+            clearInterval(timerInterval);
+            const elapsed = Date.now() - appState.startTime;
+            const saved = Math.max(0, appState.timeLimit - elapsed);
+
+            screens.question.classList.remove('active');
+            screens.results.classList.add('active');
+
+            document.getElementById('finalScore').textContent = `${appState.correct}/5`;
+            document.getElementById('correctCount').textContent = appState.correct;
+            document.getElementById('accuracyPercentage').textContent = Math.round(appState.correct / 5 * 100) + '%';
+            document.getElementById('timeSaved').textContent = (saved / 1000).toFixed(0) + 's';
+
+            // Update stats
+            const stats = updateStreak();
+            stats.totalSolved += 5;
+            stats.correct += appState.correct;
+            saveStats(stats);
+
+            document.getElementById('newStreak').textContent = stats.streak + ' Tage';
+
+            // Motivational message
+            const messages = {
+                5: '🏆 PERFEKT! Du bist ein Mathe-Meister!',
+                4: '🌟 Sehr gut! Noch etwas Training und es wird perfekt!',
+                3: '👍 Gute Arbeit! Weiter so!',
+                2: '💪 Guter Anfang! Morgen besser!',
+                1: '🚀 Guter Einsatz! Üben macht perfekt!',
+                0: '📚 Keine Sorge, das nächste Mal klappt es besser!'
+            };
+            document.getElementById('resultMessage').textContent = messages[appState.correct] || messages[0];
+
+            if (appState.correct === 5) {
+                document.getElementById('achievementBadge').style.display = 'block';
+                document.getElementById('achievementBadge').textContent = '🎖️';
+            }
+        }
+
+        document.getElementById('startBtn').addEventListener('click', startChallenge);
+        document.getElementById('backBtn').addEventListener('click', showStartScreen);
+        document.getElementById('retryBtn').addEventListener('click', startChallenge);
+        document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+
+        function toggleTheme() {
+            const isDark = document.body.classList.toggle('dark');
+            localStorage.setItem('zp10_theme', isDark ? 'dark' : 'light');
+            updateThemeIcon(isDark ? 'dark' : 'light');
+        }
+
+        function updateThemeIcon(theme) {
+            const btn = document.getElementById('themeToggle');
+            btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+
+        // Initialize
+        (function() {
+            const saved = localStorage.getItem('zp10_theme') || 'light';
+            if (saved === 'dark') document.body.classList.add('dark');
+            updateThemeIcon(saved);
+            showStartScreen();
+        })();
+    </script>
+</body>
+</html>

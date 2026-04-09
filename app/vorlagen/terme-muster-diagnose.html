@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagnose-App · Terme &amp; Muster</title>
+<style>
+  :root {
+    --bg:#0f172a; --card:#1e293b; --card2:#273449; --border:#334155;
+    --text:#e2e8f0; --text2:#94a3b8;
+    --blue:#3b82f6; --green:#22c55e; --red:#ef4444; --yellow:#eab308;
+    --orange:#f97316; --purple:#a855f7; --teal:#14b8a6;
+    --r:12px; --sh:0 4px 20px rgba(0,0,0,.4);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center}
+  header{width:100%;background:linear-gradient(135deg,#0c1526,#1a2744);padding:14px 24px;border-bottom:1px solid var(--border)}
+  .hdr-inner{max-width:740px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .hdr-title h1{font-size:1.15rem}
+  .hdr-title p{font-size:.78rem;color:var(--text2);margin-top:2px}
+  .hdr-xp{display:flex;align-items:center;gap:12px;flex-shrink:0}
+  .xp-block{text-align:right}
+  .xp-num{font-size:1.3rem;font-weight:800;color:var(--blue)}
+  .xp-lbl{font-size:.68rem;color:var(--text2)}
+  .level-pill{background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:3px 12px;font-size:.78rem;font-weight:700}
+  .streak-pill{background:#7c2d12;color:#fb923c;border-radius:20px;padding:3px 10px;font-size:.78rem;font-weight:700;display:none}
+  .streak-pill.show{display:inline-block}
+  #app{width:100%;max-width:740px;padding:22px 14px 60px}
+  .screen{display:none}
+  .screen.active{display:block;animation:fadeIn .3s}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh);padding:24px;margin-bottom:14px}
+  .start-hero{text-align:center;padding:28px 16px}
+  .hero-icon{font-size:3.5rem;margin-bottom:14px}
+  .start-hero h2{font-size:1.5rem;margin-bottom:10px}
+  .start-hero p{color:var(--text2);line-height:1.7;max-width:500px;margin:0 auto 20px}
+  .info-chip{background:var(--card2);color:var(--blue);border:1px solid var(--border);border-radius:20px;padding:5px 14px;font-size:.82rem;font-weight:600;display:inline-block;margin:3px}
+  .klp-intro{background:var(--card2);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;margin-bottom:14px}
+  .klp-intro h3{color:var(--teal);font-size:.9rem;margin-bottom:8px}
+  .klp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px}
+  .klp-item{background:var(--card);border-radius:8px;padding:8px 12px;font-size:.78rem;border-left:3px solid var(--teal)}
+  .klp-code{font-weight:700;color:var(--teal);font-size:.75rem}
+  .mv-preview{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin:14px 0}
+  .mvp-item{background:var(--card2);border-radius:8px;padding:9px 12px;font-size:.8rem;border-left:3px solid var(--blue)}
+  .mvp-code{font-weight:700;color:var(--blue)}
+  .gami-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+  .gami-item{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center}
+  .gami-icon{font-size:1.5rem;margin-bottom:4px}
+  .gami-label{font-size:.75rem;color:var(--purple);font-weight:600}
+  .prog-wrap{margin-bottom:18px}
+  .prog-meta{display:flex;justify-content:space-between;font-size:.82rem;color:var(--text2);margin-bottom:5px}
+  .streak-badge{background:#7c2d12;color:#fb923c;border-radius:10px;padding:2px 8px;font-size:.75rem;font-weight:700;display:none}
+  .streak-badge.show{display:inline-block}
+  .prog-track{background:var(--card2);border-radius:10px;height:8px;overflow:hidden}
+  .prog-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--blue),#6366f1);transition:width .4s cubic-bezier(.4,0,.2,1)}
+  .xp-pop{position:fixed;top:80px;right:20px;background:var(--green);color:#0f172a;padding:10px 18px;border-radius:12px;font-weight:700;font-size:1rem;z-index:9999;opacity:0;transform:translateY(-10px);pointer-events:none;transition:opacity .3s,transform .3s}
+  .xp-pop.show{opacity:1;transform:none}
+  .q-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+  .q-category{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--blue);background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.25);border-radius:20px;padding:3px 10px}
+  .klp-tag{font-size:.7rem;font-weight:700;border-radius:20px;padding:3px 9px}
+  .klp-tag.K1{background:#1e1b4b;color:#818cf8}
+  .klp-tag.K2{background:#022c22;color:#34d399}
+  .klp-tag.K3{background:#500724;color:#f472b6}
+  .klp-tag.K4{background:#431407;color:#fb923c}
+  .klp-tag.K5{background:#2e1065;color:#a78bfa}
+  .klp-tag.K6{background:#0c4a6e;color:#38bdf8}
+  .q-text{font-size:1rem;line-height:1.6;margin-bottom:16px}
+  .q-formula{font-family:'Georgia',serif;background:var(--card2);border-left:3px solid #6366f1;border-radius:8px;padding:7px 14px;display:inline-block;font-size:1rem;color:#a5b4fc;margin:4px 0 12px;font-weight:600}
+  .q-hint{font-size:.8rem;color:var(--text2);background:var(--card2);padding:7px 11px;border-radius:8px;margin-bottom:12px;border:1px solid var(--border)}
+  .q-graph{margin:10px 0;text-align:center}
+  .mc-grid{display:flex;flex-direction:column;gap:7px}
+  .mc-opt{display:flex;align-items:center;gap:11px;border:2px solid var(--border);border-radius:10px;padding:11px 14px;cursor:pointer;transition:all .15s;background:var(--card2);text-align:left;font-size:.93rem;width:100%;color:var(--text)}
+  .mc-opt:hover:not(:disabled){border-color:var(--blue);background:#1d3a5f}
+  .opt-letter{width:26px;height:26px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.78rem;flex-shrink:0;color:var(--text2)}
+  .mc-opt:hover:not(:disabled) .opt-letter,.mc-opt.selected .opt-letter{background:var(--blue);color:#fff}
+  .mc-opt.selected{border-color:var(--blue);background:#1d3a5f}
+  .mc-opt.correct{border-color:var(--green)!important;background:#14532d!important;color:#86efac}
+  .mc-opt.correct .opt-letter{background:var(--green);color:#0f172a}
+  .mc-opt.wrong{border-color:var(--red)!important;background:#450a0a!important;color:#fca5a5}
+  .mc-opt.wrong .opt-letter{background:var(--red);color:#fff}
+  .mc-opt:disabled{cursor:default}
+  .tf-row{display:flex;gap:10px}
+  .tf-btn{flex:1;padding:13px;border:2px solid var(--border);border-radius:10px;cursor:pointer;font-size:.95rem;font-weight:600;background:var(--card2);color:var(--text);transition:all .15s}
+  .tf-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.4)}
+  .tf-btn.true-btn:hover:not(:disabled),.tf-btn.true-btn.selected{border-color:var(--green);background:#14532d;color:#86efac}
+  .tf-btn.false-btn:hover:not(:disabled),.tf-btn.false-btn.selected{border-color:var(--red);background:#450a0a;color:#fca5a5}
+  .tf-btn.correct{border-color:var(--green)!important;background:#14532d!important;color:#86efac}
+  .tf-btn.wrong{border-color:var(--red)!important;background:#450a0a!important;color:#fca5a5}
+  .tf-btn:disabled{cursor:default}
+  .input-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .input-row input{border:2px solid var(--border);border-radius:8px;padding:9px 13px;font-size:.95rem;width:150px;background:var(--card2);color:var(--text);transition:border-color .2s}
+  .input-row input:focus{outline:none;border-color:var(--blue)}
+  .input-row input.correct{border-color:var(--green);background:#14532d;color:#86efac}
+  .input-row input.wrong{border-color:var(--red);background:#450a0a;color:#fca5a5}
+  .unit-lbl{color:var(--text2);font-size:.88rem}
+  .feedback{border-radius:10px;padding:14px 16px;margin-top:14px;display:none}
+  .feedback.show{display:block;animation:fadeIn .25s}
+  .feedback.correct{background:#052e16;border:1.5px solid #166534;color:#86efac}
+  .feedback.wrong{background:#1c0505;border:1.5px solid #7f1d1d;color:#fca5a5}
+  .fb-header{font-weight:700;font-size:.95rem;margin-bottom:7px}
+  .fb-text{font-size:.88rem;line-height:1.6}
+  .fb-solution{font-family:'Georgia',serif;background:var(--card2);border-radius:6px;padding:5px 11px;display:inline-block;margin-top:7px;font-size:.92rem;border:1px solid var(--border)}
+  .mv-alert{margin-top:9px;background:#431407;border:1px solid var(--orange);border-radius:8px;padding:9px 13px;font-size:.83rem;color:#fdba74}
+  .mv-alert strong{display:block;margin-bottom:2px}
+  .klp-feedback{margin-top:9px;background:rgba(20,184,166,.1);border:1px solid rgba(20,184,166,.3);border-radius:8px;padding:8px 12px;font-size:.8rem;color:#5eead4}
+  .klp-feedback strong{color:var(--teal)}
+  .xp-gained{display:inline-flex;align-items:center;gap:5px;background:var(--purple);color:#fff;border-radius:20px;padding:3px 10px;font-size:.78rem;font-weight:700;margin-top:7px}
+  .btn{padding:10px 22px;border:none;border-radius:10px;cursor:pointer;font-size:.92rem;font-weight:600;transition:all .15s;display:inline-flex;align-items:center;gap:6px;justify-content:center}
+  .btn-primary{background:linear-gradient(135deg,#3b82f6,#6366f1);color:#fff}
+  .btn-primary:hover{opacity:.88;transform:translateY(-1px)}
+  .btn-large{padding:13px 34px;font-size:1rem;border-radius:12px}
+  .btn-outline{background:var(--card2);color:var(--text);border:1px solid var(--border)}
+  .btn-outline:hover{background:var(--card);border-color:var(--blue)}
+  .btn-row{display:flex;gap:9px;margin-top:16px;justify-content:flex-end;flex-wrap:wrap}
+  .result-top{text-align:center;padding:24px 16px 16px;border-bottom:1px solid var(--border);margin-bottom:20px}
+  .score-circle{width:100px;height:100px;border-radius:50%;margin:0 auto 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:1.8rem;font-weight:800;border:5px solid}
+  .score-circle.excellent{border-color:var(--green);color:var(--green);background:rgba(34,197,94,.12)}
+  .score-circle.good{border-color:var(--blue);color:var(--blue);background:rgba(59,130,246,.12)}
+  .score-circle.ok{border-color:var(--yellow);color:var(--yellow);background:rgba(234,179,8,.12)}
+  .score-circle.critical{border-color:var(--red);color:var(--red);background:rgba(239,68,68,.12)}
+  .score-lbl{font-size:.65rem;letter-spacing:.05em;font-weight:500}
+  .result-heading{font-size:1.25rem;font-weight:700;margin-bottom:6px}
+  .result-sub{color:var(--text2);font-size:.87rem}
+  .stats-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:4px}
+  .stat-item{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:11px;text-align:center}
+  .stat-num{font-size:1.4rem;font-weight:800;color:var(--blue)}
+  .stat-lbl{font-size:.68rem;color:var(--text2);margin-top:2px}
+  .ach-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+  .ach-card{border-radius:10px;padding:12px 14px;display:flex;gap:10px;align-items:center}
+  .ach-card.unlocked{background:#1a0533;border:1px solid var(--purple)}
+  .ach-card.locked{background:var(--card2);border:1px solid var(--border);opacity:.45}
+  .ach-icon{font-size:1.6rem}
+  .ach-title{font-weight:700;font-size:.85rem}
+  .ach-card.unlocked .ach-title{color:#d8b4fe}
+  .ach-desc{font-size:.72rem;color:var(--text2)}
+  .klp-komp-row{margin-bottom:12px}
+  .klp-komp-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-size:.84rem}
+  .klp-bar-wrap{background:var(--card2);border-radius:8px;height:9px;overflow:hidden}
+  .klp-bar-fill{height:100%;border-radius:8px;transition:width .6s}
+  .mv-card{border-radius:var(--r);padding:16px 18px;margin-bottom:12px;border:1.5px solid}
+  .mv-card.detected{background:rgba(120,53,15,.25);border-color:#92400e}
+  .mv-card.ok{background:rgba(22,101,52,.2);border-color:#166534}
+  .mv-header{display:flex;align-items:flex-start;gap:11px;margin-bottom:8px}
+  .mv-badge{flex-shrink:0;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.8rem}
+  .mv-card.detected .mv-badge{background:var(--orange);color:#0f172a}
+  .mv-card.ok .mv-badge{background:var(--green);color:#0f172a}
+  .mv-title{font-weight:700;font-size:.92rem}
+  .mv-card.detected .mv-title{color:#fdba74}
+  .mv-card.ok .mv-title{color:#86efac}
+  .mv-sub{font-size:.75rem;color:var(--text2);margin-top:2px}
+  .mv-false{background:rgba(120,53,15,.3);border-radius:7px;padding:7px 11px;font-size:.83rem;margin:5px 0;border-left:3px solid var(--orange);color:#fdba74;font-style:italic}
+  .mv-false::before{content:'❌ Gedacht: ';font-style:normal;font-weight:600}
+  .mv-correct{background:rgba(22,101,52,.3);border-radius:7px;padding:7px 11px;font-size:.83rem;margin:5px 0;border-left:3px solid var(--green);color:#86efac}
+  .mv-correct::before{content:'✅ Richtig: ';font-weight:600}
+  .mv-example{font-family:'Georgia',serif;background:var(--card2);border-radius:6px;padding:5px 11px;display:inline-block;margin-top:5px;font-size:.88rem;border:1px solid var(--border)}
+  .rec-box{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);border-radius:var(--r);padding:16px 18px}
+  .rec-box h3{color:var(--blue);margin-bottom:9px;font-size:.92rem}
+  .rec-list{list-style:none}
+  .rec-list li{padding:4px 0;font-size:.85rem;display:flex;gap:7px}
+  .rec-list li::before{content:'→';color:var(--blue);font-weight:700;flex-shrink:0}
+  .links-section h3{font-size:.92rem;color:var(--blue);margin-bottom:12px}
+  .links-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-bottom:16px}
+  .link-card{display:flex;align-items:center;gap:10px;background:var(--card2);border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;text-decoration:none;color:var(--text);font-size:.83rem;font-weight:600;transition:all .15s}
+  .link-card:hover{background:var(--card);border-color:var(--blue);transform:translateY(-1px)}
+  .link-icon{font-size:1.4rem;flex-shrink:0}
+  .link-desc{font-size:.72rem;color:var(--text2);font-weight:400;margin-top:2px}
+  .foerder-section-title{font-size:.75rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text2);margin-bottom:10px}
+  .foerder-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:12px;border-top:3px solid var(--orange)}
+  .foerder-mv-tag{font-size:.72rem;font-weight:700;background:rgba(249,115,22,.15);color:var(--orange);border:1px solid rgba(249,115,22,.25);border-radius:20px;padding:3px 9px}
+  .diff-badge{font-size:.68rem;font-weight:700;border-radius:20px;padding:2px 9px}
+  .diff-leicht{background:#14532d;color:#86efac}
+  .diff-mittel{background:#713f12;color:#fde68a}
+  .diff-schwer{background:#3b0764;color:#d8b4fe}
+  .foerder-q-text{font-size:.95rem;line-height:1.6;margin-bottom:12px}
+  .foerder-hint{margin-bottom:12px}
+  .foerder-hint summary{font-size:.8rem;color:var(--blue);cursor:pointer;font-weight:600;padding:4px 0;user-select:none;list-style:none}
+  .foerder-hint summary::-webkit-details-marker{display:none}
+  .foerder-hint summary::before{content:"💡 Tipp anzeigen"}
+  .foerder-hint[open] summary::before{content:"💡 Tipp verbergen"}
+  .foerder-hint-body{background:#0c2340;border:1px solid #1e40af;border-radius:8px;padding:10px 13px;font-size:.83rem;color:#93c5fd;margin-top:6px;line-height:1.6}
+  .foerder-result{border-radius:8px;padding:10px 13px;margin-top:10px;font-size:.85rem;font-weight:600;display:none}
+  .foerder-result.show{display:block}
+  .foerder-result.ok{background:#052e16;color:#86efac;border:1px solid #166534}
+  .foerder-result.bad{background:#1c0505;color:#fca5a5;border:1px solid #7f1d1d}
+  .foerder-sol{font-family:'Georgia',serif;background:var(--card2);border-radius:5px;padding:4px 10px;display:inline-block;margin-top:5px;font-size:.88rem;border:1px solid var(--border);font-weight:400}
+  #toast{position:fixed;bottom:18px;right:18px;background:var(--card);color:var(--text);padding:10px 18px;border-radius:10px;font-size:.88rem;z-index:9999;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none;max-width:300px;border:1px solid var(--border)}
+  #toast.show{transform:none;opacity:1}
+  #toast.orange{background:#431407;color:#fdba74;border-color:#92400e}
+  @media(max-width:500px){
+    .stats-strip{grid-template-columns:repeat(2,1fr)}
+    .tf-row{flex-direction:column}
+    .mv-preview{grid-template-columns:1fr}
+    .hdr-inner{justify-content:center;text-align:center}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hdr-inner">
+    <div class="hdr-title">
+      <h1 id="hdr-title-h1"></h1>
+      <p id="hdr-title-p"></p>
+    </div>
+    <div class="hdr-xp">
+      <div class="xp-block">
+        <div class="xp-num" id="hdr-xp">0 XP</div>
+        <div class="xp-lbl">Punkte</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+        <div class="level-pill" id="hdr-level">Einsteiger</div>
+        <div class="streak-pill" id="hdr-streak">🔥</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div id="app">
+<div id="screen-start" class="screen active">
+  <div class="card start-hero">
+    <div class="hero-icon" id="hero-icon-el"></div>
+    <h2 id="start-h2"></h2>
+    <p>Diese Diagnose prüft deine Antworten, erkennt gezielt <strong>Fehlvorstellungen</strong>
+      und ordnet jede Frage den Kompetenzen des <strong>NRW-Kernlehrplans</strong> zu.</p>
+    <div style="margin:16px 0" id="info-chips"></div>
+    <button class="btn btn-primary btn-large" onclick="startTest()">🚀 Diagnose starten</button>
+  </div>
+  <div class="klp-intro">
+    <h3>📜 Kernlehrplan NRW – Prozessbezogene Kompetenzen (Sek I Gymnasium)</h3>
+    <p style="font-size:.8rem;color:var(--text2);margin-bottom:10px">Jede Frage ist einer der 6 Kompetenzen zugeordnet:</p>
+    <div class="klp-grid">
+      <div class="klp-item"><span class="klp-code">K1</span> Argumentieren &amp; Beweisen</div>
+      <div class="klp-item"><span class="klp-code">K2</span> Problemlösen &amp; Erkunden</div>
+      <div class="klp-item"><span class="klp-code">K3</span> Modellieren</div>
+      <div class="klp-item"><span class="klp-code">K4</span> Darstellungen nutzen</div>
+      <div class="klp-item"><span class="klp-code">K5</span> Kommunizieren</div>
+      <div class="klp-item"><span class="klp-code">K6</span> Werkzeuge nutzen</div>
+    </div>
+  </div>
+  <div class="card" style="padding:18px">
+    <h3 style="font-size:.92rem;color:var(--blue);margin-bottom:10px">🎮 Gamification</h3>
+    <div class="gami-strip">
+      <div class="gami-item"><div class="gami-icon">⭐</div><div class="gami-label">XP pro Frage</div></div>
+      <div class="gami-item"><div class="gami-icon">🔥</div><div class="gami-label">Streak-Bonus</div></div>
+      <div class="gami-item"><div class="gami-icon">🏅</div><div class="gami-label">Errungenschaften</div></div>
+    </div>
+  </div>
+  <div class="card" style="padding:18px">
+    <h3 style="font-size:.92rem;color:var(--blue);margin-bottom:10px">🧠 Geprüfte Fehlvorstellungen</h3>
+    <div class="mv-preview" id="mv-preview-start"></div>
+  </div>
+</div>
+
+<div id="screen-test" class="screen">
+  <div class="prog-wrap">
+    <div class="prog-meta">
+      <span id="prog-label">Frage 1</span>
+      <span><span class="streak-badge" id="streak-badge"></span>&nbsp;<span id="prog-pct">0 %</span></span>
+    </div>
+    <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  </div>
+  <div class="card" id="question-card"></div>
+  <div class="btn-row">
+    <button class="btn btn-primary" id="btn-check" onclick="checkAnswer()" style="display:none">Antwort prüfen</button>
+    <button class="btn btn-primary" id="btn-next" onclick="nextQuestion()" style="display:none">Weiter →</button>
+  </div>
+</div>
+
+<div id="screen-result" class="screen">
+  <div class="card">
+    <div class="result-top" id="result-top"></div>
+    <div class="stats-strip" id="stats-strip"></div>
+  </div>
+  <div class="card">
+    <h2 style="font-size:1.05rem;color:var(--blue);margin-bottom:14px">🎖️ Errungenschaften</h2>
+    <div class="ach-grid" id="ach-grid"></div>
+  </div>
+  <div class="card">
+    <h2 style="font-size:1.05rem;color:var(--teal);margin-bottom:14px">📜 Kernlehrplan-Kompetenzprofil</h2>
+    <p style="font-size:.8rem;color:var(--text2);margin-bottom:12px">Auswertung nach prozessbezogenen Kompetenzen (KLP NRW Gymnasium Sek I)</p>
+    <div id="klp-profile"></div>
+  </div>
+  <div class="card">
+    <h2 style="font-size:1.05rem;color:var(--orange);margin-bottom:6px">🧠 Fehlvorstellungs-Diagnose</h2>
+    <p style="font-size:.82rem;color:var(--text2);margin-bottom:14px">Detailanalyse aller geprüften Fehlvorstellungen.</p>
+    <div id="mv-cards"></div>
+  </div>
+  <div class="card"><div class="rec-box" id="recs"></div></div>
+  <div class="card" id="links-card" style="display:none">
+    <div class="links-section">
+      <h3>▶️ Lernvideos – Empfehlungen</h3>
+      <div class="links-grid" id="links-videos"></div>
+      <h3 style="margin-top:4px">📝 Übungsaufgaben – direkte Links</h3>
+      <div class="links-grid" id="links-uebung"></div>
+    </div>
+  </div>
+  <div style="text-align:center;margin-top:20px;padding-bottom:20px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+    <button class="btn btn-primary btn-large" id="btn-foerder" onclick="startFoerder()" style="display:none">🎯 Förder-Level starten</button>
+    <button class="btn btn-outline btn-large" onclick="restartTest()">🔄 Diagnose wiederholen</button>
+  </div>
+</div>
+
+<div id="screen-foerder" class="screen">
+  <div class="card">
+    <div style="text-align:center;padding:20px 16px 14px">
+      <div style="font-size:2.5rem;margin-bottom:8px">🎯</div>
+      <h2 style="font-size:1.3rem;margin-bottom:6px">Förder-Level – gezielte Übungen</h2>
+      <p style="font-size:.85rem;color:var(--text2)">Aufgaben genau zu den Fehlvorstellungen, bei denen Lücken erkannt wurden.</p>
+    </div>
+  </div>
+  <div id="foerder-content"></div>
+  <div style="text-align:center;margin-top:20px;padding-bottom:20px">
+    <button class="btn btn-outline" onclick="restartTest()">🔄 Diagnose wiederholen</button>
+  </div>
+</div>
+</div>
+
+<div id="toast"></div>
+<div class="xp-pop" id="xp-pop"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════
+//  DATA-BEREICH – Terme & Muster · Klasse 5–7 NRW Gymnasium
+// ══════════════════════════════════════════════════════════════════════
+
+const SVG_STREICHHOELZER = `<svg viewBox="0 0 320 105" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:320px;display:block;margin:8px auto">
+  <rect x="10" y="18" width="40" height="38" fill="none" stroke="#3b82f6" stroke-width="2.5"/>
+  <rect x="76" y="18" width="40" height="38" fill="none" stroke="#22c55e" stroke-width="2.5"/>
+  <rect x="116" y="18" width="40" height="38" fill="none" stroke="#22c55e" stroke-width="2.5"/>
+  <rect x="178" y="18" width="40" height="38" fill="none" stroke="#f97316" stroke-width="2.5"/>
+  <rect x="218" y="18" width="40" height="38" fill="none" stroke="#f97316" stroke-width="2.5"/>
+  <rect x="258" y="18" width="40" height="38" fill="none" stroke="#f97316" stroke-width="2.5"/>
+  <text x="30" y="72" fill="#3b82f6" font-size="11" font-family="Arial,sans-serif" text-anchor="middle">n = 1</text>
+  <text x="30" y="84" fill="#94a3b8" font-size="10" font-family="Arial,sans-serif" text-anchor="middle">4 Stäbe</text>
+  <text x="136" y="72" fill="#22c55e" font-size="11" font-family="Arial,sans-serif" text-anchor="middle">n = 2</text>
+  <text x="136" y="84" fill="#94a3b8" font-size="10" font-family="Arial,sans-serif" text-anchor="middle">7 Stäbe</text>
+  <text x="238" y="72" fill="#f97316" font-size="11" font-family="Arial,sans-serif" text-anchor="middle">n = 3</text>
+  <text x="238" y="84" fill="#94a3b8" font-size="10" font-family="Arial,sans-serif" text-anchor="middle">10 Stäbe</text>
+  <text x="160" y="100" fill="#a855f7" font-size="11" font-family="Arial,sans-serif" text-anchor="middle" font-style="italic">Term: 3n + 1</text>
+</svg>`;
+
+const SVG_PUNKTMUSTER = `<svg viewBox="0 0 320 90" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:320px;display:block;margin:8px auto">
+  <circle cx="30" cy="37" r="5" fill="#3b82f6"/>
+  <circle cx="100" cy="25" r="4" fill="#22c55e"/>
+  <circle cx="120" cy="25" r="4" fill="#22c55e"/>
+  <circle cx="100" cy="47" r="4" fill="#22c55e"/>
+  <circle cx="120" cy="47" r="4" fill="#22c55e"/>
+  <circle cx="185" cy="18" r="4" fill="#f97316"/>
+  <circle cx="205" cy="18" r="4" fill="#f97316"/>
+  <circle cx="225" cy="18" r="4" fill="#f97316"/>
+  <circle cx="185" cy="37" r="4" fill="#f97316"/>
+  <circle cx="205" cy="37" r="4" fill="#f97316"/>
+  <circle cx="225" cy="37" r="4" fill="#f97316"/>
+  <circle cx="185" cy="56" r="4" fill="#f97316"/>
+  <circle cx="205" cy="56" r="4" fill="#f97316"/>
+  <circle cx="225" cy="56" r="4" fill="#f97316"/>
+  <text x="30" y="78" fill="#3b82f6" font-size="11" font-family="Arial,sans-serif" text-anchor="middle">n = 1</text>
+  <text x="110" y="78" fill="#22c55e" font-size="11" font-family="Arial,sans-serif" text-anchor="middle">n = 2</text>
+  <text x="205" y="78" fill="#f97316" font-size="11" font-family="Arial,sans-serif" text-anchor="middle">n = 3</text>
+</svg>`;
+
+const TITEL      = '🔢 Diagnose-App · Terme & Muster';
+const UNTERTITEL = 'Klasse 5–7 · NRW Gymnasium · Fehlvorstellungen & KLP Sek I';
+const HERO_ICON  = '🔢';
+const INFO_CHIPS = ['📝 20 Fragen', '⏱️ ca. 20 Min.', '🔬 10 Fehlvorstellungen'];
+
+const MV = {
+  M1:{code:'M1',title:'Variable als Abkürzung missverstanden',
+    false_belief:'a steht für eine Sache (z.B. Äpfel), nicht für eine beliebige Zahl.',
+    correct:'Eine Variable ist ein Platzhalter für beliebige Zahlen. 3a bedeutet 3·a.',
+    example:'5m bei m=4 ergibt 5·4=20 – kein Maßstab, sondern eine Zahl!',
+    rec:'Übe das Einsetzen konkreter Zahlenwerte – immer mit Multiplikationspunkt denken.'},
+  M2:{code:'M2',title:'Ungleiche Terme zusammengefasst',
+    false_belief:'Terme wie 2a + 3b = 5ab – Zahlen einfach addiert, Buchstaben kombiniert.',
+    correct:'Nur gleiche Terme (gleiche Variable, gleicher Exponent) dürfen addiert werden.',
+    example:'2a + 3a = 5a ✓, aber 2a + 3b bleibt 2a + 3b.',
+    rec:'Markiere gleiche Terme farbig, bevor du zusammenfasst.'},
+  M3:{code:'M3',title:'Klammern nach Minus falsch aufgelöst',
+    false_belief:'-(a + b) = -a + b – nur das erste Vorzeichen dreht sich um.',
+    correct:'Das Minuszeichen dreht ALLE Vorzeichen in der Klammer um: -(a+b) = -a-b.',
+    example:'-(3+x) = -3-x, nicht -3+x.',
+    rec:'Ersetze -(…) durch (-1)·(…) und verteile (-1) auf alle Terme.'},
+  M4:{code:'M4',title:'Potenz und Koeffizient verwechselt',
+    false_belief:'a² und 2a bedeuten dasselbe: a wird verdoppelt.',
+    correct:'a² = a·a (a mit sich selbst multipliziert), 2a = a+a (a verdoppelt).',
+    example:'Für a=3: a²=9, 2a=6 – vollkommen verschieden!',
+    rec:'Lese a² als "a mal a" – nicht als "a mal zwei".'},
+  M5:{code:'M5',title:'Punkt-vor-Strich-Regel vergessen',
+    false_belief:'Im Term 3+2·a berechne ich von links: (3+2)·a = 5a.',
+    correct:'Punkt vor Strich: erst 2·a berechnen, dann + 3 addieren.',
+    example:'3 + 2·4 = 3 + 8 = 11, nicht 5·4 = 20.',
+    rec:'Unterstreiche alle Multiplikationen und Divisionen und rechne diese zuerst.'},
+  M6:{code:'M6',title:'Muster immer als additiv angenommen',
+    false_belief:'Jedes Zahlenmuster entsteht durch Addition einer konstanten Zahl.',
+    correct:'Muster können additiv (arithmetisch) oder multiplikativ (geometrisch) oder gemischt sein.',
+    example:'2, 4, 8, 16 wird mit 2 multipliziert – die Differenzen 2, 4, 8 sind nicht konstant!',
+    rec:'Bilde Differenzen aufeinanderfolgender Glieder – sind sie konstant (additiv) oder nicht (multiplikativ)?'},
+  M7:{code:'M7',title:'n-ter Term des Musters falsch bestimmt',
+    false_belief:'Den Term findet man immer als n · Differenz.',
+    correct:'Der Term lautet a·n + b, wobei a die Differenz und b durch n=1 Einsetzen bestimmt wird.',
+    example:'Muster 3,5,7,9: Differenz 2, einsetzen n=1: 2·1+b=3 → b=1. Term: 2n+1.',
+    rec:'Bestimme a (Differenz), dann setze n=1 ein und löse nach b auf.'},
+  M8:{code:'M8',title:'Termwert mit negativen Zahlen falsch',
+    false_belief:'Für a=-2 gilt: a² = -4 – das Minus bleibt erhalten.',
+    correct:'a² = a·a = (-2)·(-2) = +4. Minus mal Minus ergibt Plus!',
+    example:'(-3)² = 9, nicht -9.',
+    rec:'Setze negative Zahlen immer in Klammern ein: (-3)² statt -3².'},
+  M9:{code:'M9',title:'Term hat einen festen Wert',
+    false_belief:'Der Term 3x + 1 hat immer einen festen Wert.',
+    correct:'Terme ohne Gleichheitszeichen haben keinen festen Wert – der Wert hängt von der Variable ab.',
+    example:'3x+1=4 (x=1), aber 3x+1=7 (x=2) oder -2 (x=-1).',
+    rec:'Unterscheide: ein Term ist eine Rechenvorschrift; eine Gleichung (mit =) hat Lösungen.'},
+  M10:{code:'M10',title:'Vorzeichen beim Vereinfachen vergessen',
+    false_belief:'Bei 5a - 3a - 2a vergesse ich, dass -2a ein negatives Vorzeichen hat.',
+    correct:'Von links nach rechts rechnen und jedes Vorzeichen berücksichtigen: 5a-3a=2a, 2a-2a=0.',
+    example:'6a - 2a - 3a: 6-2=4, 4-3=1 → 1a. Fehler: 6-2+3=7a (Vorzeichen von -3a vergessen).',
+    rec:'Schreibe das Vorzeichen immer mit vor jedem Term, auch das Plus. Dann von links zählen.'},
+};
+
+const Q = [
+ {id:'q01',klp:'K1',mvTarget:'M1',type:'mc',xp:10,
+  cat:'🔡 Terme – Grundlagen',klpDesc:'K1 – Argumentieren: Bedeutung von Variablen kennen',
+  text:'Was bedeutet der Term <strong>5n</strong>?',
+  opts:['5 + n','5 · n','n hoch 5','5 − n'],
+  answer:1,
+  fb_ok:'Richtig! 5n = 5·n. Der Koeffizient vor einer Variable bedeutet stets Multiplikation.',
+  fb_nok:'Falsch! 5n = 5·n. Zwischen Koeffizient und Variable steht immer ein Multiplikationspunkt.',
+  mv_nok:'M1',sol:'5n = 5 · n'},
+
+ {id:'q02',klp:'K1',mvTarget:'M2',type:'tf',xp:10,
+  cat:'🔗 Terme zusammenfassen',klpDesc:'K1 – Argumentieren: Gleichartige Terme erkennen',
+  text:'Aussage: 2a + 3b = 5ab',
+  answer:false,
+  fb_ok:'Richtig! Terme mit verschiedenen Variablen können nicht zusammengefasst werden.',
+  fb_nok:'Falsch! 2a und 3b sind ungleiche Terme. Nur gleiche Terme dürfen addiert werden.',
+  mv_nok:'M2',sol:'2a + 3b bleibt 2a + 3b'},
+
+ {id:'q03',klp:'K2',mvTarget:'M5',type:'input',xp:15,
+  cat:'📊 Termwerte berechnen',klpDesc:'K2 – Problemlösen: Termwerte durch Einsetzen berechnen',
+  text:'Berechne den Termwert für a = 4.',
+  formula:'3 + 2·a',
+  answer:11,tol:0.05,unit:'',
+  fb_ok:'Richtig! Punkt vor Strich: erst 2·4=8, dann 3+8=11.',
+  fb_nok:'Falsch! Punkt vor Strich: erst 2·4=8, dann 3+8=11.',
+  mv_nok:'M5',sol:'3 + 2·4 = 3 + 8 = 11'},
+
+ {id:'q04',klp:'K1',mvTarget:'M3',type:'mc',xp:10,
+  cat:'📐 Klammern auflösen',klpDesc:'K1 – Argumentieren: Klammern mit Minuszeichen korrekt auflösen',
+  text:'Was ergibt <strong>−(4 + x)</strong>?',
+  opts:['−4 + x','4 + x','−4 − x','4 − x'],
+  answer:2,
+  fb_ok:'Richtig! Das Minuszeichen dreht alle Vorzeichen um: -(4+x) = -4-x.',
+  fb_nok:'Falsch! Das Minuszeichen dreht ALLE Vorzeichen in der Klammer um: -(4+x) = -4-x.',
+  mv_nok:'M3',sol:'-(4+x) = -4 - x'},
+
+ {id:'q05',klp:'K1',mvTarget:'M4',type:'tf',xp:10,
+  cat:'⬆ Potenz & Koeffizient',klpDesc:'K1 – Argumentieren: Unterschied Potenz und Koeffizient verstehen',
+  text:'Aussage: Für a = 5 gilt a² = 2a.',
+  answer:false,
+  fb_ok:'Richtig! a²=25, aber 2a=10. Die Terme sind nur für a=0 und a=2 gleich.',
+  fb_nok:'Falsch! a²=a·a=5·5=25, aber 2a=2·5=10. Das sind verschiedene Terme!',
+  mv_nok:'M4',sol:'a²=25 ≠ 2a=10 (für a=5)'},
+
+ {id:'q06',klp:'K4',mvTarget:'M7',type:'mc',xp:15,
+  cat:'🔢 Muster & Terme',klpDesc:'K4 – Darstellungen nutzen: Muster in algebraischen Termen ausdrücken',
+  text:'Muster: 5, 8, 11, 14, … Welcher Term beschreibt das n-te Glied (n = 1, 2, 3, …)?',
+  opts:['3n + 2','n + 3','5 + 3n','3n + 5'],
+  answer:0,
+  fb_ok:'Richtig! Differenz d=3. Einsetzen: n=1 → 3·1+b=5 → b=2. Term: 3n+2.',
+  fb_nok:'Differenz d=3. Einsetzen n=1: 3·1+b=5 → b=2. Term: 3n+2.',
+  mv_nok:'M7',sol:'Term: 3n + 2'},
+
+ {id:'q07',klp:'K2',mvTarget:'M8',type:'input',xp:15,
+  cat:'➖ Termwerte mit neg. Zahlen',klpDesc:'K2 – Problemlösen: Termwert mit negativen Zahlen berechnen',
+  text:'Berechne den Termwert für a = −3.',
+  formula:'a²',
+  answer:9,tol:0.05,unit:'',
+  fb_ok:'Richtig! (−3)² = (−3)·(−3) = +9. Minus mal Minus ergibt Plus!',
+  fb_nok:'Falsch! (−3)² = (−3)·(−3) = +9. Das Quadrat einer negativen Zahl ist stets positiv!',
+  mv_nok:'M8',sol:'(−3)² = 9'},
+
+ {id:'q08',klp:'K1',mvTarget:'M6',type:'tf',xp:10,
+  cat:'🔍 Muster erkennen',klpDesc:'K1 – Argumentieren: Additive und multiplikative Muster unterscheiden',
+  text:'Aussage: Das Muster 2, 4, 8, 16 entsteht durch Addition einer konstanten Zahl.',
+  answer:false,
+  fb_ok:'Richtig! Hier wird mit 2 multipliziert (geometrisch). Die Differenzen 2, 4, 8 sind nicht konstant.',
+  fb_nok:'Falsch! 4−2=2, 8−4=4 – die Differenzen wachsen. Es wird mit 2 multipliziert!',
+  mv_nok:'M6',sol:'Multiplikatives Muster: ×2'},
+
+ {id:'q09',klp:'K2',mvTarget:'M10',type:'mc',xp:10,
+  cat:'✏️ Terme vereinfachen',klpDesc:'K2 – Problemlösen: Terme durch Zusammenfassen vereinfachen',
+  text:'Vereinfache: <strong>7x − 3x − 2x</strong>',
+  opts:['2x','12x','7x − 5x','−2x'],
+  answer:0,
+  fb_ok:'Richtig! 7x−3x=4x, dann 4x−2x=2x. Von links nach rechts!',
+  fb_nok:'Falsch! 7x−3x=4x, 4x−2x=2x. Jedes Vorzeichen muss beachtet werden.',
+  mv_nok:'M10',sol:'7x − 3x − 2x = 2x'},
+
+ {id:'q10',klp:'K2',mvTarget:'M5',type:'input',xp:15,
+  cat:'📊 Termwerte berechnen',klpDesc:'K2 – Problemlösen: Termwert mit Potenz berechnen',
+  text:'Berechne den Termwert für a = 2.',
+  formula:'2·a² + 3',
+  answer:11,tol:0.05,unit:'',
+  fb_ok:'Richtig! a²=4, dann 2·4=8, dann 8+3=11.',
+  fb_nok:'Falsch! Reihenfolge: erst a²=4, dann 2·4=8, dann 8+3=11.',
+  mv_nok:'M5',sol:'2·4 + 3 = 8 + 3 = 11'},
+
+ {id:'q11',klp:'K1',mvTarget:'M9',type:'tf',xp:10,
+  cat:'⚖️ Terme & Gleichungen',klpDesc:'K1 – Argumentieren: Terme von Gleichungen unterscheiden',
+  text:'Aussage: Der Term 3x + 1 hat immer den Wert 4.',
+  answer:false,
+  fb_ok:'Richtig! Terme haben keinen festen Wert – er hängt vom Wert von x ab.',
+  fb_nok:'Falsch! 3x+1=4 nur für x=1. Für x=2 ist 3·2+1=7. Terme haben variablen Wert!',
+  mv_nok:'M9',sol:'Terme haben keinen festen Wert'},
+
+ {id:'q12',klp:'K3',mvTarget:'M7',type:'mc',xp:15,
+  cat:'🔢 Muster & Terme',klpDesc:'K3 – Modellieren: Muster mit Termen beschreiben',
+  text:'Welcher Term beschreibt das Muster 1, 4, 7, 10 (n = 1, 2, 3, …)?',
+  opts:['n + 3','3n + 1','3n − 2','4n − 3'],
+  answer:2,
+  fb_ok:'Richtig! Differenz 3. n=1: 3·1+b=1 → b=−2. Term: 3n−2.',
+  fb_nok:'Differenz 3. Einsetzen n=1: 3·1+b=1 → b=−2. Term: 3n−2.',
+  mv_nok:'M7',sol:'Term: 3n − 2'},
+
+ {id:'q13',klp:'K2',mvTarget:'M3',type:'mc',xp:10,
+  cat:'📐 Klammern auflösen',klpDesc:'K2 – Problemlösen: Terme durch Auflösen von Klammern vereinfachen',
+  text:'Was ergibt <strong>−(5a − 3)</strong>?',
+  opts:['−5a + 3','−5a − 3','5a − 3','5a + 3'],
+  answer:0,
+  fb_ok:'Richtig! -(5a-3) = -5a+(-1)·(-3) = -5a+3.',
+  fb_nok:'Falsch! Jedes Vorzeichen dreht sich um: -(5a-3) = -5a+3. Minus·Minus=Plus!',
+  mv_nok:'M3',sol:'-(5a − 3) = -5a + 3'},
+
+ {id:'q14',klp:'K3',mvTarget:'M7',type:'input',xp:15,
+  cat:'🔢 Terme & Muster',klpDesc:'K3 – Modellieren: Glieder eines Terms berechnen',
+  text:'Berechne das 5. Glied des Musters mit dem Term:',
+  formula:'4n + 6',
+  answer:26,tol:0.05,unit:'',
+  fb_ok:'Richtig! n=5: 4·5+6 = 20+6 = 26.',
+  fb_nok:'Falsch! Einsetzen: n=5 → 4·5+6 = 20+6 = 26.',
+  mv_nok:'M7',sol:'4·5 + 6 = 26'},
+
+ {id:'q15',klp:'K5',mvTarget:'M4',type:'mc',xp:15,
+  cat:'⚖️ Terme vergleichen',klpDesc:'K5 – Kommunizieren: Terme vergleichen und Lösungen erläutern',
+  text:'Für welche Werte von a gilt: <strong>a² = 2a</strong>?',
+  opts:['Nur a = 1','a = 0 und a = 2','Nur a = 2','Kein Wert'],
+  answer:1,
+  fb_ok:'Richtig! a²=2a → a(a−2)=0 → a=0 oder a=2. Beide Werte lösen die Gleichung.',
+  fb_nok:'Falsch! a²−2a=0 → a(a−2)=0 → a=0 oder a=2 sind beide Lösungen.',
+  mv_nok:'M4',sol:'a = 0 oder a = 2'},
+
+ {id:'q16',klp:'K4',mvTarget:'M7',type:'input',xp:15,
+  cat:'📊 Graphische Aufgabe – Streichholzmuster',klpDesc:'K4 – Darstellungen: Muster aus Figur als Term erfassen',
+  text:'Das Muster zeigt Streichholz-Quadrate in einer Reihe. Der Term lautet 3n + 1. Wie viele Stäbe braucht man für n = 5?',
+  svg:SVG_STREICHHOELZER,
+  answer:16,tol:0.05,unit:'',
+  fb_ok:'Richtig! 3·5 + 1 = 15 + 1 = 16 Stäbe.',
+  fb_nok:'Einsetzen: n=5 → 3·5+1 = 15+1 = 16 Stäbe.',
+  mv_nok:'M7',sol:'3·5 + 1 = 16 Stäbe'},
+
+ {id:'q17',klp:'K4',mvTarget:'M4',type:'mc',xp:10,
+  cat:'📊 Graphische Aufgabe – Punktmuster',klpDesc:'K4 – Darstellungen: Quadratisches Muster als Term erkennen',
+  text:'Das Punktmuster wächst mit jeder Stufe. Welcher Term beschreibt die Anzahl der Punkte für das n-te Muster?',
+  svg:SVG_PUNKTMUSTER,
+  opts:['2n','n²','n + 1','2n − 1'],
+  answer:1,
+  fb_ok:'Richtig! n=1: 1²=1, n=2: 2²=4, n=3: 3²=9. Der Term ist n².',
+  fb_nok:'Prüfe: n=1→1, n=2→4, n=3→9. Das passt zu n², nicht zu 2n.',
+  mv_nok:'M4',sol:'Term: n²'},
+
+ {id:'q18',klp:'K3',mvTarget:'M9',type:'input',xp:15,
+  cat:'📋 Textaufgabe – Terme im Alltag',klpDesc:'K3 – Modellieren: Terme für Alltagssituationen auswerten',
+  text:'Ein Taxiunternehmen berechnet den Preis in € nach P(n) = 2n + 3, wobei n die Fahrtkilometer sind. Wie viel kostet eine Fahrt von 8 km?',
+  answer:19,tol:0.05,unit:'€',
+  fb_ok:'Richtig! P(8) = 2·8 + 3 = 16 + 3 = 19 €.',
+  fb_nok:'Einsetzen: n=8 → 2·8+3 = 16+3 = 19 €.',
+  mv_nok:'M9',sol:'P(8) = 2·8 + 3 = 19 €'},
+
+ {id:'q19',klp:'K3',mvTarget:'M7',type:'input',xp:15,
+  cat:'📋 Textaufgabe – n-ter Term',klpDesc:'K3 – Modellieren: n-tes Glied einer Folge berechnen',
+  text:'Die Höhe der n-ten Sprosse einer Leiter in cm berechnet sich nach h(n) = 30n − 5. In welcher Höhe befindet sich die 7. Sprosse?',
+  answer:205,tol:0.05,unit:'cm',
+  fb_ok:'Richtig! h(7) = 30·7 − 5 = 210 − 5 = 205 cm.',
+  fb_nok:'Einsetzen: n=7 → 30·7−5 = 210−5 = 205 cm.',
+  mv_nok:'M7',sol:'h(7) = 30·7 − 5 = 205 cm'},
+
+ {id:'q20',klp:'K5',mvTarget:'M2',type:'mc',xp:10,
+  cat:'📋 Textaufgabe – Terme aufstellen',klpDesc:'K5 – Kommunizieren: Situation als Term formulieren',
+  text:'3 Erwachsene zahlen je a €, 2 Kinder zahlen je b €. Welcher Term beschreibt den Gesamtpreis?',
+  opts:['3a + 2b','5ab','(3+2)·(a+b)','3a · 2b'],
+  answer:0,
+  fb_ok:'Richtig! 3 Erwachsene à a€: 3a. 2 Kinder à b€: 2b. Gesamt: 3a + 2b.',
+  fb_nok:'3·a + 2·b = 3a + 2b. Getrennte Variablen – nicht zusammenfassen!',
+  mv_nok:'M2',sol:'Gesamtpreis = 3a + 2b'},
+];
+
+const FOERDER_DATA = {
+  M1:[
+    {diff:'leicht',type:'tf',
+     text:'Aussage: 5m bedeutet 5 · m.',
+     answer:true,hint:'Zwischen Zahl und Variable steht immer ein Multiplikationspunkt.',
+     fb_ok:'Richtig!',fb_nok:'Wahr! 5m = 5·m.',sol:'Wahr – 5m = 5·m'},
+    {diff:'mittel',type:'mc',
+     text:'Was ist der Wert von 3n für n = 4?',
+     opts:['12','7','34','43'],answer:0,hint:'3n = 3·n = 3·4 = 12.',
+     fb_ok:'Korrekt! 3·4=12.',fb_nok:'3n = 3·n = 3·4 = 12.',sol:'3·4 = 12'},
+    {diff:'schwer',type:'input',
+     text:'Berechne 2a + b für a = 3 und b = 5.',
+     formula:'2a + b',answer:11,tol:0.05,unit:'',hint:'2·3+5=6+5=11.',
+     fb_ok:'Perfekt! 2·3+5=11.',fb_nok:'2·3=6, dann 6+5=11.',sol:'2·3 + 5 = 11'},
+  ],
+  M2:[
+    {diff:'leicht',type:'tf',
+     text:'Aussage: 2x + 3x = 5x',
+     answer:true,hint:'Gleiche Variable, gleicher Exponent – zusammenfassbar.',
+     fb_ok:'Richtig!',fb_nok:'Wahr! 2x+3x=5x.',sol:'Wahr – 2x + 3x = 5x'},
+    {diff:'mittel',type:'mc',
+     text:'Welche Terme können zusammengefasst werden?',
+     opts:['3a + 2b','4x + 5x','2m + 3n','a² + a'],answer:1,hint:'Nur Terme mit identischer Variable und identischem Exponenten.',
+     fb_ok:'Korrekt! 4x+5x=9x.',fb_nok:'4x und 5x haben dieselbe Variable x → 9x.',sol:'4x + 5x = 9x'},
+    {diff:'schwer',type:'input',
+     text:'Vereinfache 3a + 2b + 4a + b. Welcher Koeffizient steht vor a?',
+     answer:7,tol:0.05,unit:'',hint:'3a+4a=7a, 2b+b=3b → 7a+3b.',
+     fb_ok:'Perfekt! 3a+4a=7a.',fb_nok:'3a+4a=7a, 2b+b=3b.',sol:'Koeffizient vor a = 7'},
+  ],
+  M3:[
+    {diff:'leicht',type:'tf',
+     text:'Aussage: −(a + b) = −a + b',
+     answer:false,hint:'Das Minus dreht ALLE Vorzeichen um: -(a+b) = -a-b.',
+     fb_ok:'Richtig! −(a+b) = −a−b.',fb_nok:'Falsch! -(a+b) = -a-b. Beide Vorzeichen drehen sich um.',sol:'Falsch – -(a+b) = -a - b'},
+    {diff:'mittel',type:'mc',
+     text:'Was ergibt −(2x − 4)?',
+     opts:['−2x + 4','−2x − 4','2x + 4','2x − 4'],answer:0,hint:'-(2x-4) = -2x+4. Minus·Minus=Plus.',
+     fb_ok:'Korrekt! -(2x-4) = -2x+4.',fb_nok:'-(2x-4): -1·2x=-2x und -1·(-4)=+4 → -2x+4.',sol:'-(2x − 4) = -2x + 4'},
+    {diff:'schwer',type:'input',
+     text:'Berechne den Koeffizienten vor b in: −(3a − 2b + 1)',
+     answer:2,tol:0.05,unit:'',hint:'-(3a-2b+1) = -3a+2b-1. Vorzeichen von -2b wird zu +2b.',
+     fb_ok:'Perfekt! Koeffizient vor b = +2.',fb_nok:'-1·(-2b) = +2b.',sol:'Koeffizient vor b = +2'},
+  ],
+  M4:[
+    {diff:'leicht',type:'tf',
+     text:'Aussage: Für a = 3 gilt a² = 6.',
+     answer:false,hint:'a²=a·a=3·3=9, aber 2a=2·3=6.',
+     fb_ok:'Richtig! a²=9, nicht 6.',fb_nok:'Falsch! a²=3·3=9 ≠ 6.',sol:'Falsch – a² = 9, nicht 6'},
+    {diff:'mittel',type:'mc',
+     text:'Für a = 4: Welcher Wert ist größer?',
+     opts:['a² = 16','2a = 8','Beide gleich','Keiner ist größer'],answer:0,hint:'a²=4·4=16, 2a=2·4=8.',
+     fb_ok:'Korrekt! a²=16 > 2a=8.',fb_nok:'a²=16 und 2a=8 → a² ist größer.',sol:'a² = 16 > 2a = 8'},
+    {diff:'schwer',type:'input',
+     text:'Berechne a² − 2a für a = 5.',
+     formula:'a² − 2a',answer:15,tol:0.05,unit:'',hint:'a²=25, 2a=10 → 25-10=15.',
+     fb_ok:'Perfekt! 25-10=15.',fb_nok:'a²=25, 2a=10 → 25-10=15.',sol:'25 − 10 = 15'},
+  ],
+  M5:[
+    {diff:'leicht',type:'tf',
+     text:'Aussage: 3 + 2 · 4 = 20',
+     answer:false,hint:'Punkt vor Strich: erst 2·4=8, dann 3+8=11.',
+     fb_ok:'Richtig! 3+2·4=11, nicht 20.',fb_nok:'Falsch! 2·4=8 zuerst (Punkt vor Strich), dann 3+8=11.',sol:'Falsch – 3+2·4=11'},
+    {diff:'mittel',type:'mc',
+     text:'Berechne 5 + 3 · 2.',
+     opts:['16','11','10','21'],answer:1,hint:'3·2=6 zuerst, dann 5+6=11.',
+     fb_ok:'Korrekt! 5+6=11.',fb_nok:'Punkt vor Strich: 3·2=6, dann 5+6=11.',sol:'5 + 3·2 = 11'},
+    {diff:'schwer',type:'input',
+     text:'Berechne 4 + 2·a² − 1 für a = 3.',
+     formula:'4 + 2·a² − 1',answer:21,tol:0.05,unit:'',hint:'a²=9, 2·9=18, 4+18-1=21.',
+     fb_ok:'Perfekt! 4+18-1=21.',fb_nok:'a²=9 → 2·9=18 → 4+18-1=21.',sol:'4 + 18 − 1 = 21'},
+  ],
+  M6:[
+    {diff:'leicht',type:'tf',
+     text:'Aussage: Das Muster 3, 6, 12, 24 entsteht durch Addition von 3.',
+     answer:false,hint:'6-3=3, 12-6=6 – die Differenzen sind nicht konstant. Es wird mit 2 multipliziert.',
+     fb_ok:'Richtig! Es wird mit 2 multipliziert.',fb_nok:'Falsch! 12-6=6 ≠ 6-3=3. Die Differenzen sind nicht gleich.',sol:'Falsch – multiplikatives Muster (×2)'},
+    {diff:'mittel',type:'mc',
+     text:'Welche Folge ist geometrisch (multiplikativ)?',
+     opts:['2, 5, 8, 11','3, 6, 12, 24','10, 8, 6, 4','1, 4, 7, 10'],answer:1,hint:'3·2=6, 6·2=12, 12·2=24 – konstanter Faktor 2.',
+     fb_ok:'Korrekt! Faktor 2 – geometrisch.',fb_nok:'3, 6, 12, 24: 6/3=2, 12/6=2 – konstanter Faktor.',sol:'3, 6, 12, 24 (Faktor 2)'},
+    {diff:'schwer',type:'input',
+     text:'Muster: 1, 3, 9, 27. Welches ist das 5. Glied?',
+     answer:81,tol:0.05,unit:'',hint:'3⁰=1, 3¹=3, 3²=9, 3³=27, 3⁴=81.',
+     fb_ok:'Perfekt! 3⁴=81.',fb_nok:'Faktor 3: 27·3=81.',sol:'3⁴ = 81'},
+  ],
+  M7:[
+    {diff:'leicht',type:'tf',
+     text:'Aussage: Im Muster 2, 4, 6, 8 ist der n-te Term: 2n',
+     answer:true,hint:'Differenz 2. n=1: 2·1=2 ✓, n=2: 2·2=4 ✓.',
+     fb_ok:'Richtig! Term: 2n.',fb_nok:'Wahr! Differenz 2, für n=1: 2·1=2 → Term 2n.',sol:'Wahr – Term: 2n'},
+    {diff:'mittel',type:'mc',
+     text:'Muster 3, 7, 11, 15: Welcher Term beschreibt das n-te Glied?',
+     opts:['4n − 1','4n + 3','n + 4','3n + 4'],answer:0,hint:'Differenz 4. n=1: 4·1+b=3 → b=-1. Term: 4n-1.',
+     fb_ok:'Korrekt! 4n-1.',fb_nok:'Differenz 4, n=1: 4+b=3 → b=-1 → Term: 4n-1.',sol:'Term: 4n − 1'},
+    {diff:'schwer',type:'input',
+     text:'Berechne das 8. Glied des Musters mit dem Term:',
+     formula:'5n + 2',answer:42,tol:0.05,unit:'',hint:'n=8: 5·8+2=40+2=42.',
+     fb_ok:'Perfekt! 5·8+2=42.',fb_nok:'n=8: 5·8=40, dann +2=42.',sol:'5·8 + 2 = 42'},
+  ],
+  M8:[
+    {diff:'leicht',type:'tf',
+     text:'Aussage: (−4)² = −16',
+     answer:false,hint:'(−4)·(−4)=+16. Minus mal Minus = Plus!',
+     fb_ok:'Richtig! (−4)²=+16.',fb_nok:'Falsch! (−4)·(−4)=+16.',sol:'Falsch – (−4)² = +16'},
+    {diff:'mittel',type:'mc',
+     text:'Was ergibt (−3)²?',
+     opts:['−9','9','6','−6'],answer:1,hint:'(−3)·(−3)=+9.',
+     fb_ok:'Korrekt! (−3)²=9.',fb_nok:'(−3)·(−3)=+9.',sol:'(−3)² = 9'},
+    {diff:'schwer',type:'input',
+     text:'Berechne a² + a für a = −4.',
+     formula:'a² + a',answer:12,tol:0.05,unit:'',hint:'a²=(−4)²=16, a=−4 → 16+(−4)=12.',
+     fb_ok:'Perfekt! 16+(−4)=12.',fb_nok:'a²=16, dann 16+(-4)=12.',sol:'16 + (−4) = 12'},
+  ],
+  M9:[
+    {diff:'leicht',type:'tf',
+     text:'Aussage: Der Term 2x + 1 hat für jedes x einen anderen Wert.',
+     answer:true,hint:'Terme ohne = sind variabel – ihr Wert hängt von x ab.',
+     fb_ok:'Richtig! Terme sind variabel.',fb_nok:'Wahr! Der Term 2x+1 ändert sich mit x.',sol:'Wahr – Term hat variablen Wert'},
+    {diff:'mittel',type:'mc',
+     text:'Für welchen x-Wert hat der Term 4x − 3 den Wert 5?',
+     opts:['x = 1','x = 2','x = 3','x = 0'],answer:1,hint:'4·2-3=8-3=5 ✓.',
+     fb_ok:'Korrekt! 4·2-3=5.',fb_nok:'x=2: 4·2-3=5.',sol:'x = 2: 4·2 − 3 = 5'},
+    {diff:'schwer',type:'input',
+     text:'Für welchen Wert x gilt: 3x + 6 = 21?',
+     answer:5,tol:0.05,unit:'',hint:'3x=21-6=15 → x=5.',
+     fb_ok:'Perfekt! x=5.',fb_nok:'3x=15 → x=5.',sol:'x = 5'},
+  ],
+  M10:[
+    {diff:'leicht',type:'tf',
+     text:'Aussage: 6a − 2a − 3a = 1a',
+     answer:true,hint:'Von links: 6a-2a=4a, 4a-3a=1a.',
+     fb_ok:'Richtig! 6-2-3=1.',fb_nok:'Wahr! 6a-2a=4a, 4a-3a=1a.',sol:'Wahr – 6a − 2a − 3a = 1a'},
+    {diff:'mittel',type:'mc',
+     text:'Vereinfache 8b − 5b + b.',
+     opts:['2b','3b','4b','14b'],answer:2,hint:'8b-5b=3b, 3b+b=4b.',
+     fb_ok:'Korrekt! 8b-5b+b=4b.',fb_nok:'8-5=3, dann 3+1=4 → 4b.',sol:'8b − 5b + b = 4b'},
+    {diff:'schwer',type:'input',
+     text:'Vereinfache 10x − 3x − 4x + x. Welcher Koeffizient steht vor x?',
+     answer:4,tol:0.05,unit:'',hint:'10-3=7, 7-4=3, 3+1=4 → 4x.',
+     fb_ok:'Perfekt! 10-3-4+1=4.',fb_nok:'10-3=7, 7-4=3, 3+1=4 → 4x.',sol:'Koeffizient = 4'},
+  ],
+};
+
+const LINKS_VIDEOS = [
+  {icon:'▶️',title:'Terme & Variablen',desc:'Grundlagen verständlich erklärt',url:'https://www.youtube.com/results?search_query=terme+variablen+erkl%C3%A4rung+klasse+6'},
+  {icon:'▶️',title:'Muster & Terme',desc:'n-ten Term einer Folge bestimmen',url:'https://www.youtube.com/results?search_query=n-ter+term+muster+folge+erkl%C3%A4rung'},
+  {icon:'▶️',title:'Terme vereinfachen',desc:'Klammern auflösen und zusammenfassen',url:'https://www.youtube.com/results?search_query=terme+vereinfachen+klammern+aufl%C3%B6sen'},
+];
+
+const LINKS_UEBUNG = [
+  {icon:'📚',title:'Serlo – Terme & Gleichungen',desc:'Erklärungen und interaktive Aufgaben',url:'https://de.serlo.org/mathe/terme-gleichungen'},
+  {icon:'📝',title:'Mathebibel – Terme',desc:'Aufgaben zu Termen und Variablen',url:'https://www.mathebibel.de/terme'},
+  {icon:'📝',title:'Aufgabenfuchs – Algebra',desc:'Umfangreiche Aufgabensammlung',url:'https://www.aufgabenfuchs.de/algebra/terme.shtml'},
+];
+
+// ══════════════════════════════════════════════════════════════════════
+//  ENGINE – IDENTISCH FÜR ALLE APPS
+// ══════════════════════════════════════════════════════════════════════
+
+const KLP={K1:{name:'Argumentieren & Beweisen'},K2:{name:'Problemlösen & Erkunden'},K3:{name:'Modellieren'},K4:{name:'Darstellungen nutzen'},K5:{name:'Kommunizieren'},K6:{name:'Werkzeuge nutzen'}};
+const ACH=[
+  {id:'first',icon:'🌟',title:'Erster Schritt',desc:'Erste Frage richtig',check:s=>s.correct>=1},
+  {id:'streak3',icon:'🔥',title:'Heiße Serie',desc:'3 in Folge richtig',check:s=>s.maxStreak>=3},
+  {id:'streak5',icon:'⚡',title:'Blitz-Serie',desc:'5 in Folge richtig',check:s=>s.maxStreak>=5},
+  {id:'perfect',icon:'💯',title:'Fehlerlos',desc:`Alle ${Q.length} richtig`,check:s=>s.correct===Q.length},
+  {id:'noMV',icon:'🧠',title:'Kein Irrtum',desc:'Keine Fehlvorstellung',check:s=>s.triggeredMVs.length===0},
+  {id:'xp100',icon:'💰',title:'Punktesammler',desc:'100 XP gesammelt',check:s=>s.xp>=100},
+  {id:'xp250',icon:'🏆',title:'Profi',desc:'250+ XP gesammelt',check:s=>s.xp>=250},
+  {id:'klpAll',icon:'📜',title:'KLP-Kenner',desc:'In allen K-Bereichen Punkte',check:s=>Object.values(s.klp).every(v=>v.total>0&&v.right>0)}
+];
+let gs={};
+const LEVELS=[{n:'Einsteiger',min:0},{n:'Lernender',min:50},{n:'Fortgeschritten',min:120},{n:'Experte',min:200}];
+const fTaskMap={};
+
+document.addEventListener('DOMContentLoaded',()=>{
+  document.title=TITEL.replace(/^\p{Emoji}\s*/u,'');
+  document.getElementById('hdr-title-h1').textContent=TITEL;
+  document.getElementById('hdr-title-p').textContent=UNTERTITEL;
+  document.getElementById('hero-icon-el').textContent=HERO_ICON;
+  document.getElementById('start-h2').textContent=TITEL.replace(/^[^\s]+\s/,'');
+  document.getElementById('info-chips').innerHTML=INFO_CHIPS.map(c=>`<span class="info-chip">${c}</span>`).join('');
+  document.getElementById('mv-preview-start').innerHTML=Object.values(MV).map(m=>`<div class="mvp-item"><span class="mvp-code">${m.code}</span> ${m.title}</div>`).join('');
+  if(LINKS_VIDEOS.length||LINKS_UEBUNG.length){
+    document.getElementById('links-card').style.display='block';
+    document.getElementById('links-videos').innerHTML=LINKS_VIDEOS.map(l=>`<a class="link-card" href="${l.url}" target="_blank" rel="noopener"><span class="link-icon">${l.icon}</span><div><div>${l.title}</div><div class="link-desc">${l.desc}</div></div></a>`).join('');
+    document.getElementById('links-uebung').innerHTML=LINKS_UEBUNG.map(l=>`<a class="link-card" href="${l.url}" target="_blank" rel="noopener"><span class="link-icon">${l.icon}</span><div><div>${l.title}</div><div class="link-desc">${l.desc}</div></div></a>`).join('');
+  }
+});
+
+function getLevel(xp){return([...LEVELS].reverse().find(l=>xp>=l.min)||LEVELS[0]).n}
+function updateHdr(){
+  document.getElementById('hdr-xp').textContent=gs.xp+' XP';
+  document.getElementById('hdr-level').textContent=getLevel(gs.xp);
+  const sp=document.getElementById('hdr-streak');
+  if(gs.streak>=2){sp.textContent=`🔥 ${gs.streak}er-Serie`;sp.classList.add('show')}
+  else sp.classList.remove('show');
+}
+function showXpPop(n){const el=document.getElementById('xp-pop');el.textContent=`+${n} XP`;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1400);}
+let _tt;
+function toast(msg,cls='',dur=2400){const t=document.getElementById('toast');t.textContent=msg;t.className='show '+(cls||'');clearTimeout(_tt);_tt=setTimeout(()=>t.className='',dur);}
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+id).classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
+
+function shuffleArr(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a;}
+function startTest(){
+  gs={xp:0,current:0,streak:0,maxStreak:0,correct:0,answers:[],triggeredMVs:[],selected:null,checked:false,achievements:{},
+      klp:Object.fromEntries(Object.keys(KLP).map(k=>[k,{right:0,total:0}]))};
+  shuffleArr(Q);updateHdr();showScreen('test');renderQ();
+}
+
+function renderQ(){
+  const q=Q[gs.current],tot=Q.length;
+  gs.selected=null;gs.checked=false;
+  const pct=Math.round((gs.current/tot)*100);
+  document.getElementById('prog-label').textContent=`Frage ${gs.current+1} von ${tot}`;
+  document.getElementById('prog-pct').textContent=pct+' %';
+  document.getElementById('prog-fill').style.width=pct+'%';
+  const sb=document.getElementById('streak-badge');
+  if(gs.streak>=2){sb.textContent=`🔥 ${gs.streak}er-Serie`;sb.classList.add('show')}else sb.classList.remove('show');
+  const kInfo=KLP[q.klp];
+  let html=`<div class="q-top"><span class="q-category">${q.cat}</span><span class="klp-tag ${q.klp}" title="${q.klpDesc}">${q.klp} · ${kInfo.name.split(' ')[0]}</span></div><div class="q-text">${q.text}</div>`;
+  if(q.svg)html+=`<div class="q-graph">${q.svg}</div>`;
+  if(q.formula)html+=`<div class="q-formula">${q.formula}</div>`;
+  if(q.hint)html+=`<div class="q-hint">💡 ${q.hint}</div>`;
+  if(q.type==='mc'){const L=['A','B','C','D'];html+=`<div class="mc-grid">${q.opts.map((o,i)=>`<button class="mc-opt" id="opt-${i}" onclick="selMC(${i})"><span class="opt-letter">${L[i]}</span>${o}</button>`).join('')}</div>`;}
+  else if(q.type==='tf'){html+=`<div class="tf-row"><button class="tf-btn true-btn" id="tf-t" onclick="selTF(true)">✅ Wahr</button><button class="tf-btn false-btn" id="tf-f" onclick="selTF(false)">❌ Falsch</button></div>`;}
+  else{html+=`<div class="input-row"><input type="text" id="inp" placeholder="Ergebnis…" onkeydown="if(event.key==='Enter'&&!gs.checked)checkAnswer()">${q.unit?`<span class="unit-lbl">${q.unit}</span>`:''}</div>`;}
+  html+=`<div class="feedback" id="fb"></div>`;
+  document.getElementById('question-card').innerHTML=html;
+  document.getElementById('btn-check').style.display=q.type==='input'?'inline-block':'none';
+  document.getElementById('btn-next').style.display='none';
+  if(q.type==='input')setTimeout(()=>document.getElementById('inp')?.focus(),50);
+}
+
+function selMC(i){if(gs.checked)return;gs.selected=i;document.querySelectorAll('.mc-opt').forEach((e,j)=>e.classList.toggle('selected',j===i));checkAnswer();}
+function selTF(v){if(gs.checked)return;gs.selected=v;document.getElementById('tf-t').classList.toggle('selected',v===true);document.getElementById('tf-f').classList.toggle('selected',v===false);checkAnswer();}
+
+function checkAnswer(){
+  if(gs.checked)return;
+  const q=Q[gs.current];let ok=false;
+  if(q.type==='input'){
+    const v=parseFloat((document.getElementById('inp')?.value||'').replace(',','.'));
+    ok=!isNaN(v)&&Math.abs(v-q.answer)<=(q.tol||0.05);
+    document.getElementById('inp')?.classList.add(ok?'correct':'wrong');
+  }else{if(gs.selected===null)return;ok=gs.selected===q.answer;}
+  gs.checked=true;
+  let xpGain=0;
+  if(ok){const bonus=gs.streak>=4?5:gs.streak>=2?3:0;xpGain=q.xp+bonus;gs.xp+=xpGain;gs.streak++;gs.correct++;if(gs.streak>gs.maxStreak)gs.maxStreak=gs.streak;if(bonus>0)toast(`🔥 Streak-Bonus! +${bonus} XP`,'orange');else showXpPop(xpGain);}
+  else{gs.streak=0;if(q.mv_nok&&!gs.triggeredMVs.includes(q.mv_nok))gs.triggeredMVs.push(q.mv_nok);}
+  gs.klp[q.klp].total++;if(ok)gs.klp[q.klp].right++;
+  gs.answers.push({qId:q.id,correct:ok,mv:ok?null:q.mv_nok});
+  updateHdr();
+  if(q.type==='mc'){document.querySelectorAll('.mc-opt').forEach((e,i)=>{e.disabled=true;e.classList.remove('selected');if(i===q.answer)e.classList.add('correct');else if(i===gs.selected&&!ok)e.classList.add('wrong');});}
+  else if(q.type==='tf'){const bt=document.getElementById('tf-t'),bf=document.getElementById('tf-f');bt.disabled=bf.disabled=true;bt.classList.remove('selected');bf.classList.remove('selected');(q.answer?bt:bf).classList.add('correct');if(!ok)(gs.selected?bt:bf).classList.add('wrong');}
+  const kInfo=KLP[q.klp];const fb=document.getElementById('fb');fb.className='feedback show '+(ok?'correct':'wrong');
+  let fhtml=`<div class="fb-header">${ok?'✅ Richtig!':'❌ Falsch!'}</div><div class="fb-text">${ok?q.fb_ok:q.fb_nok}</div><div class="fb-solution">${q.sol}</div><div class="klp-feedback"><strong>${q.klp} – ${kInfo.name}:</strong> ${q.klpDesc}</div>`;
+  if(ok)fhtml+=`<div class="xp-gained">+${xpGain} XP${xpGain>q.xp?` (inkl. ${xpGain-q.xp} Streak-Bonus)`:''}</div>`;
+  if(!ok&&q.mv_nok&&MV[q.mv_nok]){const mv=MV[q.mv_nok];fhtml+=`<div class="mv-alert"><strong>⚠️ Fehlvorstellung ${mv.code}: ${mv.title}</strong>${mv.false_belief}</div>`;}
+  fb.innerHTML=fhtml;
+  document.getElementById('btn-check').style.display='none';
+  document.getElementById('btn-next').style.display='inline-block';
+  document.getElementById('btn-next').textContent=gs.current+1<Q.length?'Weiter →':'📊 Auswertung';
+  checkAchievements();
+}
+
+function nextQuestion(){if(gs.current+1<Q.length){gs.current++;renderQ();window.scrollTo({top:0,behavior:'smooth'});}else showResult();}
+function checkAchievements(){ACH.forEach(a=>{if(!gs.achievements[a.id]&&a.check(gs)){gs.achievements[a.id]=true;toast(`🏅 Errungenschaft: ${a.title}!`,'orange',3000);}});}
+
+function showResult(){
+  checkAchievements();showScreen('result');
+  const tot=Q.length,right=gs.correct,pct=Math.round((right/tot)*100),mvCount=gs.triggeredMVs.length;
+  const cls=pct>=80?'excellent':pct>=60?'good':pct>=40?'ok':'critical';
+  const msg=pct>=80?'Ausgezeichnet!':pct>=60?'Gut gemacht!':pct>=40?'Übung macht den Meister!':'Viel Potenzial – gezielt üben!';
+
+  // Sync result to hub
+  const hubData=JSON.parse(localStorage.getItem('zp10_hub_data')||'{"extras":{}}');
+  if(!hubData.extras)hubData.extras={};
+  hubData.extras['terme-muster']={lastScore:pct,lastDate:new Date().toISOString(),attempts:(hubData.extras['terme-muster']?.attempts||0)+1};
+  localStorage.setItem('zp10_hub_data',JSON.stringify(hubData));
+
+  document.getElementById('result-top').innerHTML=`<div class="score-circle ${cls}"><span>${pct}</span><span class="score-lbl">%</span></div><div class="result-heading">${msg}</div><div class="result-sub">${right}/${tot} richtig · ${mvCount} Fehlvorstellung${mvCount!==1?'en':''} · ${gs.xp} XP</div>`;
+  document.getElementById('stats-strip').innerHTML=`<div class="stat-item"><div class="stat-num">${right}</div><div class="stat-lbl">Richtig</div></div><div class="stat-item"><div class="stat-num">${tot-right}</div><div class="stat-lbl">Falsch</div></div><div class="stat-item"><div class="stat-num">${gs.xp}</div><div class="stat-lbl">XP</div></div><div class="stat-item"><div class="stat-num">${gs.maxStreak}</div><div class="stat-lbl">Max. Serie</div></div>`;
+  document.getElementById('ach-grid').innerHTML=ACH.map(a=>{const ul=!!gs.achievements[a.id];return`<div class="ach-card ${ul?'unlocked':'locked'}"><div class="ach-icon">${a.icon}</div><div><div class="ach-title">${a.title}${ul?' ✅':' 🔒'}</div><div class="ach-desc">${a.desc}</div></div></div>`;}).join('');
+  let klpHtml='';
+  Object.entries(gs.klp).forEach(([k,d])=>{if(!d.total)return;const p=Math.round((d.right/d.total)*100);const c=p>=70?'var(--green)':p>=40?'var(--yellow)':'var(--red)';klpHtml+=`<div class="klp-komp-row"><div class="klp-komp-label"><span><strong class="klp-tag ${k}" style="display:inline-block;margin-right:6px">${k}</strong>${KLP[k].name}</span><span style="color:${c};font-weight:700">${d.right}/${d.total} (${p}%)</span></div><div class="klp-bar-wrap"><div class="klp-bar-fill" style="width:${p}%;background:${c}"></div></div>${p<70?`<div style="font-size:.72rem;color:var(--text2);margin-top:3px">${klpHint(k)}</div>`:''}</div>`;});
+  document.getElementById('klp-profile').innerHTML=klpHtml;
+  const tested=Q.map(q=>q.mvTarget);
+  document.getElementById('mv-cards').innerHTML=Object.keys(MV).filter(k=>tested.includes(k)).map(k=>{const det=gs.triggeredMVs.includes(k),mv=MV[k];return`<div class="mv-card ${det?'detected':'ok'}"><div class="mv-header"><div class="mv-badge">${mv.code}</div><div><div class="mv-title">${det?'⚠️':'✅'} ${mv.title}</div><div class="mv-sub">${mv.code}</div></div></div>${det?`<div class="mv-false">${mv.false_belief}</div><div class="mv-correct">${mv.correct}</div><div class="mv-example">${mv.example}</div>`:`<div style="font-size:.83rem;color:var(--green)">Keine Fehlvorstellung erkennbar ✓</div>`}</div>`;}).join('');
+  const recs=buildRecs();
+  document.getElementById('recs').innerHTML=`<h3>📖 Persönliche Empfehlungen</h3><ul class="rec-list">${recs.map(r=>`<li><span>${r}</span></li>`).join('')}</ul>`;
+  const weakKlp=Object.entries(gs.klp).filter(([,d])=>d.total>0&&d.right/d.total<0.5);
+  if(gs.triggeredMVs.length>0||weakKlp.length>0)document.getElementById('btn-foerder').style.display='inline-block';
+}
+
+function buildRecs(){
+  const r=gs.triggeredMVs.map(k=>MV[k]?.rec).filter(Boolean);
+  const weakKlp=Object.entries(gs.klp).filter(([,d])=>d.total>0&&d.right/d.total<0.5).map(([k])=>k);
+  if(weakKlp.length)r.push(`Kompetenzbereich${weakKlp.length>1?'e':''} ${weakKlp.join(', ')} zeigen Lücken – gezielt üben.`);
+  if(!r.length)r.push('Ausgezeichnet! Keine Fehlvorstellungen erkannt – perfekte Vorbereitung!');
+  return r;
+}
+
+function klpHint(k){return{K1:'Übe Begründungen und Argumentationsketten schriftlich.',K2:'Problemlöse-Aufgaben mehrfach schriftlich durcharbeiten.',K3:'Modellierungsaufgaben aus realen Kontexten lösen.',K4:'Figuren lesen, skizzieren und korrekt beschriften üben.',K5:'Fachbegriffe klar und präzise unterscheiden und erklären.',K6:'Formeln und Taschenrechner systematisch und gezielt einsetzen.'}[k]||'';}
+
+function restartTest(){startTest();}
+function startFoerder(){showScreen('foerder');renderFoerder();}
+
+function renderFoerder(){
+  const triggered=gs.triggeredMVs;
+  const weakKlp=Object.entries(gs.klp).filter(([,d])=>d.total>0&&d.right/d.total<0.5).map(([k])=>k);
+  const container=document.getElementById('foerder-content');
+  if(!triggered.length&&!weakKlp.length){container.innerHTML=`<div class="card"><div style="text-align:center;padding:40px 20px;color:var(--text2)"><div style="font-size:2.5rem;margin-bottom:10px">🏆</div><p style="font-size:1rem;font-weight:700;color:var(--green)">Keine Lücken erkannt!</p><p style="margin-top:6px;font-size:.85rem">Alle Fehlvorstellungen vermieden – starke Leistung!</p></div></div>`;return;}
+  let html='';
+  if(triggered.length){
+    html+=`<div class="foerder-section-title">⚠️ Erkannte Fehlvorstellungen – Übungsaufgaben</div>`;
+    triggered.forEach(mvKey=>{const mv=MV[mvKey],tasks=FOERDER_DATA[mvKey];if(!mv||!tasks)return;html+=`<div class="foerder-card"><div style="margin-bottom:12px"><span class="foerder-mv-tag">${mv.code} · ${mv.title}</span></div>`;tasks.forEach((t,i)=>{const uid=`mv_${mvKey}_${i}`;fTaskMap[uid]=t;html+=buildFoerderTask(t,uid);});html+=`</div>`;});
+  }
+  if(weakKlp.length){
+    html+=`<div class="foerder-section-title" style="margin-top:20px">📉 Schwache Kompetenzbereiche – Extra-Aufgaben</div>`;
+    weakKlp.forEach(klpKey=>{const sources=[...new Set(Q.filter(q=>q.klp===klpKey&&gs.triggeredMVs.includes(q.mv_nok||'')).map(q=>q.mvTarget).filter(Boolean))];const fallback=gs.triggeredMVs.slice(0,2);const mvKeys=sources.length?sources:fallback;if(!mvKeys.length)return;html+=`<div class="foerder-card" style="border-top-color:var(--teal)"><div style="margin-bottom:12px"><span style="font-size:.72rem;font-weight:700;background:rgba(20,184,166,.15);color:var(--teal);border:1px solid rgba(20,184,166,.25);border-radius:20px;padding:3px 9px">${klpKey} · ${KLP[klpKey].name}</span></div>`;mvKeys.slice(0,2).forEach((mvKey,i)=>{const tasks=FOERDER_DATA[mvKey];if(!tasks)return;const t=tasks[Math.min(i+1,tasks.length-1)];const uid=`klp_${klpKey}_${mvKey}_${i}`;fTaskMap[uid]=t;html+=buildFoerderTask(t,uid);});html+=`</div>`;});
+  }
+  container.innerHTML=html;
+}
+
+function buildFoerderTask(t,uid){
+  const L=['A','B','C','D'];
+  const diffLabel=t.diff==='leicht'?'🟢 LEICHT':t.diff==='mittel'?'🟡 MITTEL':'🔴 SCHWER';
+  const diffCls=`diff-${t.diff}`;
+  let inputHtml='';
+  if(t.type==='tf'){inputHtml=`<div style="display:flex;gap:8px;margin-bottom:10px"><button class="tf-btn true-btn" id="${uid}_t" onclick="fSelTF('${uid}',true)">✅ Wahr</button><button class="tf-btn false-btn" id="${uid}_f" onclick="fSelTF('${uid}',false)">❌ Falsch</button></div>`;}
+  else if(t.type==='mc'){inputHtml=`<div class="mc-grid" style="margin-bottom:10px">${t.opts.map((o,i)=>`<button class="mc-opt" id="${uid}_mc_${i}" onclick="fSelMC('${uid}',${i})"><span class="opt-letter">${L[i]}</span>${o}</button>`).join('')}</div>`;}
+  else{inputHtml=`${t.formula?`<div class="q-formula" style="margin-bottom:10px">${t.formula}</div>`:''}<div class="input-row" style="margin-bottom:10px"><input type="text" id="${uid}_inp" placeholder="Ergebnis…" onkeydown="if(event.key==='Enter')fCheck('${uid}')">${t.unit?`<span class="unit-lbl">${t.unit}</span>`:''}</div><button class="btn btn-primary" style="max-width:180px" onclick="fCheck('${uid}')">Prüfen</button>`;}
+  return`<div style="border-top:1px solid var(--border);padding-top:14px;margin-top:12px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span class="diff-badge ${diffCls}">${diffLabel}</span></div><div class="foerder-q-text">${t.text}</div>${inputHtml}<details class="foerder-hint"><summary></summary><div class="foerder-hint-body">${t.hint}</div></details><div class="foerder-result" id="res_${uid}"></div></div>`;
+}
+
+const fState={};
+function fSelMC(uid,i){if(fState[uid]?.checked)return;if(!fState[uid])fState[uid]={checked:false,selected:null};fState[uid].selected=i;document.querySelectorAll(`[id^="${uid}_mc_"]`).forEach((e,j)=>e.classList.toggle('selected',j===i));fCheck(uid);}
+function fSelTF(uid,v){if(fState[uid]?.checked)return;if(!fState[uid])fState[uid]={checked:false,selected:null};fState[uid].selected=v;document.getElementById(uid+'_t')?.classList.toggle('selected',v===true);document.getElementById(uid+'_f')?.classList.toggle('selected',v===false);fCheck(uid);}
+
+function fCheck(uid){
+  if(fState[uid]?.checked)return;const t=fTaskMap[uid];if(!t)return;if(!fState[uid])fState[uid]={checked:false,selected:null};
+  let ok=false;
+  if(t.type==='input'){const v=parseFloat((document.getElementById(uid+'_inp')?.value||'').replace(',','.'));ok=!isNaN(v)&&Math.abs(v-t.answer)<=(t.tol||0.05);document.getElementById(uid+'_inp')?.classList.add(ok?'correct':'wrong');}
+  else{if(fState[uid].selected===null)return;ok=fState[uid].selected===t.answer;}
+  fState[uid].checked=true;
+  if(t.type==='mc'){document.querySelectorAll(`[id^="${uid}_mc_"]`).forEach((e,i)=>{e.disabled=true;e.classList.remove('selected');if(i===t.answer)e.classList.add('correct');else if(i===fState[uid].selected&&!ok)e.classList.add('wrong');});}
+  else if(t.type==='tf'){const bt=document.getElementById(uid+'_t'),bf=document.getElementById(uid+'_f');if(bt)bt.disabled=true;if(bf)bf.disabled=true;bt?.classList.remove('selected');bf?.classList.remove('selected');(t.answer?bt:bf)?.classList.add('correct');if(!ok)(fState[uid].selected?bt:bf)?.classList.add('wrong');}
+  const res=document.getElementById('res_'+uid);
+  if(res){res.className='foerder-result show '+(ok?'ok':'bad');res.innerHTML=`${ok?'✅':'❌'} ${ok?t.fb_ok:t.fb_nok}<br><span class="foerder-sol">${t.sol}</span>`;}
+}
+</script>
+</body>
+</html>

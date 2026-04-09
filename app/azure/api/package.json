@@ -1,0 +1,32 @@
+{
+  "name": "zp10-azure-api",
+  "version": "1.0.0",
+  "description": "Azure Functions API backend for ZP10 Mathe-Diagnose platform",
+  "main": "index.js",
+  "scripts": {
+    "start": "func start",
+    "test": "jest",
+    "lint": "eslint .",
+    "deploy": "func azure functionapp publish YOUR_FUNCTION_APP_NAME"
+  },
+  "dependencies": {
+    "@azure/cosmos": "^3.21.0",
+    "@azure/identity": "^3.3.0",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.1.0",
+    "axios": "^1.5.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "eslint": "^8.50.0"
+  },
+  "keywords": [
+    "azure",
+    "functions",
+    "mathe",
+    "diagnose",
+    "zp10"
+  ],
+  "author": "Schule NRW",
+  "license": "MIT"
+}

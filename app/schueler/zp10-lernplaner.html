@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZP10 Lernplaner - Spaced Repetition & Adaptive Learning</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="schueler-shared.css">
+
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="header-title">
+                <div class="emoji">📚</div>
+                <h1>ZP10 Lernplaner</h1>
+            </div>
+            <div class="header-controls">
+                <div class="countdown-box" id="countdownBox">
+                    Lädt...
+                </div>
+                <button class="theme-toggle" id="themeToggle">🌙</button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- OVERVIEW STATISTICS -->
+        <section class="stat-grid" id="statsGrid">
+            <div class="stat-box">
+                <div class="stat-label">Gesamt Score</div>
+                <div class="stat-value" id="overallScore">0%</div>
+                <div class="stat-subtext">Alle Module</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Fehlvorstellungen</div>
+                <div class="stat-value" id="mvCount">0</div>
+                <div class="stat-subtext">Erkannt</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Zu wiederh.</div>
+                <div class="stat-value" id="dueCount">0</div>
+                <div class="stat-subtext">Diese Woche</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Beherrscht</div>
+                <div class="stat-value" id="masteredCount">0</div>
+                <div class="stat-subtext">Grün</div>
+            </div>
+        </section>
+
+        <!-- PROGRESS TREND CHART -->
+        <section class="card">
+            <div class="card-title">📈 Lernfortschritt über Zeit</div>
+            <div class="chart-container">
+                <canvas id="progressChart"></canvas>
+            </div>
+        </section>
+
+        <!-- SPACED REPETITION DASHBOARD -->
+        <div class="container-2col">
+            <section class="card">
+                <div class="card-title">⏰ Wiederholungsplan (nächste 30 Tage)</div>
+                <div class="sr-timeline" id="srTimeline"></div>
+                <p style="font-size: 0.85rem; color: var(--text2); margin-top: 1rem; text-align: center;">
+                    Rote Karte = überfällig | Gelbe Karte = heute | Grüne Karte = beherrscht
+                </p>
+            </section>
+
+            <!-- MODULE PROGRESS -->
+            <section class="card">
+                <div class="card-title">📊 Modul-Fortschritt</div>
+                <div id="moduleProgress"></div>
+            </section>
+        </div>
+
+        <!-- FEHLVORSTELLUNGEN OVERVIEW -->
+        <section class="card">
+            <div class="card-title">❌ Deine Fehlvorstellungen (Wiederholungsreihenfolge)</div>
+            <div class="mv-list" id="mvList"></div>
+            <div style="margin-top: 1rem; padding: 1rem; background: var(--card2); border-radius: 8px; border-left: 3px solid var(--teal); font-size: 0.85rem; color: var(--text2);">
+                <strong style="color: var(--teal); display: block; margin-bottom: 0.5rem;">Wie funktioniert der Wiederholungsplan?</strong>
+                1. Tag: Nach Entdeckung | 3. Tag: Erste Wiederholung | 7. Tag: Zweite Wiederholung | 14. Tag: Dritte Wiederholung | 30. Tag: Finale Kontrolle
+            </div>
+        </section>
+
+        <!-- PRACTICE SECTION -->
+        <section class="practice-section">
+            <h3>🎯 Heute Trainieren</h3>
+            <p id="practiceInfo">Klicke unten, um personalisierte Aufgaben zu generieren</p>
+            <button class="btn btn-primary large" id="practiceBtn">
+                🎮 10 Fragen Generieren
+            </button>
+        </section>
+
+        <!-- DEINE SCHWÄCHEN -->
+        <section class="card">
+            <div class="card-title">⚠️ Top 3 Schwächen (Nach Priorität)</div>
+            <div class="weakness-grid" id="weaknessGrid"></div>
+        </section>
+
+        <!-- STREAK CALENDAR -->
+        <section class="card">
+            <div class="card-title">🔥 Lern-Streak (Letzten 8 Wochen)</div>
+            <div class="streak-calendar" id="streakCalendar"></div>
+        </section>
+
+        <!-- HUB LINK -->
+        <div class="hub-link-footer">
+            <a href="../index.html" class="hub-link">
+                ← Zurück zum Hub
+            </a>
+        </div>
+    </main>
+
+    <!-- PRACTICE QUESTIONS MODAL -->
+    <div class="modal" id="practiceModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <div style="font-size: 0.85rem; color: var(--text2); margin-bottom: 0.5rem;">Frage <span id="currentQuestion">1</span> von 10</div>
+                    Tägliches Training
+                </div>
+                <button class="modal-close" onclick="closePracticeModal()">×</button>
+            </div>
+            <div id="questionContent"></div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closePracticeModal()">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DATA STRUCTURES =====
+        const MVDatabase = {
+            // Terme
+            "MV-TERM-01": { name: "Vorzeichen-Vorstellung", module: "terme", description: "Verwechslung von Vorzeichen und Rechenoperation" },
+            "MV-TERM-02": { name: "Malklammer-Fehler", module: "terme", description: "Falsche Anwendung der Distributivgesetze" },
+            "MV-TERM-03": { name: "Potenz-Missverständnis", module: "terme", description: "2·3 = 6 statt 2³ = 8" },
+            "MV-TERM-04": { name: "Gleichartigkeit", module: "terme", description: "2a + 3b = 5ab (nicht korrekt)" },
+            "MV-TERM-05": { name: "Bruch-Regel-Fehler", module: "terme", description: "a/b + c = (a+c)/b" },
+
+            // Funktionen
+            "MV-FUNK-01": { name: "Steigung-Missverständnis", module: "lineare-funktionen", description: "Steigung als Punkt statt als Verhältnis verstanden" },
+            "MV-FUNK-02": { name: "y-Achsenabschnitt", module: "lineare-funktionen", description: "Verwechslung mit x-Achsenabschnitt" },
+            "MV-FUNK-03": { name: "Achsen-Verwechslung", module: "lineare-funktionen", description: "x und y-Achse vertauscht" },
+            "MV-FUNK-04": { name: "Antiproportionalität", module: "funktionen", description: "Missverstehen von Umgekehrt-Proportionalität" },
+            "MV-FUNK-05": { name: "Exponential-Verwechslung", module: "exponentialfunktionen", description: "Lineares vs. exponentielles Wachstum" },
+
+            // Geometrie
+            "MV-GEO-01": { name: "Winkelsumme", module: "geometrie", description: "Falsche Summe bei Dreiecken oder Vierecken" },
+            "MV-GEO-02": { name: "Ähnlichkeit vs. Kongruenz", module: "geometrie", description: "Verwechslung der Begriffe" },
+            "MV-GEO-03": { name: "Pythagoras falsch", module: "geometrie", description: "Falsche Anwendung a+b=c statt a²+b²=c²" },
+            "MV-GEO-04": { name: "Strahlensatz-Fehler", module: "geometrie", description: "Falsche Seitenverhältnisse" },
+            "MV-GEO-05": { name: "Trigonometrie-Verwirrung", module: "geometrie", description: "Sin/Cos/Tan verwechselt" },
+
+            // Stochastik
+            "MV-STOCH-01": { name: "Bedingte Wahrscheinlichkeit", module: "stochastik", description: "P(A|B) = P(A) angenommen" },
+            "MV-STOCH-02": { name: "Pfadregel-Fehler", module: "stochastik", description: "Addition und Multiplikation verwechselt" },
+            "MV-STOCH-03": { name: "Unabhängigkeit", module: "stochastik", description: "Mit/ohne Zurücklegen nicht unterschieden" },
+            "MV-STOCH-04": { name: "Erwartungswert", module: "stochastik", description: "Verwechslung mit Median oder Modus" },
+            "MV-STOCH-05": { name: "Binomialverteilung", module: "stochastik", description: "Falsche Parameter oder Bedingungen" },
+
+            // LGS
+            "MV-LGS-01": { name: "Äquivalenz-Umformung", module: "lgs", description: "Regeln nicht korrekt angewendet" },
+            "MV-LGS-02": { name: "Lösungsmenge", module: "lgs", description: "Keine, eine oder unendlich viele Lösungen verwechselt" },
+            "MV-LGS-03": { name: "Substitution-Fehler", module: "lgs", description: "Einsetzungsverfahren falsch durchgeführt" },
+            "MV-LGS-04": { name: "Gauß-Algorithmus", module: "lgs", description: "Zeilenoperationen nicht korrekt" },
+            "MV-LGS-05": { name: "Probe-Versäumnis", module: "lgs", description: "Lösung nicht überprüft" },
+        };
+
+        // Question bank for each MV (5 questions per MV)
+        const QuestionBank = {
+            "MV-TERM-01": [
+                { q: "Berechne: -3 + (-2) = ?", type: "input", options: [], correct: "-5", feedback: "Negative Zahlen addieren: beide Vorzeichen haben das gleiche Vorzeichen." },
+                { q: "Was ist -5 - 3?", type: "input", options: [], correct: "-8", feedback: "Subtraktion einer positiven Zahl von einer negativen Zahl." },
+                { q: "Löse: 2 · (-4) = ?", type: "input", options: [], correct: "-8", feedback: "Positive mal Negative ergibt Negative." },
+                { q: "Berechne: (-2) · (-3) = ?", type: "input", options: [], correct: "6", feedback: "Negative mal Negative ergibt Positive." },
+                { q: "Was ist 0 - 7?", type: "input", options: [], correct: "-7", feedback: "Null minus eine positive Zahl ergibt die Negative dieser Zahl." }
+            ],
+            "MV-TERM-02": [
+                { q: "Löse: 2(a + b) = ?", type: "input", options: [], correct: "2a+2b", feedback: "Distributivgesetz: multipliziere jeden Term in der Klammer." },
+                { q: "Vereinfache: 3(2x - 1) = ?", type: "input", options: [], correct: "6x-3", feedback: "Beachte das Minuszeichen beim Multiplizieren." },
+                { q: "Was ist (a + b)2? (Beachte: ≠ a² + b²)", type: "input", options: [], correct: "a²+2ab+b²", feedback: "Binomische Formel: (a+b)² = a² + 2ab + b²" },
+                { q: "Löse: -2(x - 3) = ?", type: "input", options: [], correct: "-2x+6", feedback: "Negatives Vorzeichen ändert alle Terme in der Klammer." },
+                { q: "Vereinfache: 5(2 + 3a) = ?", type: "input", options: [], correct: "10+15a", feedback: "Multipliziere den konstanten Term und den Term mit Variable." }
+            ],
+            "MV-TERM-03": [
+                { q: "Berechne: 2³ = ?", type: "input", options: [], correct: "8", feedback: "2³ bedeutet 2·2·2 = 8, NICHT 2·3 = 6" },
+                { q: "Was ist 3²?", type: "input", options: [], correct: "9", feedback: "3² = 3·3 = 9" },
+                { q: "Berechne: 5² = ?", type: "input", options: [], correct: "25", feedback: "5² = 5·5 = 25" },
+                { q: "Was ist 10³?", type: "input", options: [], correct: "1000", feedback: "10³ = 10·10·10 = 1000" },
+                { q: "Berechne: 2⁴ = ?", type: "input", options: [], correct: "16", feedback: "2⁴ = 2·2·2·2 = 16" }
+            ],
+            "MV-TERM-04": [
+                { q: "Vereinfache: 2a + 3a = ?", type: "input", options: [], correct: "5a", feedback: "Gleichartige Terme können addiert werden." },
+                { q: "Vereinfache: 5b - 2b = ?", type: "input", options: [], correct: "3b", feedback: "Subtrahiere gleichartige Terme." },
+                { q: "Vereinfache: 2x + 3y = ?", type: "input", options: [], correct: "2x+3y", feedback: "Ungleicheartige Terme können NICHT addiert werden." },
+                { q: "Was ist 4a + 2a - a?", type: "input", options: [], correct: "5a", feedback: "Addiere und subtrahiere die Koeffizienten der gleichen Variablen." },
+                { q: "Vereinfache: 3m + 2n + m = ?", type: "input", options: [], correct: "4m+2n", feedback: "Nur die m-Terme können kombiniert werden." }
+            ],
+            "MV-FUNK-01": [
+                { q: "Wie lautet die Steigung der Linie durch (0,0) und (1,2)?", type: "input", options: [], correct: "2", feedback: "Steigung = Δy/Δx = (2-0)/(1-0) = 2" },
+                { q: "Berechne die Steigung durch (0,1) und (2,5).", type: "input", options: [], correct: "2", feedback: "m = (5-1)/(2-0) = 4/2 = 2" },
+                { q: "Steigung durch (1,1) und (3,5)?", type: "input", options: [], correct: "2", feedback: "m = (5-1)/(3-1) = 4/2 = 2" },
+                { q: "Berechne m für Punkte (0,0) und (2,6).", type: "input", options: [], correct: "3", feedback: "m = 6/2 = 3" },
+                { q: "Steigung durch (1,2) und (2,3)?", type: "input", options: [], correct: "1", feedback: "m = (3-2)/(2-1) = 1/1 = 1" }
+            ],
+            "MV-FUNK-02": [
+                { q: "Welcher ist der y-Achsenabschnitt von y = 2x + 3?", type: "input", options: [], correct: "3", feedback: "Der y-Achsenabschnitt ist der b-Wert in y = mx + b" },
+                { q: "Was ist der y-Achsenabschnitt von y = x - 5?", type: "input", options: [], correct: "-5", feedback: "Der Punkt, wo die Linie die y-Achse kreuzt (x=0)." },
+                { q: "y-Achsenabschnitt von y = 4x?", type: "input", options: [], correct: "0", feedback: "Die Linie geht durch den Ursprung." },
+                { q: "Finde den y-Achsenabschnitt: y = -2x + 7", type: "input", options: [], correct: "7", feedback: "Setze x = 0 ein: y = 0 + 7 = 7" },
+                { q: "y-Achsenabschnitt von y = 3x - 2?", type: "input", options: [], correct: "-2", feedback: "Der Wert des Ausdrucks, wenn x = 0" }
+            ],
+            "MV-GEO-01": [
+                { q: "Winkelsumme im Dreieck in Grad?", type: "input", options: [], correct: "180", feedback: "Die Summe aller Winkel in einem Dreieck ist 180°." },
+                { q: "Winkelsumme im Viereck?", type: "input", options: [], correct: "360", feedback: "Die Summe aller Winkel in einem Viereck ist 360°." },
+                { q: "Wenn zwei Winkel eines Dreiecks 60° und 70° sind, wie groß ist der dritte?", type: "input", options: [], correct: "50", feedback: "180° - 60° - 70° = 50°" },
+                { q: "Wie viel Grad sind drei gleiche Winkel eines Dreiecks zusammen?", type: "input", options: [], correct: "180", feedback: "Jeder Winkel ist 60° (180° ÷ 3)" },
+                { q: "Winkelsumme in einem Fünfeck?", type: "input", options: [], correct: "540", feedback: "(5-2) × 180° = 3 × 180° = 540°" }
+            ],
+            "MV-GEO-03": [
+                { q: "Berechne die Hypotenuse: a=3, b=4, c=?", type: "input", options: [], correct: "5", feedback: "c² = 3² + 4² = 9 + 16 = 25, also c = 5" },
+                { q: "Finde c: a=5, b=12", type: "input", options: [], correct: "13", feedback: "c² = 25 + 144 = 169, c = 13" },
+                { q: "a² + b² = ? (a=6, b=8)", type: "input", options: [], correct: "100", feedback: "36 + 64 = 100, also c = 10" },
+                { q: "Berechne: a=1, b=1, c²=?", type: "input", options: [], correct: "2", feedback: "c² = 1 + 1 = 2" },
+                { q: "Hypotenuse: a=9, b=12, c=?", type: "input", options: [], correct: "15", feedback: "c² = 81 + 144 = 225, c = 15" }
+            ],
+            "MV-STOCH-01": [
+                { q: "P(Kopf) bei einer fairen Münze?", type: "input", options: [], correct: "0.5", feedback: "Es gibt 2 gleich wahrscheinliche Ergebnisse." },
+                { q: "P(6 beim Würfel)?", type: "input", options: [], correct: "1/6", feedback: "Ein günstiges Ergebnis von 6 möglichen." },
+                { q: "P(rot bei roter Kugel in 10 Kugeln insgesamt 3 rot)?", type: "input", options: [], correct: "0.3", feedback: "3 rote von 10 = 3/10 = 0,3" },
+                { q: "Wie viele mögliche Ergebnisse bei 2 Münzwürfen?", type: "input", options: [], correct: "4", feedback: "HH, HZ, ZH, ZZ = 4 Ergebnisse" },
+                { q: "P(zwei Sechsen beim Würfeln)?", type: "input", options: [], correct: "1/36", feedback: "1/6 × 1/6 = 1/36" }
+            ],
+            "MV-LGS-01": [
+                { q: "Löse: x + 2 = 5, also x = ?", type: "input", options: [], correct: "3", feedback: "Subtrahiere 2 von beiden Seiten: x = 5 - 2 = 3" },
+                { q: "2x = 8, also x = ?", type: "input", options: [], correct: "4", feedback: "Dividiere beide Seiten durch 2." },
+                { q: "x - 3 = 7, also x = ?", type: "input", options: [], correct: "10", feedback: "Addiere 3 zu beiden Seiten." },
+                { q: "3x + 1 = 10, also x = ?", type: "input", options: [], correct: "3", feedback: "Subtrahiere 1, dann dividiere durch 3." },
+                { q: "2x - 4 = 6, also x = ?", type: "input", options: [], correct: "5", feedback: "2x = 10, x = 5" }
+            ]
+        };
+
+        // ===== STATE =====
+        let allMVData = {};
+        let allModuleData = {};
+        let practiceQuestions = [];
+        let currentQuestionIndex = 0;
+
+        // ===== INITIALIZATION =====
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            loadAllData();
+            renderCountdown();
+            renderStats();
+            renderSRTimeline();
+            renderModuleProgress();
+            renderMVList();
+            renderWeaknesses();
+            renderStreakCalendar();
+            renderProgressChart();
+            setupEventListeners();
+        });
+
+        // ===== THEME HANDLING =====
+        function initTheme() {
+            const savedTheme = localStorage.getItem('zp10_theme') || 'dark';
+            applyTheme(savedTheme);
+        }
+
+        function applyTheme(theme) {
+            const body = document.body;
+            const btn = document.getElementById('themeToggle');
+            if (theme === 'light') {
+                body.classList.add('light-theme');
+                btn.textContent = '🌙';
+            } else {
+                body.classList.remove('light-theme');
+                btn.textContent = '☀️';
+            }
+        }
+
+        document.getElementById('themeToggle')?.addEventListener('click', () => {
+            const current = localStorage.getItem('zp10_theme') || 'dark';
+            const newTheme = current === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('zp10_theme', newTheme);
+            applyTheme(newTheme);
+        });
+
+        // ===== DATA LOADING =====
+        function loadAllData() {
+            // Load hub data
+            const hubData = JSON.parse(localStorage.getItem('zp10_hub_data') || '{}');
+
+            // Load module histories
+            const modules = ['termine', 'lineare-funktionen', 'funktionen', 'exponentialfunktionen', 'geometrie', 'stochastik', 'lgs'];
+            modules.forEach(mod => {
+                const history = JSON.parse(localStorage.getItem(`zp10_${mod}_history`) || '[]');
+                allModuleData[mod] = history;
+                processModuleHistory(mod, history);
+            });
+        }
+
+        function processModuleHistory(moduleId, history) {
+            history.forEach(record => {
+                if (record.fehlvorstellungen && Array.isArray(record.fehlvorstellungen)) {
+                    record.fehlvorstellungen.forEach(mv => {
+                        if (!allMVData[mv.id]) {
+                            allMVData[mv.id] = {
+                                ...MVDatabase[mv.id],
+                                triggered: [],
+                                nextReview: null,
+                                reviewCount: 0,
+                                lastReview: null,
+                                failCount: 0
+                            };
+                        }
+                        allMVData[mv.id].triggered.push({
+                            date: record.date || new Date().toISOString(),
+                            moduleId: moduleId
+                        });
+                    });
+                }
+            });
+
+            // Calculate review schedules
+            Object.keys(allMVData).forEach(mvId => {
+                calculateNextReview(mvId);
+            });
+        }
+
+        // ===== SM-2 SPACED REPETITION ALGORITHM =====
+        function calculateNextReview(mvId) {
+            const mv = allMVData[mvId];
+            if (!mv) return;
+
+            const lastTriggered = mv.triggered[mv.triggered.length - 1]?.date;
+            if (!lastTriggered) return;
+
+            const lastDate = new Date(lastTriggered);
+            const intervals = [1, 3, 7, 14, 30];
+            const interval = intervals[Math.min(mv.reviewCount, 4)];
+
+            const nextDate = new Date(lastDate);
+            nextDate.setDate(nextDate.getDate() + interval);
+            mv.nextReview = nextDate;
+            mv.reviewCount = Math.min(mv.reviewCount, 4);
+        }
+
+        // ===== COUNTDOWN =====
+        function renderCountdown() {
+            // Assuming ZP10 happens in May (example: May 23, 2024)
+            const zpDate = new Date(2026, 4, 23); // May 23, 2026
+            const today = new Date();
+            const daysLeft = Math.ceil((zpDate - today) / (1000 * 60 * 60 * 24));
+
+            const box = document.getElementById('countdownBox');
+            if (daysLeft > 0) {
+                box.textContent = `⏳ ${daysLeft} Tage bis ZP10`;
+            } else {
+                box.textContent = '✅ ZP10 vorbei!';
+            }
+        }
+
+        // ===== STATISTICS =====
+        function renderStats() {
+            const today = new Date();
+            const weekEnd = new Date(today);
+            weekEnd.setDate(weekEnd.getDate() + 7);
+
+            let totalScore = 0;
+            let totalAttempts = 0;
+            let dueCount = 0;
+            let masteredCount = 0;
+
+            // Collect all attempts
+            Object.values(allModuleData).forEach(history => {
+                history.forEach(record => {
+                    if (record.score !== undefined) {
+                        totalScore += record.score;
+                        totalAttempts += 1;
+                    }
+                });
+            });
+
+            const overallPercent = totalAttempts > 0 ? Math.round((totalScore / totalAttempts) * 100) : 0;
+
+            // Count MVs
+            Object.values(allMVData).forEach(mv => {
+                if (mv.nextReview) {
+                    if (mv.nextReview <= today) {
+                        dueCount++;
+                    }
+                    if (mv.reviewCount >= 4) {
+                        masteredCount++;
+                    }
+                }
+            });
+
+            document.getElementById('overallScore').textContent = overallPercent + '%';
+            document.getElementById('mvCount').textContent = Object.keys(allMVData).length;
+            document.getElementById('dueCount').textContent = dueCount;
+            document.getElementById('masteredCount').textContent = masteredCount;
+        }
+
+        // ===== SPACED REPETITION TIMELINE =====
+        function renderSRTimeline() {
+            const today = new Date();
+            const timeline = document.getElementById('srTimeline');
+            timeline.innerHTML = '';
+
+            // Create 30-day timeline
+            for (let i = 0; i <= 30; i++) {
+                const date = new Date(today);
+                date.setDate(date.getDate() + i);
+
+                // Count MVs due on this day
+                let count = 0;
+                let hasOverdue = false;
+                let hasToday = false;
+                let hasMastered = false;
+
+                Object.values(allMVData).forEach(mv => {
+                    if (!mv.nextReview) return;
+                    const dateOnly = new Date(mv.nextReview);
+                    dateOnly.setHours(0, 0, 0, 0);
+
+                    const compareDate = new Date(date);
+                    compareDate.setHours(0, 0, 0, 0);
+
+                    if (dateOnly.getTime() === compareDate.getTime()) {
+                        count++;
+                        if (mv.reviewCount >= 4) hasMastered = true;
+                        else if (compareDate < today) hasOverdue = true;
+                        else if (compareDate.getTime() === new Date().setHours(0, 0, 0, 0)) hasToday = true;
+                    }
+                });
+
+                const dayEl = document.createElement('div');
+                dayEl.className = 'sr-day';
+                if (hasOverdue) dayEl.classList.add('overdue');
+                if (hasToday) dayEl.classList.add('today');
+                if (hasMastered && count > 0) dayEl.classList.add('mastered');
+
+                const dayNames = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+                const dayName = dayNames[date.getDay()];
+
+                dayEl.innerHTML = `
+                    <div class="sr-day-label">${dayName}</div>
+                    <div class="sr-day-date">${date.getDate()}</div>
+                    <div class="sr-day-count">${count}</div>
+                `;
+
+                timeline.appendChild(dayEl);
+            }
+        }
+
+        // ===== MODULE PROGRESS =====
+        function renderModuleProgress() {
+            const container = document.getElementById('moduleProgress');
+            container.innerHTML = '';
+
+            const modules = [
+                { id: 'termine', name: 'Terme' },
+                { id: 'lineare-funktionen', name: 'Lineare Funktionen' },
+                { id: 'funktionen', name: 'Funktionen' },
+                { id: 'exponentialfunktionen', name: 'Exponentialfunktionen' },
+                { id: 'geometrie', name: 'Geometrie' },
+                { id: 'stochastik', name: 'Stochastik' },
+                { id: 'lgs', name: 'Lineare Gleichungssysteme' }
+            ];
+
+            modules.forEach(mod => {
+                const history = allModuleData[mod.id] || [];
+                let totalScore = 0;
+                let totalAttempts = 0;
+
+                history.forEach(record => {
+                    if (record.score !== undefined) {
+                        totalScore += record.score;
+                        totalAttempts += 1;
+                    }
+                });
+
+                const percent = totalAttempts > 0 ? Math.round((totalScore / totalAttempts) * 100) : 0;
+
+                const progressEl = document.createElement('div');
+                progressEl.className = 'module-progress';
+                progressEl.innerHTML = `
+                    <div class="module-header">
+                        <div class="module-name">${mod.name}</div>
+                        <div class="module-percent">${percent}%</div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="fill" style="width: ${percent}%"></div>
+                    </div>
+                `;
+                container.appendChild(progressEl);
+            });
+        }
+
+        // ===== MV LIST =====
+        function renderMVList() {
+            const container = document.getElementById('mvList');
+            container.innerHTML = '';
+
+            // Sort by review priority
+            const sortedMVs = Object.entries(allMVData)
+                .sort((a, b) => {
+                    const aDate = a[1].nextReview || new Date(2099, 0, 1);
+                    const bDate = b[1].nextReview || new Date(2099, 0, 1);
+                    return aDate - bDate;
+                });
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            sortedMVs.forEach(([mvId, mv]) => {
+                if (!mv.triggered || mv.triggered.length === 0) return;
+
+                const nextReview = mv.nextReview || new Date();
+                let status = 'pending';
+                let statusText = 'Nicht getestet';
+                let statusClass = 'pending';
+
+                if (mv.reviewCount >= 4) {
+                    status = 'mastered';
+                    statusText = '✅ Beherrscht';
+                    statusClass = 'mastered';
+                } else if (nextReview <= today) {
+                    status = 'overdue';
+                    statusText = '⚠️ Überfällig';
+                    statusClass = 'overdue';
+                } else if (nextReview.getTime() === today.getTime()) {
+                    status = 'today';
+                    statusText = '📅 Heute';
+                    statusClass = 'today';
+                } else {
+                    const daysUntil = Math.ceil((nextReview - today) / (1000 * 60 * 60 * 24));
+                    statusText = `${daysUntil} Tage`;
+                }
+
+                const lastTriggered = mv.triggered[mv.triggered.length - 1];
+                const lastDate = lastTriggered ? new Date(lastTriggered.date).toLocaleDateString('de-DE') : 'N/A';
+
+                const mvEl = document.createElement('div');
+                mvEl.className = `mv-item ${statusClass}`;
+                mvEl.innerHTML = `
+                    <div class="mv-info">
+                        <div class="mv-name">${mv.name}</div>
+                        <div class="mv-details">
+                            <span>Modul: ${mv.module}</span>
+                            <span>Erkannt: ${lastDate}</span>
+                            <span>Wiederholungen: ${mv.reviewCount}/4</span>
+                        </div>
+                    </div>
+                    <div class="mv-status">
+                        <div class="progress-bar-small">
+                            <div class="progress-fill" style="width: ${(mv.reviewCount / 4) * 100}%"></div>
+                        </div>
+                        <span class="status-badge ${statusClass}">${statusText}</span>
+                    </div>
+                `;
+                container.appendChild(mvEl);
+            });
+
+            if (sortedMVs.length === 0) {
+                container.innerHTML = '<p style="color: var(--text2); text-align: center; padding: 2rem;">Keine Fehlvorstellungen erkannt. Starte eine Diagnose!</p>';
+            }
+        }
+
+        // ===== WEAKNESSES =====
+        function renderWeaknesses() {
+            const container = document.getElementById('weaknessGrid');
+            container.innerHTML = '';
+
+            // Get top 3 MVs by fail count
+            const sorted = Object.entries(allMVData)
+                .filter(([_, mv]) => mv.triggered && mv.triggered.length > 0)
+                .sort((a, b) => b[1].triggered.length - a[1].triggered.length)
+                .slice(0, 3);
+
+            sorted.forEach(([mvId, mv], idx) => {
+                const weakEl = document.createElement('div');
+                weakEl.className = 'weakness-card';
+                const ranks = ['🥇 Top 1', '🥈 Top 2', '🥉 Top 3'];
+
+                weakEl.innerHTML = `
+                    <div class="weakness-rank">${ranks[idx]}</div>
+                    <div class="weakness-title">${mv.name}</div>
+                    <div class="weakness-stats">
+                        <div>⚠️ ${mv.triggered.length}x erkannt</div>
+                        <div>📊 Wiederholungen: ${mv.reviewCount}/4</div>
+                        <div>🎯 Priorität: ${mv.reviewCount >= 4 ? 'Beherrscht' : 'Hoch'}</div>
+                    </div>
+                    <div class="weakness-action">
+                        <a href="../module/zp10-${mv.module}.html" target="_blank">Modul öffnen →</a>
+                    </div>
+                `;
+                container.appendChild(weakEl);
+            });
+
+            if (sorted.length === 0) {
+                container.innerHTML = '<p style="color: var(--text2); text-align: center; padding: 2rem;">Keine Fehlvorstellungen erkannt.</p>';
+            }
+        }
+
+        // ===== STREAK CALENDAR =====
+        function renderStreakCalendar() {
+            const container = document.getElementById('streakCalendar');
+            container.innerHTML = '';
+
+            const today = new Date();
+            const eightWeeksAgo = new Date(today);
+            eightWeeksAgo.setDate(eightWeeksAgo.getDate() - 56);
+
+            // Count practice attempts per day
+            const practicePerDay = {};
+            Object.values(allModuleData).forEach(history => {
+                history.forEach(record => {
+                    const dateOnly = new Date(record.date || new Date()).toLocaleDateString('de-DE');
+                    practicePerDay[dateOnly] = (practicePerDay[dateOnly] || 0) + 1;
+                });
+            });
+
+            // Create calendar for each month
+            let currentMonth = new Date(eightWeeksAgo);
+            while (currentMonth <= today) {
+                const monthEl = document.createElement('div');
+                monthEl.className = 'streak-month';
+
+                const monthNames = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
+                const monthTitle = `${monthNames[currentMonth.getMonth()]} ${currentMonth.getFullYear()}`;
+                monthEl.innerHTML = `<div class="streak-month-title">${monthTitle}</div>`;
+
+                // Generate calendar grid
+                const firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+                const lastDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+
+                let currentDate = new Date(firstDay);
+                currentDate.setDate(currentDate.getDate() - currentDate.getDay());
+
+                while (currentDate <= lastDay) {
+                    const weekEl = document.createElement('div');
+                    weekEl.className = 'streak-week';
+
+                    for (let i = 0; i < 7; i++) {
+                        const dayEl = document.createElement('div');
+                        dayEl.className = 'streak-day';
+
+                        if (currentDate.getMonth() === currentMonth.getMonth() && currentDate >= eightWeeksAgo && currentDate <= today) {
+                            const dateStr = currentDate.toLocaleDateString('de-DE');
+                            const count = practicePerDay[dateStr] || 0;
+                            let level = 0;
+                            if (count >= 4) level = 4;
+                            else if (count >= 3) level = 3;
+                            else if (count >= 1) level = 1;
+
+                            if (level > 0) {
+                                dayEl.classList.add(`level${level}`);
+                                dayEl.setAttribute('data-title', `${count} Übungen`);
+                            }
+                            dayEl.textContent = currentDate.getDate();
+                        } else if (currentDate.getMonth() === currentMonth.getMonth()) {
+                            dayEl.textContent = currentDate.getDate();
+                        }
+
+                        weekEl.appendChild(dayEl);
+                        currentDate.setDate(currentDate.getDate() + 1);
+                    }
+
+                    monthEl.appendChild(weekEl);
+                }
+
+                container.appendChild(monthEl);
+                currentMonth.setMonth(currentMonth.getMonth() + 1);
+            }
+        }
+
+        // ===== PROGRESS CHART =====
+        let progressChart = null;
+        function renderProgressChart() {
+            const ctx = document.getElementById('progressChart');
+            if (!ctx) return;
+
+            // Collect chronological data
+            const allRecords = [];
+            Object.values(allModuleData).forEach(history => {
+                history.forEach(record => {
+                    if (record.score !== undefined) {
+                        allRecords.push({
+                            date: new Date(record.date || new Date()),
+                            score: record.score
+                        });
+                    }
+                });
+            });
+
+            allRecords.sort((a, b) => a.date - b.date);
+
+            // Aggregate by week
+            const weeklyData = {};
+            let weeklyScores = [];
+
+            allRecords.forEach(record => {
+                const weekStart = new Date(record.date);
+                weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+                const weekKey = weekStart.toLocaleDateString('de-DE');
+
+                if (!weeklyData[weekKey]) {
+                    weeklyData[weekKey] = [];
+                }
+                weeklyData[weekKey].push(record.score);
+            });
+
+            const labels = [];
+            const data = [];
+            Object.entries(weeklyData).sort().forEach(([week, scores]) => {
+                labels.push(week);
+                const avg = scores.reduce((a, b) => a + b) / scores.length;
+                data.push(Math.round(avg));
+            });
+
+            if (progressChart) {
+                progressChart.destroy();
+            }
+
+            progressChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Wöchentlicher Durchschnitt (%)',
+                        data: data,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#3b82f6',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: { color: '#e2e8f0' }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            min: 0,
+                            max: 100,
+                            ticks: { color: '#94a3b8' },
+                            grid: { color: 'rgba(51, 65, 85, 0.2)' }
+                        },
+                        x: {
+                            ticks: { color: '#94a3b8' },
+                            grid: { color: 'rgba(51, 65, 85, 0.2)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ===== PRACTICE BUTTON =====
+        function setupEventListeners() {
+            document.getElementById('practiceBtn')?.addEventListener('click', generatePracticeQuestions);
+        }
+
+        function generatePracticeQuestions() {
+            // Get overdue MVs first, then fill with others
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const overdueMVs = Object.entries(allMVData)
+                .filter(([_, mv]) => mv.nextReview && mv.nextReview <= today)
+                .map(([id, _]) => id);
+
+            const otherMVs = Object.entries(allMVData)
+                .filter(([_, mv]) => !mv.nextReview || mv.nextReview > today)
+                .map(([id, _]) => id);
+
+            const selectedMVs = [...overdueMVs, ...otherMVs].slice(0, 10);
+
+            practiceQuestions = [];
+            selectedMVs.forEach(mvId => {
+                const bank = QuestionBank[mvId] || [];
+                if (bank.length > 0) {
+                    const q = bank[Math.floor(Math.random() * bank.length)];
+                    practiceQuestions.push({
+                        mvId: mvId,
+                        mvName: allMVData[mvId]?.name || mvId,
+                        ...q
+                    });
+                }
+            });
+
+            if (practiceQuestions.length === 0) {
+                alert('Keine Fragen verfügbar. Bitte führe zuerst eine Diagnose durch.');
+                return;
+            }
+
+            currentQuestionIndex = 0;
+            showPracticeQuestion(0);
+            document.getElementById('practiceModal').classList.add('active');
+        }
+
+        function showPracticeQuestion(idx) {
+            if (idx >= practiceQuestions.length) {
+                closePracticeModal();
+                alert('🎉 Trainingseinheit abgeschlossen!');
+                return;
+            }
+
+            const q = practiceQuestions[idx];
+            document.getElementById('currentQuestion').textContent = idx + 1;
+
+            let optionsHTML = '';
+            if (q.type === 'input') {
+                optionsHTML = `<input type="text" id="answerInput" placeholder="Antwort eingeben..." style="width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: 8px; background: var(--card2); color: var(--text); font-size: 1rem;">`;
+            }
+
+            document.getElementById('questionContent').innerHTML = `
+                <div class="question-container">
+                    <div class="q-text">${q.q}</div>
+                    <div class="q-options">${optionsHTML}</div>
+                    <div id="feedback" class="q-feedback"></div>
+                    <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                        <button class="btn btn-secondary" onclick="showPracticeQuestion(${idx + 1})" id="nextBtn" style="flex: 1; display: none;">Nächste Frage →</button>
+                        <button class="btn btn-primary" onclick="checkAnswer()" id="checkBtn" style="flex: 1;">Antwort prüfen</button>
+                    </div>
+                </div>
+            `;
+
+            // Focus input
+            setTimeout(() => {
+                const input = document.getElementById('answerInput');
+                if (input) input.focus();
+            }, 100);
+        }
+
+        function checkAnswer() {
+            const q = practiceQuestions[currentQuestionIndex];
+            const input = document.getElementById('answerInput');
+            const feedbackEl = document.getElementById('feedback');
+            const checkBtn = document.getElementById('checkBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            const answer = input?.value?.trim().toLowerCase() || '';
+            const correct = q.correct?.toString().toLowerCase() || '';
+            const isCorrect = answer === correct;
+
+            feedbackEl.classList.add('show');
+            if (isCorrect) {
+                feedbackEl.classList.add('correct');
+                feedbackEl.classList.remove('wrong');
+                feedbackEl.innerHTML = `<strong>✅ Richtig!</strong><br>${q.feedback}`;
+            } else {
+                feedbackEl.classList.add('wrong');
+                feedbackEl.classList.remove('correct');
+                feedbackEl.innerHTML = `<strong>❌ Nicht ganz.</strong><br>Die richtige Antwort ist: <strong>${q.correct}</strong><br>${q.feedback}`;
+            }
+
+            checkBtn.style.display = 'none';
+            nextBtn.style.display = 'block';
+            input.disabled = true;
+        }
+
+        function closePracticeModal() {
+            document.getElementById('practiceModal').classList.remove('active');
+        }
+
+        // Practice info update
+        const dueCount = document.getElementById('dueCount');
+        if (dueCount) {
+            document.getElementById('practiceInfo').textContent = `Du hast ${dueCount.textContent} fällige Fehlvorstellungen. Trainiere jetzt!`;
+        }
+    </script>
+
+<button id="theme-toggle" aria-label="Toggle theme" style="
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 9999;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  cursor: pointer;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: all 150ms ease;
+" onclick="toggleTheme()">
+  ☀️
+</button>
+
+<script>
+function toggleTheme(){
+  const body = document.body;
+  const isDark = body.classList.toggle('dark');
+  localStorage.setItem('zp10_theme', isDark ? 'dark' : 'light');
+}
+// Apply saved theme on load
+(function(){
+  const saved = localStorage.getItem('zp10_theme') || 'light';
+  if(saved === 'dark'){
+    document.body.classList.add('dark');
+  }
+})();
+</script>
+
+</body>
+</html>

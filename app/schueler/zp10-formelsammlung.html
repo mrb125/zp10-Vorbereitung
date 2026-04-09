@@ -1,0 +1,1616 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZP10 Formelsammlung – NRW Mathematik</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="zp10-formelsammlung.css">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <div class="header-title">
+                <div>
+                    <h1>Formelsammlung</h1>
+                    <div class="official-badge">
+                        <span>📋</span>
+                        <span>Offizielle NRW ZP10</span>
+                    </div>
+                </div>
+            </div>
+            <div class="header-controls">
+                <div class="search-box">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                    <input type="text" id="searchInput" placeholder="Formeln durchsuchen...">
+                </div>
+                <button class="theme-toggle" id="themeToggle" title="Design umschalten">
+                    <span id="themeIcon">🌙</span>
+                </button>
+                <a href="../index.html" class="back-to-hub">← Zurück zum Hub</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="nav-title">Abschnitte</div>
+            <nav class="nav-links">
+                <a href="#section-1" data-section="1" class="nav-link active">1. Ebene Figuren</a>
+                <a href="#section-2" data-section="2" class="nav-link">2. Satz des Pythagoras & Trigonometrie</a>
+                <a href="#section-3" data-section="3" class="nav-link">3. Körper</a>
+                <a href="#section-4" data-section="4" class="nav-link">4. Funktionen</a>
+                <a href="#section-5" data-section="5" class="nav-link">5. Stochastik</a>
+                <a href="#section-6" data-section="6" class="nav-link">6. Weitere Formeln</a>
+            </nav>
+        </aside>
+
+        <!-- Content Area -->
+        <div class="content">
+            <!-- Intro Note -->
+            <div class="intro-note">
+                <strong>ℹ️ Offizielle Formelsammlung:</strong> Diese Formelsammlung entspricht der offiziellen <em>Formelsammlung Mathematik – Zentrale Prüfungen 10, Anforderungsniveau MSA</em> des Ministeriums für Schule und Bildung des Landes Nordrhein-Westfalen. Die interaktiven Features unterstützen Ihr Lernen – Sie können Formeln durchsuchen, mit Quiz üben und Ihre Favoriten speichern.
+            </div>
+
+            <!-- Section 1: Ebene Figuren -->
+            <section class="section" id="section-1" data-section="1">
+                <div class="section-header">
+                    <div>
+                        <h2 class="section-title">Ebene Figuren</h2>
+                    </div>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="formula-grid">
+                        <!-- Quadrat -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Quadrat</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">A = a²<br>u = 4a</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">a</span>
+                                    <span class="var-description">Seitenlänge</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">A</span>
+                                    <span class="var-description">Fläche</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">u</span>
+                                    <span class="var-description">Umfang</span>
+                                </div>
+                            </div>
+                            <div class="diagram-container">
+                                <svg viewBox="0 0 100 100" width="100" height="100">
+                                    <rect x="10" y="10" width="80" height="80" fill="none" stroke="#5B6CF0" stroke-width="2"/>
+                                    <line x1="10" y1="50" x2="90" y2="50" stroke="#FF6B8A" stroke-width="1" stroke-dasharray="2,2"/>
+                                    <text x="55" y="45" text-anchor="middle" font-size="12" fill="#5B6CF0">a</text>
+                                </svg>
+                                <div class="diagram-label">Quadrat mit Seitenlänge a</div>
+                            </div>
+                        </div>
+
+                        <!-- Rechteck -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Rechteck</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">A = a·b<br>u = 2a + 2b</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">a, b</span>
+                                    <span class="var-description">Seitenlängen</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">A</span>
+                                    <span class="var-description">Fläche</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">u</span>
+                                    <span class="var-description">Umfang</span>
+                                </div>
+                            </div>
+                            <div class="diagram-container">
+                                <svg viewBox="0 0 120 80" width="120" height="80">
+                                    <rect x="10" y="10" width="100" height="60" fill="none" stroke="#5B6CF0" stroke-width="2"/>
+                                    <line x1="10" y1="40" x2="110" y2="40" stroke="#FF6B8A" stroke-width="1" stroke-dasharray="2,2"/>
+                                    <line x1="60" y1="10" x2="60" y2="70" stroke="#FF6B8A" stroke-width="1" stroke-dasharray="2,2"/>
+                                    <text x="35" y="35" text-anchor="middle" font-size="12" fill="#5B6CF0">a</text>
+                                    <text x="65" y="50" text-anchor="middle" font-size="12" fill="#5B6CF0">b</text>
+                                </svg>
+                                <div class="diagram-label">Rechteck mit Seitenlängen a und b</div>
+                            </div>
+                        </div>
+
+                        <!-- Dreieck -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Dreieck</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">A = (g·h)/2<br>u = a + b + c</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">g</span>
+                                    <span class="var-description">Grundlinie (Basis)</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">h</span>
+                                    <span class="var-description">Höhe (senkrecht zur Grundlinie)</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">a, b, c</span>
+                                    <span class="var-description">Seitenlängen</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">A</span>
+                                    <span class="var-description">Fläche</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">u</span>
+                                    <span class="var-description">Umfang</span>
+                                </div>
+                            </div>
+                            <div class="diagram-container">
+                                <svg viewBox="0 0 100 100" width="100" height="100">
+                                    <polygon points="10,80 50,10 90,80" fill="none" stroke="#5B6CF0" stroke-width="2"/>
+                                    <line x1="50" y1="10" x2="50" y2="80" stroke="#FF6B8A" stroke-width="1.5" stroke-dasharray="2,2"/>
+                                    <text x="55" y="45" font-size="11" fill="#FF6B8A">h</text>
+                                    <text x="50" y="95" text-anchor="middle" font-size="11" fill="#5B6CF0">g</text>
+                                </svg>
+                                <div class="diagram-label">Dreieck mit Grundlinie g und Höhe h</div>
+                            </div>
+                        </div>
+
+                        <!-- Parallelogramm -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Parallelogramm</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">A = g·h<br>u = 2a + 2b</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">g</span>
+                                    <span class="var-description">Grundlinie</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">h</span>
+                                    <span class="var-description">Höhe (senkrecht zur Grundlinie)</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">a, b</span>
+                                    <span class="var-description">Seitenlängen</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Trapez -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Trapez</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">A = ((a+c)/2)·h<br>u = a + b + c + d</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">a, c</span>
+                                    <span class="var-description">Parallele Seiten</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">h</span>
+                                    <span class="var-description">Höhe (Abstand zwischen parallelen Seiten)</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">b, d</span>
+                                    <span class="var-description">Schenkel</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Kreis -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Kreis</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">d = 2r<br>A = π·r²<br>u = 2·π·r = π·d</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">r</span>
+                                    <span class="var-description">Radius</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">d</span>
+                                    <span class="var-description">Durchmesser</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">π</span>
+                                    <span class="var-description">Kreiszahl (≈ 3,14159)</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">A</span>
+                                    <span class="var-description">Fläche</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">u</span>
+                                    <span class="var-description">Umfang</span>
+                                </div>
+                            </div>
+                            <div class="diagram-container">
+                                <svg viewBox="0 0 100 100" width="100" height="100">
+                                    <circle cx="50" cy="50" r="40" fill="none" stroke="#5B6CF0" stroke-width="2"/>
+                                    <line x1="50" y1="50" x2="90" y2="50" stroke="#FF6B8A" stroke-width="1.5"/>
+                                    <text x="72" y="45" font-size="11" fill="#FF6B8A">r</text>
+                                    <circle cx="50" cy="50" r="2" fill="#5B6CF0"/>
+                                </svg>
+                                <div class="diagram-label">Kreis mit Radius r</div>
+                            </div>
+                        </div>
+
+                        <!-- Kreissektor -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Kreissektor</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">A = (α/360°)·π·r²<br>b = (α/360°)·2·π·r</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">α</span>
+                                    <span class="var-description">Zentralwinkel in Grad</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">r</span>
+                                    <span class="var-description">Radius</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">A</span>
+                                    <span class="var-description">Fläche des Sektors</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">b</span>
+                                    <span class="var-description">Bogenlänge</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Kreisring -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Kreisring</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">A = π·(R² - r²)</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">R</span>
+                                    <span class="var-description">Außenradius</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">r</span>
+                                    <span class="var-description">Innenradius</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">A</span>
+                                    <span class="var-description">Fläche des Rings</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 2: Satz des Pythagoras & Trigonometrie -->
+            <section class="section" id="section-2" data-section="2">
+                <div class="section-header">
+                    <div>
+                        <h2 class="section-title">Satz des Pythagoras & Trigonometrie</h2>
+                    </div>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="formula-grid">
+                        <!-- Satz des Pythagoras -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Satz des Pythagoras</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">a² + b² = c²</div>
+                            <div class="formula-description">Gilt im rechtwinkligen Dreieck, wobei c die Hypotenuse (längste Seite) ist.</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">a, b</span>
+                                    <span class="var-description">Katheten (Seiten am rechten Winkel)</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">c</span>
+                                    <span class="var-description">Hypotenuse (Seite gegenüber dem rechten Winkel)</span>
+                                </div>
+                            </div>
+                            <div class="diagram-container">
+                                <svg viewBox="0 0 120 120" width="120" height="120">
+                                    <polygon points="10,100 10,20 80,100" fill="none" stroke="#5B6CF0" stroke-width="2"/>
+                                    <rect x="10" y="90" width="10" height="10" fill="none" stroke="#5B6CF0" stroke-width="1"/>
+                                    <text x="35" y="110" text-anchor="middle" font-size="12" fill="#5B6CF0">a</text>
+                                    <text x="5" y="50" font-size="12" fill="#5B6CF0">b</text>
+                                    <text x="45" y="55" font-size="12" fill="#5B6CF0">c</text>
+                                </svg>
+                                <div class="diagram-label">Rechtwinkliges Dreieck mit Hypotenuse c</div>
+                            </div>
+                        </div>
+
+                        <!-- Trigonometrie Sinus -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Sinus (sin)</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">sin(α) = Gegenkathete / Hypotenuse</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">α</span>
+                                    <span class="var-description">Winkel in Grad oder Bogenmaß</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">sin(α)</span>
+                                    <span class="var-description">Sinuswert des Winkels (zwischen -1 und 1)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Trigonometrie Kosinus -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Kosinus (cos)</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">cos(α) = Ankathete / Hypotenuse</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">α</span>
+                                    <span class="var-description">Winkel in Grad oder Bogenmaß</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">cos(α)</span>
+                                    <span class="var-description">Kosinuswert des Winkels (zwischen -1 und 1)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Trigonometrie Tangens -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Tangens (tan)</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">tan(α) = Gegenkathete / Ankathete</div>
+                            <div class="formula-description">Auch: tan(α) = sin(α) / cos(α)</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">α</span>
+                                    <span class="var-description">Winkel in Grad oder Bogenmaß</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">tan(α)</span>
+                                    <span class="var-description">Tangenswert des Winkels</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Innenwinkelsumme Dreieck -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Innenwinkelsumme Dreieck</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">α + β + γ = 180°</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">α, β, γ</span>
+                                    <span class="var-description">Innenwinkel des Dreiecks</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Innenwinkelsumme Viereck -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Innenwinkelsumme Viereck</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">α + β + γ + δ = 360°</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">α, β, γ, δ</span>
+                                    <span class="var-description">Innenwinkel des Vierecks</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 3: Körper -->
+            <section class="section" id="section-3" data-section="3">
+                <div class="section-header">
+                    <div>
+                        <h2 class="section-title">Körper</h2>
+                    </div>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="formula-grid">
+                        <!-- Quader -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Quader</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">V = a·b·c<br>O = 2(ab + ac + bc)</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">a, b, c</span>
+                                    <span class="var-description">Kantenlängen</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">V</span>
+                                    <span class="var-description">Volumen</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">O</span>
+                                    <span class="var-description">Oberfläche</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Würfel -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Würfel</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">V = a³<br>O = 6a²</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">a</span>
+                                    <span class="var-description">Kantenlänge</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">V</span>
+                                    <span class="var-description">Volumen</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">O</span>
+                                    <span class="var-description">Oberfläche</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Prisma -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Prisma</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">V = G·h<br>O = 2G + M</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">G</span>
+                                    <span class="var-description">Grundfläche</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">h</span>
+                                    <span class="var-description">Höhe des Prismas</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">M</span>
+                                    <span class="var-description">Mantel (Seitenflächen)</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">V</span>
+                                    <span class="var-description">Volumen</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">O</span>
+                                    <span class="var-description">Oberfläche</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Zylinder -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Zylinder</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">V = π·r²·h<br>O = 2π·r² + 2π·r·h<br>M = 2π·r·h</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">r</span>
+                                    <span class="var-description">Radius der Grundfläche</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">h</span>
+                                    <span class="var-description">Höhe des Zylinders</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">V</span>
+                                    <span class="var-description">Volumen</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">O</span>
+                                    <span class="var-description">Oberfläche</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">M</span>
+                                    <span class="var-description">Mantel</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pyramide -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Pyramide</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">V = (1/3)·G·h</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">G</span>
+                                    <span class="var-description">Grundfläche</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">h</span>
+                                    <span class="var-description">Höhe der Pyramide</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">V</span>
+                                    <span class="var-description">Volumen</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Kegel -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Kegel</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">V = (1/3)·π·r²·h<br>M = π·r·s</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">r</span>
+                                    <span class="var-description">Radius der Grundfläche</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">h</span>
+                                    <span class="var-description">Höhe des Kegels</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">s</span>
+                                    <span class="var-description">Seitenlinie / Mantellinie</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">V</span>
+                                    <span class="var-description">Volumen</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">M</span>
+                                    <span class="var-description">Mantel</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Kugel -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Kugel</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">V = (4/3)·π·r³<br>O = 4π·r²</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">r</span>
+                                    <span class="var-description">Radius</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">V</span>
+                                    <span class="var-description">Volumen</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">O</span>
+                                    <span class="var-description">Oberfläche</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Volumeneinheiten -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Volumeneinheiten</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">1 m³ = 1000 dm³<br>1 dm³ = 1000 cm³ = 1 L<br>1 cm³ = 1000 mm³ = 1 mL</div>
+                        </div>
+
+                        <!-- Masse -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Masse</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">m = ρ · V</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">m</span>
+                                    <span class="var-description">Masse</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">ρ</span>
+                                    <span class="var-description">Dichte (z.B. in g/cm³ oder kg/m³)</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">V</span>
+                                    <span class="var-description">Volumen</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 4: Funktionen -->
+            <section class="section" id="section-4" data-section="4">
+                <div class="section-header">
+                    <div>
+                        <h2 class="section-title">Funktionen</h2>
+                    </div>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="formula-grid">
+                        <!-- Lineare Funktion -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Lineare Funktion</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">y = mx + b</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">m</span>
+                                    <span class="var-description">Steigung (Anstieg der Geraden)</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">b</span>
+                                    <span class="var-description">y-Achsenabschnitt (wo die Gerade die y-Achse schneidet)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Steigung -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Steigung berechnen</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">m = (y₂ - y₁)/(x₂ - x₁) = Δy/Δx</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">m</span>
+                                    <span class="var-description">Steigung</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">(x₁|y₁), (x₂|y₂)</span>
+                                    <span class="var-description">Zwei Punkte auf der Geraden</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Nullstelle linear -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Nullstelle (lineare Funktion)</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">0 = mx + b<br>x₀ = -b/m</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">x₀</span>
+                                    <span class="var-description">Nullstelle (x-Wert, wo y = 0)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Parallele Geraden -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Parallele Geraden</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">m₁ = m₂</div>
+                            <div class="formula-description">Zwei Geraden sind parallel, wenn ihre Steigungen gleich sind.</div>
+                        </div>
+
+                        <!-- Quadratische Funktion -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Quadratische Funktion (Normalform)</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">y = ax² + bx + c</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">a</span>
+                                    <span class="var-description">Öffnungskoeffizient (a > 0: nach oben, a < 0: nach unten)</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">b</span>
+                                    <span class="var-description">Linearer Koeffizient</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">c</span>
+                                    <span class="var-description">Konstantes Glied (y-Achsenabschnitt)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Scheitelpunktform -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Quadratische Funktion (Scheitelpunktform)</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">y = a(x - d)² + e</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">S(d|e)</span>
+                                    <span class="var-description">Scheitelpunkt (Scheitel der Parabel)</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">d</span>
+                                    <span class="var-description">x-Koordinate des Scheitels</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">e</span>
+                                    <span class="var-description">y-Koordinate des Scheitels</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- p-q-Formel -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">p-q-Formel (Lösungsformel)</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">Für: x² + px + q = 0<br><br>x₁,₂ = -p/2 ± √((p/2)² - q)</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">D</span>
+                                    <span class="var-description">Diskriminante: D = (p/2)² - q</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">D > 0</span>
+                                    <span class="var-description">Zwei verschiedene Lösungen</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">D = 0</span>
+                                    <span class="var-description">Eine Lösung (Doppellösung)</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">D < 0</span>
+                                    <span class="var-description">Keine reelle Lösung</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Exponentialfunktion -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Exponentialfunktion</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">f(x) = a · bˣ</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">a</span>
+                                    <span class="var-description">Anfangswert (f(0) = a)</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">b</span>
+                                    <span class="var-description">Wachstumsfaktor (b > 1: Wachstum, 0 < b < 1: Zerfall)</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">x</span>
+                                    <span class="var-description">Exponent (Zeit, Anzahl der Schritte, etc.)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Exponentielles Wachstum -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Exponentielles Wachstum</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">N(t) = N₀ · qᵗ<br><br>q = 1 + p/100</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">N₀</span>
+                                    <span class="var-description">Anfangswert (zur Zeit t = 0)</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">N(t)</span>
+                                    <span class="var-description">Wert zur Zeit t</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">q</span>
+                                    <span class="var-description">Wachstumsfaktor</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">p</span>
+                                    <span class="var-description">Prozentualer Wachstum pro Zeitschritt</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">t</span>
+                                    <span class="var-description">Zeit (Anzahl der Zeitschritte)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 5: Stochastik -->
+            <section class="section" id="section-5" data-section="5">
+                <div class="section-header">
+                    <div>
+                        <h2 class="section-title">Stochastik & Wahrscheinlichkeit</h2>
+                    </div>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="formula-grid">
+                        <!-- Absolute Häufigkeit -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Absolute Häufigkeit</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">H(A) = Anzahl des Eintretens</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">H(A)</span>
+                                    <span class="var-description">Absolute Häufigkeit des Ereignisses A</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Relative Häufigkeit -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Relative Häufigkeit</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">h(A) = H(A) / n</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">h(A)</span>
+                                    <span class="var-description">Relative Häufigkeit des Ereignisses A</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">H(A)</span>
+                                    <span class="var-description">Absolute Häufigkeit</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">n</span>
+                                    <span class="var-description">Gesamtzahl der Versuche</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Laplace-Wahrscheinlichkeit -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Laplace-Wahrscheinlichkeit</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">P(A) = |A| / |Ω|<br><br>= Anzahl günstiger / Anzahl mögliche</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">P(A)</span>
+                                    <span class="var-description">Wahrscheinlichkeit von Ereignis A (0 ≤ P ≤ 1)</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">|A|</span>
+                                    <span class="var-description">Anzahl günstiger Ergebnisse</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">|Ω|</span>
+                                    <span class="var-description">Anzahl möglicher Ergebnisse</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Gegenereignis -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Gegenereignis (Komplementärereignis)</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">P(Ā) = 1 - P(A)</div>
+                            <div class="formula-description">Die Wahrscheinlichkeit, dass A nicht eintritt.</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">Ā</span>
+                                    <span class="var-description">Gegenereignis (Komplementärereignis) von A</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Produktregel -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Produktregel (UND)</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">P(A∩B) = P(A) · P(B|A)</div>
+                            <div class="formula-description">Wahrscheinlichkeit, dass sowohl A als auch B eintritt. Pfade werden multipliziert.</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">A∩B</span>
+                                    <span class="var-description">Beide Ereignisse treten ein</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">P(B|A)</span>
+                                    <span class="var-description">Wahrscheinlichkeit von B, gegeben A ist eingetreten</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Summenregel -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Summenregel (ODER)</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">P(A∪B) = P(Pfad₁) + P(Pfad₂) + ...</div>
+                            <div class="formula-description">Wahrscheinlichkeit, dass A oder B (oder beide) eintritt. Pfade werden addiert.</div>
+                            <div class="variable">
+                                <div class="variable">
+                                    <span class="var-name">A∪B</span>
+                                    <span class="var-description">Mindestens eines der Ereignisse tritt ein</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bedingte Wahrscheinlichkeit -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Bedingte Wahrscheinlichkeit</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">P(A|B) = P(A∩B) / P(B)</div>
+                            <div class="formula-description">Wahrscheinlichkeit von A, gegeben dass B bereits eingetreten ist.</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">P(A|B)</span>
+                                    <span class="var-description">Bedingte Wahrscheinlichkeit von A unter der Bedingung B</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Erwartungswert -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Erwartungswert</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">E(X) = Σ xᵢ · P(xᵢ)</div>
+                            <div class="formula-description">Durchschnittswert einer Zufallsvariablen.</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">E(X)</span>
+                                    <span class="var-description">Erwartungswert der Zufallsvariablen X</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">xᵢ</span>
+                                    <span class="var-description">Mögliche Werte von X</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">P(xᵢ)</span>
+                                    <span class="var-description">Wahrscheinlichkeit von xᵢ</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mittelwert -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Mittelwert (Arithmetisches Mittel)</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">x̄ = (x₁ + x₂ + ... + xₙ) / n</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">x̄</span>
+                                    <span class="var-description">Mittelwert (Durchschnitt)</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">x₁, x₂, ..., xₙ</span>
+                                    <span class="var-description">Datenwerte</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">n</span>
+                                    <span class="var-description">Anzahl der Datenwerte</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Median -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Median (Zentralwert)</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">Median = Mittlerer Wert der geordneten Datenreihe</div>
+                            <div class="formula-description">Bei gerader Anzahl: Durchschnitt der beiden mittleren Werte.</div>
+                        </div>
+
+                        <!-- Spannweite -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Spannweite (Range)</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">R = x_max - x_min</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">R</span>
+                                    <span class="var-description">Spannweite (Differenz zwischen größtem und kleinstem Wert)</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">x_max</span>
+                                    <span class="var-description">Größter Datenwert</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">x_min</span>
+                                    <span class="var-description">Kleinster Datenwert</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 6: Weitere Formeln -->
+            <section class="section" id="section-6" data-section="6">
+                <div class="section-header">
+                    <div>
+                        <h2 class="section-title">Weitere Formeln</h2>
+                    </div>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="formula-grid">
+                        <!-- Binomische Formeln -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Binomische Formeln</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">(a + b)² = a² + 2ab + b²<br><br>(a - b)² = a² - 2ab + b²<br><br>(a + b)(a - b) = a² - b²</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">a, b</span>
+                                    <span class="var-description">Beliebige Zahlen oder Terme</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- abc-Formel -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">abc-Formel (Mitternachtsformel)</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">Für: ax² + bx + c = 0<br><br>x₁,₂ = (-b ± √(b² - 4ac)) / 2a</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">D</span>
+                                    <span class="var-description">Diskriminante: D = b² - 4ac</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">D > 0</span>
+                                    <span class="var-description">Zwei verschiedene Lösungen</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">D = 0</span>
+                                    <span class="var-description">Eine Lösung (Doppellösung)</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">D < 0</span>
+                                    <span class="var-description">Keine reelle Lösung</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Potenzgesetze -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Potenzgesetze</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">aⁿ · aᵐ = aⁿ⁺ᵐ<br><br>aⁿ / aᵐ = aⁿ⁻ᵐ<br><br>(aⁿ)ᵐ = aⁿ·ᵐ<br><br>a⁰ = 1<br><br>a⁻ⁿ = 1/aⁿ<br><br>a^(1/n) = ⁿ√a</div>
+                        </div>
+
+                        <!-- Wurzelgesetze -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Wurzelgesetze</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">√(a·b) = √a · √b<br><br>√(a/b) = √a / √b</div>
+                        </div>
+
+                        <!-- Prozentrechnung -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Prozentrechnung</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">W = G · p/100<br><br>G = W · 100/p<br><br>p = W/G · 100</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">W</span>
+                                    <span class="var-description">Prozentwert</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">G</span>
+                                    <span class="var-description">Grundwert</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">p</span>
+                                    <span class="var-description">Prozentsatz (in %)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Zinsrechnung einfach -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Zinsrechnung (einfach)</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">Z = K · p/100 · t</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">Z</span>
+                                    <span class="var-description">Zinsen</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">K</span>
+                                    <span class="var-description">Kapital</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">p</span>
+                                    <span class="var-description">Zinssatz (in %)</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">t</span>
+                                    <span class="var-description">Zeit (in Jahren)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Zinseszins -->
+                        <div class="formula-item">
+                            <div class="formula-header">
+                                <span class="formula-name">Zinseszins</span>
+                                <div class="formula-actions">
+                                    <button class="formula-btn bookmark-btn" title="Speichern">⭐</button>
+                                    <button class="formula-btn quiz-btn-trigger" title="Quiz">❓</button>
+                                </div>
+                            </div>
+                            <div class="formula-box">K(n) = K₀ · (1 + p/100)ⁿ</div>
+                            <div class="formula-variables">
+                                <div class="variable">
+                                    <span class="var-name">K(n)</span>
+                                    <span class="var-description">Kapital nach n Jahren</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">K₀</span>
+                                    <span class="var-description">Anfangskapital</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">p</span>
+                                    <span class="var-description">Zinssatz (in %)</span>
+                                </div>
+                                <div class="variable">
+                                    <span class="var-name">n</span>
+                                    <span class="var-description">Anzahl der Jahre</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Modal für Quiz -->
+    <div id="quizModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>Quiz: <span id="quizTitle"></span></span>
+                <button class="modal-close" onclick="closeQuizModal()">✕</button>
+            </div>
+            <div class="modal-body" id="quizBody"></div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeQuizModal()">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // Theme Toggle
+        // ==========================================
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const html = document.documentElement;
+
+        const isDarkMode = localStorage.getItem('darkMode') === 'true';
+        if (isDarkMode) {
+            document.body.classList.add('dark');
+            themeIcon.textContent = '☀️';
+        }
+
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark');
+            const isDark = document.body.classList.contains('dark');
+            themeIcon.textContent = isDark ? '☀️' : '🌙';
+            localStorage.setItem('darkMode', isDark);
+        });
+
+        // ==========================================
+        // Section Collapsing
+        // ==========================================
+        const sections = document.querySelectorAll('.section');
+        sections.forEach(section => {
+            const header = section.querySelector('.section-header');
+            const sectionNum = section.dataset.section;
+            const isCollapsed = localStorage.getItem(`section-${sectionNum}-collapsed`) === 'true';
+
+            if (isCollapsed) {
+                section.classList.add('collapsed');
+            }
+
+            header.addEventListener('click', () => {
+                section.classList.toggle('collapsed');
+                const collapsed = section.classList.contains('collapsed');
+                localStorage.setItem(`section-${sectionNum}-collapsed`, collapsed);
+            });
+        });
+
+        // ==========================================
+        // Sidebar Navigation
+        // ==========================================
+        const navLinks = document.querySelectorAll('.nav-link');
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                navLinks.forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+
+                const sectionNum = link.dataset.section;
+                const section = document.querySelector(`#section-${sectionNum}`);
+                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                // Expand section if collapsed
+                if (section.classList.contains('collapsed')) {
+                    section.classList.remove('collapsed');
+                    localStorage.setItem(`section-${sectionNum}-collapsed`, false);
+                }
+            });
+        });
+
+        // Update active nav link on scroll
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (scrollY >= sectionTop - 100) {
+                    current = section.dataset.section;
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.dataset.section === current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // ==========================================
+        // Bookmarking System
+        // ==========================================
+        const bookmarkBtns = document.querySelectorAll('.bookmark-btn');
+        const bookmarks = JSON.parse(localStorage.getItem('bookmarks')) || [];
+
+        function updateBookmarkDisplay() {
+            bookmarkBtns.forEach(btn => {
+                const formulaName = btn.closest('.formula-item').querySelector('.formula-name').textContent;
+                if (bookmarks.includes(formulaName)) {
+                    btn.classList.add('bookmarked');
+                } else {
+                    btn.classList.remove('bookmarked');
+                }
+            });
+        }
+
+        updateBookmarkDisplay();
+
+        bookmarkBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const formulaName = btn.closest('.formula-item').querySelector('.formula-name').textContent;
+
+                if (bookmarks.includes(formulaName)) {
+                    bookmarks.splice(bookmarks.indexOf(formulaName), 1);
+                } else {
+                    bookmarks.push(formulaName);
+                }
+
+                localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+                updateBookmarkDisplay();
+            });
+        });
+
+        // ==========================================
+        // Search/Filter System
+        // ==========================================
+        const searchInput = document.getElementById('searchInput');
+        const formulaItems = document.querySelectorAll('.formula-item');
+
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+
+            formulaItems.forEach(item => {
+                const formulaName = item.querySelector('.formula-name').textContent.toLowerCase();
+                const formulaBox = item.querySelector('.formula-box').textContent.toLowerCase();
+                const formulaDesc = item.querySelector('.formula-description')?.textContent.toLowerCase() || '';
+
+                const matches = formulaName.includes(query) ||
+                               formulaBox.includes(query) ||
+                               formulaDesc.includes(query);
+
+                item.style.display = matches ? 'block' : 'none';
+            });
+
+            // Show/hide sections based on visible items
+            sections.forEach(section => {
+                const visibleItems = Array.from(section.querySelectorAll('.formula-item'))
+                    .filter(item => item.style.display !== 'none');
+                section.style.display = visibleItems.length > 0 ? 'block' : 'none';
+            });
+        });
+
+        // ==========================================
+        // Quiz Modal System
+        // ==========================================
+        const quizData = {
+            'Quadrat': 'Ein Quadrat hat eine Seitenlänge von 5 cm. Wie groß ist die Fläche?',
+            'Rechteck': 'Ein Rechteck hat die Seitenlängen a = 6 m und b = 4 m. Wie groß ist der Umfang?',
+            'Dreieck': 'Ein Dreieck hat eine Grundlinie von 8 cm und eine Höhe von 5 cm. Berechne die Fläche.',
+            'Kreis': 'Ein Kreis hat einen Radius von 3 cm. Wie groß ist die Fläche?',
+            'Satz des Pythagoras': 'In einem rechtwinkligen Dreieck sind a = 3 und b = 4. Wie lang ist die Hypotenuse c?',
+            'Lineare Funktion': 'Die Gerade y = 2x + 3 schneidet die y-Achse bei welchem Punkt?',
+            'Quadratische Funktion (Normalform)': 'Bestimme die Nullstellen von y = x² - 4.',
+            'Mittelwert (Arithmetisches Mittel)': 'Berechne den Mittelwert der Werte: 2, 4, 6, 8.',
+            'Prozentrechnung': 'Wie viel sind 20% von 50 Euro?',
+            'Zinsrechnung (einfach)': 'Ein Kapital von 1000 Euro wird mit 2% pro Jahr verzinst. Wie viel Zinsen entstehen nach 1 Jahr?'
+        };
+
+        const quizBtnTriggers = document.querySelectorAll('.quiz-btn-trigger');
+        const quizModal = document.getElementById('quizModal');
+        const quizTitle = document.getElementById('quizTitle');
+        const quizBody = document.getElementById('quizBody');
+
+        quizBtnTriggers.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const formulaName = btn.closest('.formula-item').querySelector('.formula-name').textContent;
+                const question = quizData[formulaName] || 'Diese Formel hat noch keine Quiz-Frage.';
+
+                quizTitle.textContent = formulaName;
+                quizBody.innerHTML = `<p><strong>Aufgabe:</strong> ${question}</p><p style="margin-top: 1.5rem; color: var(--text-secondary); font-style: italic;">Löse diese Aufgabe auf Papier und überprüfe dein Ergebnis!</p>`;
+
+                quizModal.classList.add('show');
+            });
+        });
+
+        function closeQuizModal() {
+            quizModal.classList.remove('show');
+        }
+
+        quizModal.addEventListener('click', (e) => {
+            if (e.target === quizModal) {
+                closeQuizModal();
+            }
+        });
+
+        // ==========================================
+        // Keyboard shortcuts
+        // ==========================================
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeQuizModal();
+            }
+            if (e.ctrlKey && e.key === 'f') {
+                e.preventDefault();
+                searchInput.focus();
+            }
+        });
+    </script>
+</body>
+</html>
