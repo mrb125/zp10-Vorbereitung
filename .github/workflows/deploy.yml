@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'api/**'
+      - 'app/**'
       - '.github/workflows/deploy.yml'
   workflow_dispatch:
 
@@ -26,7 +27,7 @@ jobs:
           date_default_timezone_set('Europe/Berlin');
           EOF
 
-      - name: FTP Deploy
+      - name: FTP Deploy API
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -36,4 +37,16 @@ jobs:
           port: 21
           local-dir: api/
           server-dir: /html/api/
+          dangerous-clean-slate: false
+
+      - name: FTP Deploy App
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          local-dir: app/
+          server-dir: /html/app/
           dangerous-clean-slate: false
