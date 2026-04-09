@@ -100,6 +100,7 @@
             <thead>
               <tr>
                 <th onclick="sortTable(0)">Name 👤</th>
+                <th>Status</th>
                 <th onclick="sortTable(1)">Ø Score</th>
                 <th onclick="sortTable(2)">Note</th>
                 <th onclick="sortTable(3)">Module</th>
@@ -496,7 +497,7 @@
       const s = loadData();
       const tb = document.getElementById('classTableBody');
       if (s.length === 0) {
-        tb.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-secondary);">Keine Daten.</td></tr>';
+        tb.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-secondary);">Keine Daten.</td></tr>';
         updateStats();
         return;
       }
@@ -508,7 +509,16 @@
         const gbc = ag <= 2 ? 'score-green' : ag <= 3 ? 'score-yellow' : 'score-red';
         const la = st.lastActivity ? new Date(st.lastActivity).toLocaleDateString('de-DE') : '—';
         const mc = (st.fehlvorstellungen || []).length;
-        return `<tr><td><span class="student-name" onclick="openProfile('${st.name}')">${st.name}</span></td><td><span class="score-badge ${abc}">${as}%</span></td><td><span class="score-badge ${gbc}">Note ${ag}</span></td><td>${Object.keys(st.modules).length}</td><td><strong>${st.totalXP || 0}</strong></td><td>${mc > 0 ? `<span class="badge badge--danger">${mc}</span>` : '—'}</td><td style="font-size: 0.8125rem; color: var(--text-secondary);">${la}</td></tr>`;
+        const loginTime = st.lastLogin ? new Date(st.lastLogin).toLocaleString('de-DE', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : null;
+        let statusBadge;
+        if (st.status === 'active' || ms.length > 0) {
+          statusBadge = '<span style="color:#10b981;font-size:1rem;" title="Aktiv">🟢</span>';
+        } else if (st.status === 'logged_in' || loginTime) {
+          statusBadge = `<span style="color:#f59e0b;font-size:0.8rem;white-space:nowrap;" title="Eingeloggt, noch nichts bearbeitet">🟡 ${loginTime || ''}</span>`;
+        } else {
+          statusBadge = '<span style="color:#94a3b8;font-size:1rem;" title="Noch nie eingeloggt">⚪</span>';
+        }
+        return `<tr><td><span class="student-name" onclick="openProfile('${st.name}')">${st.name}</span></td><td>${statusBadge}</td><td><span class="score-badge ${abc}">${as}%</span></td><td><span class="score-badge ${gbc}">Note ${ag}</span></td><td>${Object.keys(st.modules).length}</td><td><strong>${st.totalXP || 0}</strong></td><td>${mc > 0 ? `<span class="badge badge--danger">${mc}</span>` : '—'}</td><td style="font-size: 0.8125rem; color: var(--text-secondary);">${la}</td></tr>`;
       }).join('');
       updateStats();
     }
@@ -958,6 +968,8 @@
               }
             });
             existing.totalXP = Math.max(existing.totalXP || 0, serverSt.totalXP || 0);
+            if (serverSt.lastLogin) existing.lastLogin = serverSt.lastLogin;
+            if (serverSt.status) existing.status = serverSt.status;
           } else {
             local.push(serverSt);
           }

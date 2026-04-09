@@ -37,7 +37,7 @@ $db->prepare("
     ':max_score'    => (int)($body['maxScore']    ?? 0),
     ':percentage'   => (int)($body['percentage']  ?? 0),
     ':xp'           => (int)($body['xp']          ?? 0),
-    ':mode'         => in_array($body['mode'] ?? '', ['diagnose','exam']) ? $body['mode'] : 'diagnose',
+    ':mode'         => in_array($body['mode'] ?? '', ['diagnose','exam','login','escape_partial']) ? $body['mode'] : 'diagnose',
     ':confidence'   => json_encode($body['confidence'] ?? null),
 ]);
 

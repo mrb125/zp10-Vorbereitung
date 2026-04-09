@@ -3,9 +3,6 @@
  * ZP10 — Ergebnisse abrufen (für Lehrer-Dashboard)
  * GET /api/results.php?key=<dein key>
  * Optional: ?student=SCHÜLERCODE  oder  ?module=MODULE_ID
- *
- * Gibt alle Ergebnisse als JSON zurück, im Format das
- * zp10-lehrer-lokal.html erwartet.
  */
 require_once __DIR__ . '/db.php';
 setCORSHeaders();
@@ -33,22 +30,38 @@ $stmt = $db->prepare($sql);
 $stmt->execute($params);
 $rows = $stmt->fetchAll();
 
-// Gruppiert nach Schüler — passt direkt ins Lehrer-Dashboard
+// Gruppiert nach Schüler
 $students = [];
 foreach ($rows as $row) {
     $code = $row['student_code'];
     if (!isset($students[$code])) {
         $students[$code] = [
-            'name'           => $code,
-            'code'           => $code,
-            'modules'        => [],
+            'name'              => $code,
+            'code'              => $code,
+            'modules'           => [],
             'fehlvorstellungen' => [],
-            'totalXP'        => 0,
-            'lastActivity'   => $row['created_at'],
+            'totalXP'           => 0,
+            'lastActivity'      => $row['created_at'],
+            'lastLogin'         => null,
+            'status'            => 'never_logged_in',
         ];
     }
     $st = &$students[$code];
-    $mid = $row['module_id'];
+    $mid  = $row['module_id'];
+    $mode = $row['mode'];
+
+    // Login-Einträge separat tracken, nicht als Modul zählen
+    if ($mode === 'login' || $mid === 'LOGIN') {
+        if (!$st['lastLogin'] || $row['created_at'] > $st['lastLogin']) {
+            $st['lastLogin'] = $row['created_at'];
+        }
+        if ($st['status'] === 'never_logged_in') {
+            $st['status'] = 'logged_in';
+        }
+        continue; // nicht in modules aufnehmen
+    }
+
+    $st['status'] = 'active';
 
     // Neuestes Ergebnis je Modul behalten
     if (!isset($st['modules'][$mid]) || $row['created_at'] > $st['modules'][$mid]['lastAttempt']) {
@@ -62,10 +75,29 @@ foreach ($rows as $row) {
 
     $st['totalXP']      = max($st['totalXP'], array_sum(array_column($st['modules'], 'xp')));
     $st['lastActivity'] = max($st['lastActivity'], $row['created_at']);
+}
 
-    // Konfidenz-Daten für Deep-MV-Erkennung auswerten
-    $conf = json_decode($row['confidence'] ?? 'null', true);
-    // (Erweiterungspunkt: confidence-Daten könnten hier zu fehlvorstellungen gemappt werden)
+// Schüler aus student_codes einbeziehen die noch nie eingeloggt waren
+try {
+    $codeRows = $db->query("SELECT code, student_name, created_at FROM student_codes")->fetchAll();
+    foreach ($codeRows as $cr) {
+        $code = $cr['code'];
+        if (!isset($students[$code])) {
+            $students[$code] = [
+                'name'              => $cr['student_name'] ?: $code,
+                'code'              => $code,
+                'modules'           => [],
+                'fehlvorstellungen' => [],
+                'totalXP'           => 0,
+                'lastActivity'      => null,
+                'lastLogin'         => null,
+                'status'            => 'never_logged_in',
+                'codeCreatedAt'     => $cr['created_at'],
+            ];
+        }
+    }
+} catch (Exception $e) {
+    // student_codes Tabelle existiert noch nicht — kein Problem
 }
 
 jsonOut(array_values($students));

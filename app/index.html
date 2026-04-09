@@ -544,6 +544,12 @@
           if (nameEl) nameEl.textContent = d.name || code;
           document.getElementById('onboardingModal').style.display = 'none';
           errEl.textContent = '';
+          // Login-Event ans Backend senden
+          if (typeof ZP10Storage !== 'undefined') {
+            ZP10Storage.saveModuleResult('LOGIN', {
+              studentCode: code, score: 0, maxScore: 0, percentage: 0, xp: 0, mode: 'login'
+            });
+          }
         } else {
           errEl.textContent = '❌ Ungültiger Code. Frag deine Lehrperson.';
         }
