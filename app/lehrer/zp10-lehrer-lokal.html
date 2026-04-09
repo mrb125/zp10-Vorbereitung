@@ -32,6 +32,7 @@
       <button class="tab-btn" onclick="switchTab('heatmap')">Fehlvorstellungen</button>
       <button class="tab-btn" onclick="switchTab('recommendations')">Förderempfehlungen</button>
       <button class="tab-btn" onclick="switchTab('import')">Daten importieren</button>
+      <button class="tab-btn" onclick="switchTab('codes')">🔑 Schüler-Codes</button>
       <button class="tab-btn" onclick="switchTab('reasoning')" style="background:linear-gradient(135deg,#FF6B8A,#8B5CF6);color:white;">✍️ Begründungen bewerten</button>
     </div>
 
@@ -193,6 +194,94 @@
         <div style="margin-top: 1.5rem;">
           <button class="btn btn--danger btn--sm" onclick="clearData()">🗑️ Alle Daten löschen</button>
         </div>
+      </div>
+    </div>
+
+    <!-- CODES TAB -->
+    <div id="codes" class="tab-content">
+      <div class="card">
+        <h2>🔑 Schüler-Codes verwalten</h2>
+        <p style="color:var(--text-secondary);margin-bottom:1.5rem;">
+          Schüler müssen beim ersten Start einen gültigen Code eingeben. Nur Codes aus dieser Liste werden akzeptiert.
+        </p>
+
+        <!-- Einzeln hinzufügen -->
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:1.5rem;">
+          <div style="flex:1;min-width:120px;">
+            <label style="display:block;font-weight:600;font-size:0.85rem;margin-bottom:4px;">Code</label>
+            <input id="newCodeInput" type="text" placeholder="z.B. MUELLER-M"
+              style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:0.95rem;background:var(--bg);text-transform:uppercase;"
+              oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9_\-]/g,'')">
+          </div>
+          <div style="flex:2;min-width:160px;">
+            <label style="display:block;font-weight:600;font-size:0.85rem;margin-bottom:4px;">Name (optional)</label>
+            <input id="newNameInput" type="text" placeholder="z.B. Max Müller"
+              style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:0.95rem;background:var(--bg);">
+          </div>
+          <button onclick="addCode()" style="padding:9px 20px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;white-space:nowrap;">
+            ➕ Hinzufügen
+          </button>
+        </div>
+
+        <!-- Bulk-Import & Generieren -->
+        <details open style="margin-bottom:1.5rem;">
+          <summary style="cursor:pointer;font-weight:600;margin-bottom:12px;">📋 Viele Codes auf einmal</summary>
+
+          <!-- Auto-generieren -->
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px;">
+            <p style="font-weight:600;font-size:0.88rem;margin-bottom:8px;">🎲 Codes automatisch generieren</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
+              <div>
+                <label style="font-size:0.8rem;color:var(--text-secondary);">Anzahl</label>
+                <input id="genCount" type="number" value="30" min="1" max="200"
+                  style="display:block;width:80px;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:0.95rem;background:var(--surface);">
+              </div>
+              <div>
+                <label style="font-size:0.8rem;color:var(--text-secondary);">Präfix (optional)</label>
+                <input id="genPrefix" type="text" placeholder="z.B. 10A-"
+                  style="display:block;width:120px;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:0.95rem;background:var(--surface);">
+              </div>
+              <div>
+                <label style="font-size:0.8rem;color:var(--text-secondary);">Format</label>
+                <select id="genFormat" style="display:block;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:0.95rem;background:var(--surface);">
+                  <option value="num">Nummern (01, 02…)</option>
+                  <option value="alpha">Buchstaben (AA, AB…)</option>
+                  <option value="random">Zufallscode</option>
+                </select>
+              </div>
+              <button onclick="generateCodes()" style="padding:7px 16px;background:var(--primary);color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;">
+                ✨ Generieren → Liste
+              </button>
+            </div>
+          </div>
+
+          <!-- Manuell einfügen -->
+          <p style="font-size:0.85rem;color:var(--text-secondary);margin:0 0 6px;">
+            Oder manuell: eine Zeile pro Schüler: <code>CODE Name</code> oder nur <code>CODE</code>
+          </p>
+          <textarea id="bulkInput" rows="8"
+            placeholder="MUELLER-M Max Müller&#10;SCHMIDT-L Laura Schmidt&#10;WEBER-J Jonas Weber"
+            style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:0.9rem;background:var(--bg);font-family:monospace;box-sizing:border-box;"></textarea>
+          <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+            <button onclick="bulkImport()" style="padding:9px 20px;background:var(--success);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;">
+              ⬆️ Alle auf Server speichern
+            </button>
+            <button onclick="copyBulk()" style="padding:9px 16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:0.9rem;">
+              📋 Liste kopieren
+            </button>
+          </div>
+        </details>
+
+        <div id="codesStatus" style="margin-bottom:1rem;font-size:0.88rem;"></div>
+
+        <!-- Code-Liste -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
+          <h4 style="margin:0;" id="codesCount">Codes werden geladen…</h4>
+          <button onclick="loadCodes()" style="padding:6px 14px;background:var(--surface);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:0.85rem;">
+            🔄 Aktualisieren
+          </button>
+        </div>
+        <div id="codesTable"></div>
       </div>
     </div>
   </div>
@@ -963,6 +1052,150 @@
       renderAllTables();
       document.addEventListener('click', e => { if (e.target.classList.contains('student-name')) openProfile(e.target.textContent); });
     });
+
+    // ═══════════════════════════════════════════════════════════
+    // SCHÜLER-CODES
+    // ═══════════════════════════════════════════════════════════
+    function getCodesApiUrl() {
+      const base = (localStorage.getItem('zp10_server_url') || '').replace(/\/$/, '');
+      if (!base) return null;
+      return base.replace(/\/api$/, '') + '/api/codes.php';
+    }
+    function getApiKey() { return localStorage.getItem('zp10_server_key') || ''; }
+
+    function codesStatus(msg, ok = true) {
+      const el = document.getElementById('codesStatus');
+      el.innerHTML = `<span style="color:${ok ? 'var(--success)' : 'var(--danger)'}">${msg}</span>`;
+    }
+
+    async function loadCodes() {
+      const url = getCodesApiUrl();
+      if (!url) { codesStatus('⚠️ Erst Server-Sync konfigurieren (Button oben rechts)', false); return; }
+      try {
+        const r = await fetch(url, { headers: { 'X-API-Key': getApiKey() } });
+        const data = await r.json();
+        if (!r.ok) { codesStatus('Fehler: ' + (data.error || r.status), false); return; }
+        renderCodesTable(data);
+        document.getElementById('codesCount').textContent = `${data.length} Code${data.length !== 1 ? 's' : ''} gespeichert`;
+      } catch(e) { codesStatus('Verbindungsfehler: ' + e.message, false); }
+    }
+
+    function renderCodesTable(codes) {
+      const el = document.getElementById('codesTable');
+      if (!codes.length) {
+        el.innerHTML = '<p style="color:var(--text-secondary);">Noch keine Codes. Füge welche hinzu.</p>';
+        return;
+      }
+      el.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:0.9rem;">
+        <thead><tr style="border-bottom:2px solid var(--border);">
+          <th style="text-align:left;padding:8px 10px;">Code</th>
+          <th style="text-align:left;padding:8px 10px;">Name</th>
+          <th style="text-align:left;padding:8px 10px;color:var(--text-secondary);">Hinzugefügt</th>
+          <th style="padding:8px 10px;"></th>
+        </tr></thead>
+        <tbody>${codes.map(c => `
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:8px 10px;font-family:monospace;font-weight:700;">${c.code}</td>
+            <td style="padding:8px 10px;">${c.student_name || '—'}</td>
+            <td style="padding:8px 10px;color:var(--text-secondary);font-size:0.82rem;">${c.added || ''}</td>
+            <td style="padding:8px 10px;text-align:right;">
+              <button onclick="deleteCode('${c.code}')"
+                style="padding:4px 10px;background:var(--danger);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:0.8rem;">
+                🗑️
+              </button>
+            </td>
+          </tr>`).join('')}
+        </tbody></table>`;
+    }
+
+    async function addCode() {
+      const code = document.getElementById('newCodeInput').value.trim();
+      const name = document.getElementById('newNameInput').value.trim();
+      if (!code) { codesStatus('Code darf nicht leer sein', false); return; }
+      const url = getCodesApiUrl();
+      if (!url) { codesStatus('Server nicht konfiguriert', false); return; }
+      const r = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-API-Key': getApiKey() },
+        body: JSON.stringify({ action: 'add', code, name })
+      });
+      const d = await r.json();
+      if (d.ok) {
+        document.getElementById('newCodeInput').value = '';
+        document.getElementById('newNameInput').value = '';
+        codesStatus(`✅ Code "${d.code}" gespeichert`);
+        loadCodes();
+      } else { codesStatus('Fehler: ' + (d.error || '?'), false); }
+    }
+
+    async function deleteCode(code) {
+      if (!confirm(`Code "${code}" wirklich löschen?`)) return;
+      const url = getCodesApiUrl();
+      const r = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-API-Key': getApiKey() },
+        body: JSON.stringify({ action: 'delete', code })
+      });
+      const d = await r.json();
+      if (d.ok) { codesStatus(`🗑️ Code "${code}" gelöscht`); loadCodes(); }
+      else { codesStatus('Fehler: ' + (d.error || '?'), false); }
+    }
+
+    async function bulkImport() {
+      const lines = document.getElementById('bulkInput').value.trim().split('\n').filter(l => l.trim());
+      if (!lines.length) { codesStatus('Keine Codes in der Liste', false); return; }
+      const codes = lines.map(l => {
+        const parts = l.trim().split(/\s+/);
+        const code = parts[0].toUpperCase().replace(/[^A-Z0-9_\-]/g, '');
+        const name = parts.slice(1).join(' ');
+        return { code, name };
+      }).filter(c => c.code);
+      const url = getCodesApiUrl();
+      if (!url) { codesStatus('Server nicht konfiguriert', false); return; }
+      const r = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-API-Key': getApiKey() },
+        body: JSON.stringify({ action: 'bulk', codes })
+      });
+      const d = await r.json();
+      if (d.ok) { codesStatus(`✅ ${d.added} Codes gespeichert`); loadCodes(); }
+      else { codesStatus('Fehler: ' + (d.error || '?'), false); }
+    }
+
+    function generateCodes() {
+      const count  = Math.min(200, Math.max(1, parseInt(document.getElementById('genCount').value) || 30));
+      const prefix = document.getElementById('genPrefix').value.trim().toUpperCase().replace(/[^A-Z0-9_\-]/g, '');
+      const format = document.getElementById('genFormat').value;
+      const lines = [];
+      for (let i = 0; i < count; i++) {
+        let suffix;
+        if (format === 'num') {
+          suffix = String(i + 1).padStart(2, '0');
+        } else if (format === 'alpha') {
+          const a = String.fromCharCode(65 + Math.floor(i / 26));
+          const b = String.fromCharCode(65 + (i % 26));
+          suffix = a + b;
+        } else {
+          suffix = Math.random().toString(36).substring(2, 7).toUpperCase();
+        }
+        lines.push(prefix + suffix);
+      }
+      document.getElementById('bulkInput').value = lines.join('\n');
+      codesStatus(`✨ ${count} Codes generiert — jetzt "Alle auf Server speichern" klicken`);
+    }
+
+    function copyBulk() {
+      const text = document.getElementById('bulkInput').value;
+      if (!text) return;
+      navigator.clipboard.writeText(text).then(() => codesStatus('📋 Liste in Zwischenablage kopiert'));
+    }
+
+    // Codes laden wenn Tab geöffnet wird
+    const _origSwitchTab = switchTab;
+    function switchTab(tn) {
+      _origSwitchTab(tn);
+      if (tn === 'codes') loadCodes();
+    }
   </script>
 </body>
 </html>

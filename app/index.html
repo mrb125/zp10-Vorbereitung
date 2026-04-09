@@ -495,6 +495,62 @@
     })();
     </script>
 
+    <!-- Onboarding: Code-Abfrage beim ersten Start -->
+    <div id="onboardingModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.75);z-index:9998;align-items:center;justify-content:center;">
+      <div style="background:var(--surface,#1e1e2e);border-radius:16px;padding:2rem;max-width:420px;width:90%;box-shadow:0 8px 40px rgba(0,0,0,0.5);">
+        <h2 style="margin:0 0 0.5rem;font-size:1.4rem;">👋 Willkommen!</h2>
+        <p style="color:var(--text-secondary,#888);margin:0 0 1.5rem;font-size:0.95rem;">
+          Gib deinen Schüler-Code ein, den du von deiner Lehrperson bekommen hast.
+        </p>
+        <input id="codeInputField" type="text" placeholder="Dein Code, z.B. 10A-07"
+          style="width:100%;padding:12px 14px;border:2px solid var(--border,#333);border-radius:10px;font-size:1.1rem;background:var(--bg,#13131f);color:inherit;text-transform:uppercase;box-sizing:border-box;letter-spacing:0.05em;outline:none;"
+          oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9_\-]/g,'')"
+          onkeydown="if(event.key==='Enter')submitCode()">
+        <div id="codeError" style="color:#f87171;font-size:0.85rem;margin-top:6px;min-height:1.2em;"></div>
+        <button onclick="submitCode()"
+          style="margin-top:1rem;width:100%;padding:13px;background:linear-gradient(135deg,#5B6CF0,#8B5CF6);color:#fff;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;">
+          ✅ Code bestätigen
+        </button>
+      </div>
+    </div>
+    <script>
+    (function() {
+      const stored = localStorage.getItem('zp10_student_code');
+      if (!stored) {
+        const modal = document.getElementById('onboardingModal');
+        modal.style.display = 'flex';
+        setTimeout(() => document.getElementById('codeInputField').focus(), 100);
+      } else {
+        const nameEl = document.getElementById('studentName');
+        if (nameEl) nameEl.textContent = stored;
+      }
+    })();
+
+    async function submitCode() {
+      const code = document.getElementById('codeInputField').value.trim();
+      const errEl = document.getElementById('codeError');
+      if (!code) { errEl.textContent = 'Bitte einen Code eingeben.'; return; }
+
+      errEl.textContent = 'Wird geprüft…';
+      const apiBase = window.location.origin + '/api';
+      try {
+        const r = await fetch(`${apiBase}/codes.php?validate=${encodeURIComponent(code)}`);
+        const d = await r.json();
+        if (d.valid) {
+          localStorage.setItem('zp10_student_code', code);
+          const nameEl = document.getElementById('studentName');
+          if (nameEl) nameEl.textContent = d.name || code;
+          document.getElementById('onboardingModal').style.display = 'none';
+          errEl.textContent = '';
+        } else {
+          errEl.textContent = '❌ Ungültiger Code. Frag deine Lehrperson.';
+        }
+      } catch(e) {
+        errEl.textContent = '⚠️ Server nicht erreichbar. Versuche es später.';
+      }
+    }
+    </script>
+
     <!-- T2: Service Worker + Offline-Indikator -->
     <div id="offline-indicator" style="display:none;position:fixed;bottom:16px;right:16px;background:#f59e0b;color:#000;padding:8px 16px;border-radius:8px;font-size:0.85rem;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,0.2)">⚡ Offline-Modus</div>
     <script>
