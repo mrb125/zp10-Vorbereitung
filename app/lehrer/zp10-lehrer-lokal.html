@@ -379,14 +379,18 @@
     function saveData(d) { localStorage.setItem('zp10_lehrer_data', JSON.stringify(d)); }
 
     function loadTheme() {
-      const t = localStorage.getItem('zp10_theme') || 'light';
-      if (t === 'dark') { document.body.classList.add('dark'); document.getElementById('themeIcon').textContent = '☀️'; }
+      // theme.js übernimmt — nur Icon aktualisieren
+      const mode = (ZP10Theme?.getPrefs().mode) || (localStorage.getItem('zp10_theme') || 'light');
+      document.getElementById('themeIcon').textContent = mode === 'dark' ? '☀️' : '🌙';
     }
 
     function toggleTheme() {
-      const d = document.body.classList.toggle('dark');
-      localStorage.setItem('zp10_theme', d ? 'dark' : 'light');
-      document.getElementById('themeIcon').textContent = d ? '☀️' : '🌙';
+      const p = ZP10Theme?.getPrefs() || {};
+      const newMode = (p.mode || 'light') === 'dark' ? 'light' : 'dark';
+      p.mode = newMode;
+      ZP10Theme?.savePrefs(p);
+      ZP10Theme?.applyTheme(newMode, p.accent || 'indigo');
+      document.getElementById('themeIcon').textContent = newMode === 'dark' ? '☀️' : '🌙';
     }
 
     function getGradeFromScore(s) {
@@ -1191,5 +1195,6 @@
     }
 
   </script>
+  <script src="../js/theme.js"></script>
 </body>
 </html>
