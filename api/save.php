@@ -37,7 +37,12 @@ $db->prepare("
     ':max_score'    => (int)($body['maxScore']    ?? 0),
     ':percentage'   => (int)($body['percentage']  ?? 0),
     ':xp'           => (int)($body['xp']          ?? 0),
-    ':mode'         => in_array($body['mode'] ?? '', ['diagnose','exam','login','escape_partial']) ? $body['mode'] : 'diagnose',
+    ':mode'         => (function() use ($body) {
+        $m = $body['mode'] ?? '';
+        // escape_partial is stored as 'diagnose'; module_id ESCAPE_ROOM_N identifies it
+        if ($m === 'escape_partial') return 'diagnose';
+        return in_array($m, ['diagnose','exam','login']) ? $m : 'diagnose';
+    })(),
     ':confidence'   => json_encode($body['confidence'] ?? null),
 ]);
 
