@@ -3051,7 +3051,9 @@
                 savedRoomAnswers: AppState.global.savedRoomAnswers
             }));
             localStorage.setItem('zp10_spaced_data', JSON.stringify(AppState.global.spacedData));
+            const existingHubData = JSON.parse(localStorage.getItem('zp10_hub_data') || '{}');
             localStorage.setItem('zp10_hub_data', JSON.stringify({
+                ...existingHubData,
                 totalXP: AppState.global.totalXP,
                 completedRooms: Object.keys(AppState.global.completedRooms).length,
                 lastUpdate: new Date().toISOString()
