@@ -959,8 +959,8 @@
     }
 
     async function loadFromServer() {
-      const url = (localStorage.getItem('zp10_server_url') || document.getElementById('serverUrl').value.trim()).replace(/\/$/, '');
-      const key = localStorage.getItem('zp10_server_key') || document.getElementById('serverKey').value.trim();
+      const url = getServerUrl() || document.getElementById('serverUrl').value.trim().replace(/\/$/, '');
+      const key = getApiKey() || document.getElementById('serverKey').value.trim();
       if (!url || !key) { setServerStatus('⚠️ Bitte zuerst speichern.', 'warning'); return; }
 
       setServerStatus('⏳ Lade Daten vom Server…', 'info');
@@ -1087,12 +1087,13 @@
     // ═══════════════════════════════════════════════════════════
     // SCHÜLER-CODES
     // ═══════════════════════════════════════════════════════════
+    function getServerUrl() { return (localStorage.getItem('zp10_server_url') || window.ZP10_SERVER_URL || '').replace(/\/$/, ''); }
     function getCodesApiUrl() {
-      const base = (localStorage.getItem('zp10_server_url') || '').replace(/\/$/, '');
+      const base = getServerUrl();
       if (!base) return null;
       return base.replace(/\/api$/, '') + '/api/codes.php';
     }
-    function getApiKey() { return localStorage.getItem('zp10_server_key') || ''; }
+    function getApiKey() { return localStorage.getItem('zp10_server_key') || window.ZP10_API_KEY || ''; }
 
     function codesStatus(msg, ok = true) {
       const el = document.getElementById('codesStatus');
