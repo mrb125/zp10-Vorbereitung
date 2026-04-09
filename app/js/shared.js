@@ -245,10 +245,15 @@ const ZP10 = {
     },
 
     // ===== GUARDIAN (Klassen-Nebelwolf) =====
+    // Schwellen für ~28 Schüler (Guardian-XP = Klassen-Gesamt-XP × 0.2):
+    //   Stufe 2 (~1000): wenige Schüler, 1-2 Module       → 28 × 1 Modul × 180 XP × 0.2 ≈ 1008
+    //   Stufe 3 (~4000): halbe Klasse, 3-4 Module         → 28 × 0.5 × 3 × 480 × 0.2 ≈ 4032
+    //   Stufe 4 (~12000): meiste Schüler, ~6 Module        → 28 × 0.8 × 6 × 450 × 0.2 ≈ 12096
+    //   Stufe 5 (~28000): alle Schüler, alle 13 Module     → 28 × 13 × 385 × 0.2 ≈ 28028
     GUARDIAN: {
         name: 'Nebelwolf', emoji: '🐺', color: '#9C7DFC',
         stages: ['Mistpup','Mistfang','Mistprowler','Mistguardian','Aetheris'],
-        thresholds: [0, 500, 1500, 3000, 6000]
+        thresholds: [0, 1000, 4000, 12000, 28000]
     },
 
     getGuardian() {

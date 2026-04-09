@@ -735,23 +735,39 @@ function renderGuardianWidget() {
     const widget = document.getElementById('guardianWidget');
     if (!widget) return;
 
-    try {
-        const guardianData = JSON.parse(localStorage.getItem('zp10_guardian_data') || 'null');
-        if (!guardianData) {
-            // Auto-create guardian with accumulated XP from hub
-            const hubData = loadHubData();
-            const totalXP = hubData.totalXP || 0;
-            const guardianXP = Math.round(totalXP * 0.2);
-            const gd = { xp: guardianXP, name: 'Nebula', createdAt: new Date().toISOString() };
-            localStorage.setItem('zp10_guardian_data', JSON.stringify(gd));
-            renderGuardianWidgetWithData(gd, widget);
-        } else {
-            renderGuardianWidgetWithData(guardianData, widget);
-        }
-    } catch(e) {
-        console.warn('Guardian widget error:', e);
-        widget.style.display = 'none';
+    // Cached local data shown immediately while server loads
+    const cached = _guardianLocalFallback();
+    renderGuardianWidgetWithData(cached, widget);
+
+    // Try server fetch for real class-aggregated XP
+    const serverUrl = localStorage.getItem('zp10_server_url') || window.ZP10_SERVER_URL;
+    const apiKey    = localStorage.getItem('zp10_server_key') || window.ZP10_API_KEY;
+    if (serverUrl && apiKey) {
+        fetch(serverUrl + '/guardian.php', { headers: { 'X-API-Key': apiKey } })
+            .then(r => r.ok ? r.json() : null)
+            .then(data => {
+                if (data && typeof data.xp === 'number') {
+                    // Merge: keep local name, use server XP
+                    const gd = { ..._guardianLocalFallback(), xp: data.xp, students: data.students };
+                    localStorage.setItem('zp10_guardian_data', JSON.stringify(gd));
+                    renderGuardianWidgetWithData(gd, widget);
+                }
+            })
+            .catch(() => {}); // silently fall back to cached data
     }
+}
+
+function _guardianLocalFallback() {
+    try {
+        const stored = JSON.parse(localStorage.getItem('zp10_guardian_data') || 'null');
+        if (stored) return stored;
+    } catch(e) {}
+    // Auto-create from local XP as first estimate
+    const hubData  = loadHubData();
+    const totalXP  = hubData.totalXP || 0;
+    const gd = { xp: Math.round(totalXP * 0.2), name: 'Nebula', createdAt: new Date().toISOString() };
+    localStorage.setItem('zp10_guardian_data', JSON.stringify(gd));
+    return gd;
 }
 
 function renderGuardianWidgetWithData(gd, widget) {
@@ -776,7 +792,10 @@ function renderGuardianWidgetWithData(gd, widget) {
     document.getElementById('guardianName').textContent = G.emoji + ' ' + (gd.name || 'Nebelwolf');
     document.getElementById('guardianStage').textContent = G.stages[level] + ' · Stufe ' + (level + 1) + '/' + G.stages.length;
     document.getElementById('guardianXpFill').style.width = Math.min(100, pct) + '%';
-    document.getElementById('guardianXpText').textContent = nextThr ? xp + ' / ' + nextThr + ' XP' : xp + ' XP · Max!';
+    const studentsText = gd.students ? ' · ' + gd.students + ' Schüler' : '';
+    document.getElementById('guardianXpText').textContent = nextThr
+        ? xp + ' / ' + nextThr + ' XP' + studentsText
+        : xp + ' XP · Max!' + studentsText;
 
     widget.style.display = 'flex';
 }
