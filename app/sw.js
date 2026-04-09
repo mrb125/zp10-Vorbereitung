@@ -1,5 +1,5 @@
-// ===== ZP10 DIAGNOSE – SERVICE WORKER v5 =====
-const CACHE_NAME = 'zp10-v5';
+// ===== ZP10 DIAGNOSE – SERVICE WORKER v6 =====
+const CACHE_NAME = 'zp10-v6';
 
 const CORE_ASSETS = [
     './',
