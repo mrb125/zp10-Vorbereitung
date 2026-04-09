@@ -32,7 +32,7 @@
       <button class="tab-btn" onclick="switchTab('heatmap')">Fehlvorstellungen</button>
       <button class="tab-btn" onclick="switchTab('recommendations')">Förderempfehlungen</button>
       <button class="tab-btn" onclick="switchTab('import')">Daten importieren</button>
-      <button class="tab-btn" onclick="switchTab('codes')">🔑 Schüler-Codes</button>
+      <button class="tab-btn" onclick="switchTab('codes');loadCodes()">🔑 Schüler-Codes</button>
       <button class="tab-btn" onclick="switchTab('reasoning')" style="background:linear-gradient(135deg,#FF6B8A,#8B5CF6);color:white;">✍️ Begründungen bewerten</button>
     </div>
 
@@ -1190,12 +1190,6 @@
       navigator.clipboard.writeText(text).then(() => codesStatus('📋 Liste in Zwischenablage kopiert'));
     }
 
-    // Codes laden wenn Tab geöffnet wird
-    const _origSwitchTab = switchTab;
-    function switchTab(tn) {
-      _origSwitchTab(tn);
-      if (tn === 'codes') loadCodes();
-    }
   </script>
 </body>
 </html>
