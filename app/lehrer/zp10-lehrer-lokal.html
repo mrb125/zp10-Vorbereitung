@@ -156,52 +156,6 @@
         </div>
       </div>
 
-      <!-- Server-Sync Modal -->
-      <div id="serverModal" class="modal">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h2>🔗 Server-Sync (PHP-Backend)</h2>
-            <button class="close-btn" onclick="closeModal('serverModal')">×</button>
-          </div>
-          <div class="modal-body">
-            <div style="margin-bottom:1.5rem;">
-              <label style="display:block;font-weight:600;margin-bottom:6px;">Server-URL</label>
-              <input id="serverUrl" type="url" placeholder="https://deine-domain.de/api"
-                style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:0.95rem;background:var(--bg);"
-                value="">
-              <div style="font-size:0.8rem;color:var(--text-secondary);margin-top:4px;">URL zum api/-Ordner auf deinem Server</div>
-            </div>
-            <div style="margin-bottom:1.5rem;">
-              <label style="display:block;font-weight:600;margin-bottom:6px;">API-Schlüssel</label>
-              <input id="serverKey" type="password" placeholder="Dein API_KEY aus config.php"
-                style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:0.95rem;background:var(--bg);"
-                value="">
-            </div>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;">
-              <button onclick="saveServerConfig()" style="padding:10px 20px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;">
-                💾 Speichern
-              </button>
-              <button onclick="loadFromServer()" style="padding:10px 20px;background:var(--success);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;">
-                ⬇️ Daten jetzt laden
-              </button>
-              <button onclick="clearServerConfig()" style="padding:10px 20px;background:var(--danger);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;">
-                🗑️ Verbindung entfernen
-              </button>
-            </div>
-            <div id="serverStatus" style="margin-top:1rem;font-size:0.88rem;"></div>
-          </div>
-        </div>
-      </div>
-
-      <div id="heatmapModal" class="modal">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h2 id="heatmapModalTitle">Schüler mit dieser MV</h2>
-            <button class="close-btn" onclick="closeModal('heatmapModal')">×</button>
-          </div>
-          <div class="modal-body" id="heatmapModalBody"></div>
-        </div>
-      </div>
     </div>
 
     <div id="recommendations" class="tab-content">
@@ -240,6 +194,53 @@
           <button class="btn btn--danger btn--sm" onclick="clearData()">🗑️ Alle Daten löschen</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Server-Sync Modal -->
+  <div id="serverModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>🔗 Server-Sync (PHP-Backend)</h2>
+        <button class="close-btn" onclick="closeModal('serverModal')">×</button>
+      </div>
+      <div class="modal-body">
+        <div style="margin-bottom:1.5rem;">
+          <label style="display:block;font-weight:600;margin-bottom:6px;">Server-URL</label>
+          <input id="serverUrl" type="url" placeholder="https://deine-domain.de/api"
+            style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:0.95rem;background:var(--bg);"
+            value="">
+          <div style="font-size:0.8rem;color:var(--text-secondary);margin-top:4px;">URL zum api/-Ordner auf deinem Server</div>
+        </div>
+        <div style="margin-bottom:1.5rem;">
+          <label style="display:block;font-weight:600;margin-bottom:6px;">API-Schlüssel</label>
+          <input id="serverKey" type="password" placeholder="Dein API_KEY aus config.php"
+            style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:0.95rem;background:var(--bg);"
+            value="">
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button onclick="saveServerConfig()" style="padding:10px 20px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;">
+            💾 Speichern
+          </button>
+          <button onclick="loadFromServer()" style="padding:10px 20px;background:var(--success);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;">
+            ⬇️ Daten jetzt laden
+          </button>
+          <button onclick="clearServerConfig()" style="padding:10px 20px;background:var(--danger);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;">
+            🗑️ Verbindung entfernen
+          </button>
+        </div>
+        <div id="serverStatus" style="margin-top:1rem;font-size:0.88rem;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="heatmapModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="heatmapModalTitle">Schüler mit dieser MV</h2>
+        <button class="close-btn" onclick="closeModal('heatmapModal')">×</button>
+      </div>
+      <div class="modal-body" id="heatmapModalBody"></div>
     </div>
   </div>
 
