@@ -45,7 +45,7 @@
 
   function init() {
     const p = getPrefs();
-    const mode   = p.mode   || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    const mode   = p.mode   || 'light';
     const accent = p.accent || 'indigo';
     applyTheme(mode, accent);
     return { mode, accent };
@@ -120,7 +120,7 @@
         const p = getPrefs();
         p.accent = btn.dataset.accent;
         savePrefs(p);
-        applyTheme(p.mode || 'dark', p.accent);
+        applyTheme(p.mode || 'light', p.accent);
         updatePickerState();
       });
     });
@@ -128,7 +128,7 @@
 
   function updatePickerState() {
     const p = getPrefs();
-    const mode   = p.mode   || 'dark';
+    const mode   = p.mode   || 'light';
     const accent = p.accent || 'indigo';
 
     document.querySelectorAll('#zp10-mode-btns [data-mode]').forEach(b => {
