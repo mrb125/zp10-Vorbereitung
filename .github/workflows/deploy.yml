@@ -29,11 +29,12 @@ jobs:
 
       - name: api-config.js aus Secrets generieren
         run: |
-          cat > app/js/api-config.js << 'EOF'
-          // Auto-generiert beim Deploy — nicht committen
+          DEPLOY_TS=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
+          cat > app/js/api-config.js << JSEOF
+          // Auto-generiert beim Deploy — nicht committen — $DEPLOY_TS
           window.ZP10_SERVER_URL = 'https://mrbl.4lima.de/api';
           window.ZP10_API_KEY    = '${{ secrets.API_KEY }}';
-          EOF
+          JSEOF
 
       - name: FTP Deploy API
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5

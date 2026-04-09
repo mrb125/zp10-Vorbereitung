@@ -6,6 +6,7 @@
     <title>ZP10 Formelsammlung – NRW Mathematik</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="zp10-formelsammlung.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
 </head>
 <body>
     <!-- Header -->
@@ -1410,6 +1411,85 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+    <script>
+    // ==========================================
+    // KaTeX Formel-Rendering
+    // ==========================================
+    const LATEX_FORMULAS = {
+        // Ebene Figuren
+        'Quadrat':                              '$$A = a^2 \\qquad u = 4a$$',
+        'Rechteck':                             '$$A = a \\cdot b \\qquad u = 2a + 2b$$',
+        'Dreieck':                              '$$A = \\dfrac{g \\cdot h}{2} \\qquad u = a + b + c$$',
+        'Parallelogramm':                       '$$A = g \\cdot h \\qquad u = 2a + 2b$$',
+        'Trapez':                               '$$A = \\dfrac{a+c}{2} \\cdot h \\qquad u = a + b + c + d$$',
+        'Kreis':                                '$$d = 2r \\qquad A = \\pi r^2 \\qquad u = 2\\pi r = \\pi d$$',
+        'Kreissektor':                          '$$A = \\dfrac{\\alpha}{360°} \\cdot \\pi r^2 \\qquad b = \\dfrac{\\alpha}{360°} \\cdot 2\\pi r$$',
+        'Kreisring':                            '$$A = \\pi \\left(R^2 - r^2\\right)$$',
+        // Pythagoras & Trigonometrie
+        'Satz des Pythagoras':                  '$$a^2 + b^2 = c^2$$',
+        'Sinus (sin)':                          '$$\\sin(\\alpha) = \\dfrac{\\text{Gegenkathete}}{\\text{Hypotenuse}}$$',
+        'Kosinus (cos)':                        '$$\\cos(\\alpha) = \\dfrac{\\text{Ankathete}}{\\text{Hypotenuse}}$$',
+        'Tangens (tan)':                        '$$\\tan(\\alpha) = \\dfrac{\\text{Gegenkathete}}{\\text{Ankathete}} = \\dfrac{\\sin(\\alpha)}{\\cos(\\alpha)}$$',
+        'Innenwinkelsumme Dreieck':             '$$\\alpha + \\beta + \\gamma = 180°$$',
+        'Innenwinkelsumme Viereck':             '$$\\alpha + \\beta + \\gamma + \\delta = 360°$$',
+        // Körper
+        'Quader':                               '$$V = a \\cdot b \\cdot c \\qquad O = 2(ab + ac + bc)$$',
+        'Würfel':                               '$$V = a^3 \\qquad O = 6a^2$$',
+        'Prisma':                               '$$V = G \\cdot h \\qquad O = 2G + M$$',
+        'Zylinder':                             '$$V = \\pi r^2 h \\qquad M = 2\\pi r h$$ $$O = 2\\pi r^2 + 2\\pi r h$$',
+        'Pyramide':                             '$$V = \\dfrac{1}{3} \\cdot G \\cdot h$$',
+        'Kegel':                                '$$V = \\dfrac{1}{3} \\cdot \\pi r^2 h \\qquad M = \\pi r s$$',
+        'Kugel':                                '$$V = \\dfrac{4}{3} \\cdot \\pi r^3 \\qquad O = 4\\pi r^2$$',
+        'Masse':                                '$$m = \\rho \\cdot V$$',
+        // Funktionen
+        'Lineare Funktion':                     '$$y = mx + b$$',
+        'Steigung berechnen':                   '$$m = \\dfrac{y_2 - y_1}{x_2 - x_1} = \\dfrac{\\Delta y}{\\Delta x}$$',
+        'Nullstelle (lineare Funktion)':        '$$0 = mx + b \\qquad x_0 = -\\dfrac{b}{m}$$',
+        'Parallele Geraden':                    '$$m_1 = m_2$$',
+        'Quadratische Funktion (Normalform)':   '$$y = ax^2 + bx + c$$',
+        'Quadratische Funktion (Scheitelpunktform)': '$$y = a(x - d)^2 + e$$',
+        'p-q-Formel (Lösungsformel)':           '$$x^2 + px + q = 0$$ $$x_{1,2} = -\\dfrac{p}{2} \\pm \\sqrt{\\left(\\dfrac{p}{2}\\right)^2 - q}$$',
+        'Exponentialfunktion':                  '$$f(x) = a \\cdot b^x$$',
+        'Exponentielles Wachstum':              '$$N(t) = N_0 \\cdot q^t \\qquad q = 1 + \\dfrac{p}{100}$$',
+        // Stochastik
+        'Absolute Häufigkeit':                  '$$H(A) = \\text{Anzahl des Eintretens von } A$$',
+        'Relative Häufigkeit':                  '$$h(A) = \\dfrac{H(A)}{n}$$',
+        'Laplace-Wahrscheinlichkeit':           '$$P(A) = \\dfrac{|A|}{|\\Omega|} = \\dfrac{\\text{günstige Ergebnisse}}{\\text{mögliche Ergebnisse}}$$',
+        'Gegenereignis (Komplementärereignis)': '$$P(\\bar{A}) = 1 - P(A)$$',
+        'Produktregel (UND)':                   '$$P(A \\cap B) = P(A) \\cdot P(B|A)$$',
+        'Summenregel (ODER)':                   '$$P(A \\cup B) = P(\\text{Pfad}_1) + P(\\text{Pfad}_2) + \\ldots$$',
+        'Bedingte Wahrscheinlichkeit':          '$$P(A|B) = \\dfrac{P(A \\cap B)}{P(B)}$$',
+        'Erwartungswert':                       '$$E(X) = \\sum_i x_i \\cdot P(x_i)$$',
+        'Mittelwert (Arithmetisches Mittel)':   '$$\\bar{x} = \\dfrac{x_1 + x_2 + \\ldots + x_n}{n}$$',
+        'Spannweite (Range)':                   '$$R = x_{\\max} - x_{\\min}$$',
+        // Weitere Formeln
+        'Binomische Formeln':                   '$$\\begin{aligned}(a+b)^2 &= a^2 + 2ab + b^2 \\\\ (a-b)^2 &= a^2 - 2ab + b^2 \\\\ (a+b)(a-b) &= a^2 - b^2\\end{aligned}$$',
+        'abc-Formel (Mitternachtsformel)':      '$$ax^2 + bx + c = 0$$ $$x_{1,2} = \\dfrac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$$',
+        'Potenzgesetze':                        '$$a^n \\cdot a^m = a^{n+m} \\qquad \\dfrac{a^n}{a^m} = a^{n-m}$$ $$(a^n)^m = a^{n \\cdot m} \\qquad a^0 = 1$$ $$a^{-n} = \\dfrac{1}{a^n} \\qquad a^{\\frac{1}{n}} = \\sqrt[n]{a}$$',
+        'Wurzelgesetze':                        '$$\\sqrt{a \\cdot b} = \\sqrt{a} \\cdot \\sqrt{b} \\qquad \\sqrt{\\dfrac{a}{b}} = \\dfrac{\\sqrt{a}}{\\sqrt{b}}$$',
+        'Prozentrechnung':                      '$$W = G \\cdot \\dfrac{p}{100} \\qquad G = W \\cdot \\dfrac{100}{p} \\qquad p = \\dfrac{W}{G} \\cdot 100$$',
+        'Zinsrechnung (einfach)':               '$$Z = K \\cdot \\dfrac{p}{100} \\cdot t$$',
+        'Zinseszins':                           '$$K(n) = K_0 \\cdot \\left(1 + \\dfrac{p}{100}\\right)^n$$',
+    };
+
+    document.querySelectorAll('.formula-item').forEach(item => {
+        const name = item.querySelector('.formula-name')?.textContent?.trim();
+        const box = item.querySelector('.formula-box');
+        if (name && box && LATEX_FORMULAS[name]) {
+            box.innerHTML = LATEX_FORMULAS[name];
+        }
+    });
+
+    renderMathInElement(document.querySelector('main'), {
+        delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\\(', right: '\\)', display: false}
+        ],
+        throwOnError: false
+    });
+    </script>
     <script>
         // ==========================================
         // Theme Toggle
