@@ -56,7 +56,10 @@
             transition: background 0.15s;
         }
         .icon-btn:hover { background: var(--primary-light, #EEF2FF); color: var(--primary, #5B6CF0); }
-        body.dark .sub-nav { background: var(--surface); border-color: var(--border); }
+        body.dark .sub-nav { background: #1E293B; border-bottom-color: rgba(255,255,255,0.08); }
+        body.dark .back-btn { background: rgba(99,102,241,0.15); color: #818CF8; }
+        body.dark .sub-nav-title { color: #F8FAFC; }
+        body.dark .icon-btn { background: rgba(255,255,255,0.06); color: #94A3B8; }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -80,20 +83,6 @@
             --radius: 20px;
         }
 
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg: #0F172A;
-                --surface: #1E293B;
-                --text: #F1F5F9;
-                --text-secondary: #94A3B8;
-                --border: #334155;
-                --primary-light: #1E293B;
-                --accent-light: #2D1B2E;
-                --success-light: #1B2E26;
-                --warning-light: #2E2A1B;
-                --danger-light: #2E1B1B;
-            }
-        }
         body.dark {
             --bg: #0F172A;
             --surface: #1E293B;

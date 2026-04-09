@@ -59,9 +59,10 @@
     transition: background 0.15s;
 }
 .icon-btn:hover { background: var(--primary-light, #EEF2FF); color: var(--primary, #5B6CF0); }
-[data-theme="dark"] .sub-nav { background: #1E293B; border-color: #334155; color: #F1F5F9; }
-[data-theme="dark"] .sub-nav-title { color: #F1F5F9; }
-[data-theme="dark"] .icon-btn { background: #334155; border-color: #475569; color: #F1F5F9; }
+body.dark .sub-nav { background: #1E293B; border-bottom-color: rgba(255,255,255,0.08); }
+body.dark .back-btn { background: rgba(99,102,241,0.15); color: #818CF8; }
+body.dark .sub-nav-title { color: #F8FAFC; }
+body.dark .icon-btn { background: rgba(255,255,255,0.06); color: #94A3B8; }
 
 :root {
     --primary: #5B6CF0;
@@ -122,14 +123,14 @@
 }
 
 /* Dark Theme */
-[data-theme='dark'] {
-    --bg-primary: #1F2937;
-    --bg-secondary: #111827;
-    --bg-tertiary: #0F172A;
+body.dark {
+    --bg-primary: #1E293B;
+    --bg-secondary: #0F172A;
+    --bg-tertiary: #334155;
     --text-primary: #F9FAFB;
     --text-secondary: #D1D5DB;
     --text-tertiary: #9CA3AF;
-    --border-color: #374151;
+    --border-color: #334155;
 }
 
 /* ============================================

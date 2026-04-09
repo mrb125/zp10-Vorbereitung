@@ -95,15 +95,7 @@
             --primary-light: #1E1B4B;
         }
 
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg: #0F172A;
-                --surface: #1E293B;
-                --text: #F1F5F9;
-                --text-secondary: #CBD5E1;
-                --border: #334155;
-            }
-        }
+        /* dark mode handled by body.dark */
 
         body {
             font-family: 'Inter', sans-serif;

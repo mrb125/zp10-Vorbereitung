@@ -107,19 +107,14 @@
             min-height: 100vh;
         }
 
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg: #1a1a2e;
-                --text: #f5f5f5;
-                --text-light: #b0b0b0;
-                --border: #333;
-                --shadow: 0 2px 8px rgba(0,0,0,0.3);
-                --soft-lavender: #2a2545;
-            }
-
-            body {
-                background: linear-gradient(135deg, #1a1a2e 0%, #2a2545 100%);
-            }
+        body.dark {
+            --bg: #0F172A;
+            --text: #F8FAFC;
+            --text-light: #94A3B8;
+            --border: rgba(255,255,255,0.08);
+            --shadow: 0 2px 8px rgba(0,0,0,0.3);
+            --soft-lavender: #1E1B4B;
+            background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 100%);
         }
 
         .container {
@@ -171,10 +166,8 @@
             animation: fadeIn 0.5s ease;
         }
 
-        @media (prefers-color-scheme: dark) {
-            .section {
-                background: #2a2a3e;
-            }
+        body.dark .section {
+            background: #1E293B;
         }
 
         @keyframes fadeIn {
@@ -234,10 +227,8 @@
             text-align: center;
         }
 
-        @media (prefers-color-scheme: dark) {
-            .scale-btn {
-                background: #1a1a2e;
-            }
+        body.dark .scale-btn {
+            background: #0F172A;
         }
 
         .scale-btn:hover {
@@ -354,10 +345,8 @@
             border: 2px solid var(--border);
         }
 
-        @media (prefers-color-scheme: dark) {
-            .flip-card {
-                background: #1a1a2e;
-            }
+        body.dark .flip-card {
+            background: #0F172A;
         }
 
         .flip-card:hover {
@@ -409,10 +398,8 @@
             border-left: 4px solid var(--primary);
         }
 
-        @media (prefers-color-scheme: dark) {
-            .time-section {
-                background: #1a1a2e;
-            }
+        body.dark .time-section {
+            background: #0F172A;
         }
 
         .time-section h4 {

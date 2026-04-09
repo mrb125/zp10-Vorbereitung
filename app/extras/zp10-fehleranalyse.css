@@ -19,10 +19,16 @@
             --surface-hover: #334155;
             --bg: #0F172A;
             --text: #F1F5F9;
+            --text-light: #94A3B8;
             --border: #334155;
             --primary: #818CF8;
             --primary-light: #1E1B4B;
+            --shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
+        body.dark .sub-nav { background: #1E293B; border-bottom-color: rgba(255,255,255,0.08); }
+        body.dark .back-btn { background: rgba(99,102,241,0.15); color: #818CF8; }
+        body.dark .sub-nav-title { color: #F8FAFC; }
+        body.dark .icon-btn { background: rgba(255,255,255,0.06); color: #94A3B8; }
 
         /* ===== SUB-PAGE NAVIGATION ===== */
         .sub-nav {
@@ -96,15 +102,6 @@
             padding: 20px;
         }
 
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg: #1a1a2e;
-                --text: #f5f5f5;
-                --text-light: #b0b0b0;
-                --border: #333;
-                --shadow: 0 2px 8px rgba(0,0,0,0.3);
-            }
-        }
 
         .container {
             max-width: 900px;
@@ -171,12 +168,7 @@
             font-weight: 500;
         }
 
-        @media (prefers-color-scheme: dark) {
-            select {
-                background: #2a2a3e;
-                color: white;
-            }
-        }
+        body.dark select { background: #1E293B; color: #F1F5F9; }
 
         .progress-bar {
             background: var(--border);
@@ -207,11 +199,7 @@
             text-align: center;
         }
 
-        @media (prefers-color-scheme: dark) {
-            .stat-card {
-                background: #2a2a3e;
-            }
-        }
+        body.dark .stat-card { background: #1E293B; }
 
         .stat-value {
             font-size: 1.8em;
@@ -235,11 +223,7 @@
             display: none;
         }
 
-        @media (prefers-color-scheme: dark) {
-            .task-card {
-                background: #2a2a3e;
-            }
-        }
+        body.dark .task-card { background: #1E293B; }
 
         .task-card.active {
             display: block;
@@ -321,11 +305,7 @@
             line-height: 1.8;
         }
 
-        @media (prefers-color-scheme: dark) {
-            .solution-box {
-                background: #1a1a2e;
-            }
-        }
+        body.dark .solution-box { background: #0F172A; }
 
         .solution-step {
             margin: 5px 0;
@@ -365,11 +345,7 @@
             transition: all 0.2s;
         }
 
-        @media (prefers-color-scheme: dark) {
-            .option-btn {
-                background: #1a1a2e;
-            }
-        }
+        body.dark .option-btn { background: #0F172A; }
 
         .option-btn:hover {
             border-color: var(--primary);
@@ -393,12 +369,7 @@
             background: white;
         }
 
-        @media (prefers-color-scheme: dark) {
-            input[type="text"], textarea {
-                background: #1a1a2e;
-                color: white;
-            }
-        }
+        body.dark input[type="text"], body.dark textarea { background: #0F172A; color: #F1F5F9; }
 
         textarea {
             resize: vertical;
@@ -493,11 +464,7 @@
             margin: 20px 0;
         }
 
-        @media (prefers-color-scheme: dark) {
-            .error-profile {
-                background: #2a2a3e;
-            }
-        }
+        body.dark .error-profile { background: #1E293B; }
 
         .profile-category {
             margin: 15px 0;
