@@ -179,9 +179,9 @@ function updateCreatureDisplay() {
     // Has creature: show display
     section.style.display = 'block';
     const cr = ZP10.CREATURES[creature.type];
-    const totalXP = hubData.totalXP || 0;
-    const level = ZP10.getCreatureLevel(totalXP);
-    const progress = ZP10.getCreatureProgress(totalXP);
+    const masteredCount = ZP10.getMasteredMVCount();
+    const level = ZP10.getCreatureLevel(masteredCount);
+    const progress = ZP10.getCreatureProgress(masteredCount);
     const mood = ZP10.getCreatureMood(hubData);
     const sprite = ZP10.getCreatureSprite(creature.type, level);
     const weakest = ZP10.getWeakestModule(hubData, MODULES);
@@ -190,7 +190,7 @@ function updateCreatureDisplay() {
         <div class="creature-card" style="border-color: ${cr.color}40;">
             <div class="creature-main">
                 <div class="creature-sprite-wrap">
-                    ${sprite ? `<img src="${sprite.src}" alt="${cr.name}" class="creature-sprite">` : `<div class="creature-placeholder">${cr.emoji}</div>`}
+                    <img src="${sprite}" alt="${cr.name}" class="creature-sprite" onerror="this.style.display='none'">
                     <div class="creature-mood" style="background: ${mood.color};" title="${mood.label}">${mood.emoji}</div>
                 </div>
                 <div class="creature-info">
@@ -234,7 +234,7 @@ function showCreaturePicker() {
                     return `
                         <div class="creature-option ${selected ? 'selected' : ''}" onclick="selectCreature('${key}')" style="--cr-color: ${cr.color};">
                             <div class="creature-option-img">
-                                ${sprite ? `<img src="${sprite.src}" alt="${cr.name}">` : `<div style="font-size:2.5rem">${cr.emoji}</div>`}
+                                <img src="${sprite}" alt="${cr.name}" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<div style=\'font-size:2.5rem\'>${cr.emoji}</div>')">
                             </div>
                             <div class="creature-option-name" style="color: ${cr.color};">${cr.emoji} ${cr.name}</div>
                             <div class="creature-option-stage">${cr.stages[0]}</div>
@@ -253,7 +253,7 @@ function selectCreature(type) {
 
     // Check if this triggers an evolution overlay
     const hubData = getHubData();
-    const level = ZP10.getCreatureLevel(hubData.totalXP || 0);
+    const level = ZP10.getCreatureLevel(ZP10.getMasteredMVCount());
 
     updateCreatureDisplay();
 
@@ -884,12 +884,12 @@ function showEvolution(type, oldLevel, newLevel) {
     document.getElementById('evoTitle').textContent = `${cr.emoji} Evolution!`;
     document.getElementById('evoSprites').innerHTML = `
         <div class="evolution-sprite">
-            ${oldSprite ? `<img src="${oldSprite.src}" alt="${cr.stages[oldLevel]}">` : `<div style="font-size:4rem">${cr.emoji}</div>`}
+            <img src="${oldSprite}" alt="${cr.stages[oldLevel]}" onerror="this.outerHTML='<div style=\'font-size:4rem\'>${cr.emoji}</div>'">
             <div class="evolution-sprite-name">${cr.stages[oldLevel]}</div>
         </div>
         <div class="evolution-arrow">→</div>
         <div class="evolution-sprite">
-            ${newSprite ? `<img src="${newSprite.src}" alt="${cr.stages[newLevel]}">` : `<div style="font-size:4rem">${cr.emoji}</div>`}
+            <img src="${newSprite}" alt="${cr.stages[newLevel]}" onerror="this.outerHTML='<div style=\'font-size:4rem\'>${cr.emoji}</div>'">
             <div class="evolution-sprite-name" style="color: #ffd166;">${cr.stages[newLevel]}</div>
         </div>
     `;

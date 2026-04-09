@@ -575,21 +575,178 @@ function activateCode(code) {
     location.reload();
 }
 
+// ===== PASSWORT-SETUP (einmalig nach erstem Code) =====
+function showProfilSetup() {
+    initTheme();
+    document.body.innerHTML = `
+        <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:2rem;">
+            <div style="max-width:400px;width:100%;text-align:center;background:var(--surface);border-radius:20px;padding:2.5rem;box-shadow:0 8px 32px rgba(0,0,0,0.15);border:2px solid var(--primary);">
+                <div style="font-size:3rem;margin-bottom:0.5rem;">🔐</div>
+                <h1 style="color:var(--primary);margin-bottom:0.5rem;font-size:1.5rem;font-family:'Nunito Sans',sans-serif;">Passwort vergeben</h1>
+                <p style="color:var(--text-secondary);margin-bottom:1.5rem;line-height:1.5;font-size:0.9rem;">
+                    Schütze deine Daten mit einem persönlichen Passwort.
+                </p>
+                <div style="display:flex;flex-direction:column;gap:14px;text-align:left;">
+                    <div>
+                        <label style="font-size:0.85rem;font-weight:700;color:var(--text-secondary);display:block;margin-bottom:6px;">Passwort (optional)</label>
+                        <input id="setupPw" type="password" placeholder="Mind. 4 Zeichen"
+                            style="width:100%;padding:12px;border:2px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:1rem;outline:none;box-sizing:border-box;">
+                        <div style="font-size:0.78rem;color:var(--text-tertiary,#94a3b8);margin-top:4px;">Leer lassen = kein Passwort</div>
+                    </div>
+                    <div id="setupError" style="color:var(--danger,#EF4444);font-size:0.85rem;display:none;"></div>
+                    <button id="setupBtn" style="padding:14px;background:var(--primary);color:white;border:none;border-radius:12px;font-size:1.05rem;font-weight:700;cursor:pointer;font-family:'Nunito Sans',sans-serif;margin-top:4px;">
+                        Weiter ➜
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.getElementById('setupPw').focus();
+    document.getElementById('setupBtn').addEventListener('click', () => {
+        const pw  = document.getElementById('setupPw').value;
+        const err = document.getElementById('setupError');
+        if (pw && pw.length < 4) { err.textContent = 'Passwort muss mind. 4 Zeichen haben.'; err.style.display = 'block'; return; }
+        localStorage.setItem('zp10_password', pw || 'NONE');
+        sessionStorage.setItem('zp10_authenticated', '1');
+        location.reload();
+    });
+}
+
+// ===== PASSWORT-GATE (bei Rückkehr) =====
+function showPasswordGate() {
+    initTheme();
+    const hubData = loadHubData();
+    const name = hubData.studentName || 'Schüler';
+    document.body.innerHTML = `
+        <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:2rem;">
+            <div style="max-width:400px;width:100%;text-align:center;background:var(--surface);border-radius:20px;padding:2.5rem;box-shadow:0 8px 32px rgba(0,0,0,0.15);border:2px solid var(--primary);">
+                <div style="font-size:3rem;margin-bottom:0.5rem;">🔒</div>
+                <h1 style="color:var(--primary);margin-bottom:0.25rem;font-size:1.4rem;font-family:'Nunito Sans',sans-serif;">Hallo, ${name}!</h1>
+                <p style="color:var(--text-secondary);margin-bottom:1.5rem;font-size:0.9rem;">Bitte gib dein Passwort ein.</p>
+                <input id="pwInput" type="password" placeholder="Passwort"
+                    style="width:100%;padding:14px;font-size:1.1rem;text-align:center;border:2px solid var(--border);border-radius:12px;background:var(--bg);color:var(--text);outline:none;box-sizing:border-box;margin-bottom:12px;">
+                <div id="pwError" style="color:var(--danger,#EF4444);font-size:0.85rem;display:none;margin-bottom:12px;"></div>
+                <button id="pwBtn" style="width:100%;padding:14px;background:var(--primary);color:white;border:none;border-radius:12px;font-size:1.05rem;font-weight:700;cursor:pointer;font-family:'Nunito Sans',sans-serif;">
+                    Anmelden
+                </button>
+                <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);">
+                    <p style="font-size:0.8rem;color:var(--text-tertiary,#94a3b8);margin:0;">
+                        Passwort vergessen? Bitte deine Lehrkraft, es zurückzusetzen.
+                    </p>
+                </div>
+            </div>
+        </div>
+    `;
+    const input = document.getElementById('pwInput');
+    input.focus();
+    const check = () => {
+        const stored = localStorage.getItem('zp10_password');
+        if (input.value === stored) {
+            sessionStorage.setItem('zp10_authenticated', '1');
+            location.reload();
+        } else {
+            const err = document.getElementById('pwError');
+            err.textContent = 'Falsches Passwort. Versuche es nochmal.';
+            err.style.display = 'block';
+            input.value = '';
+            input.focus();
+        }
+    };
+    document.getElementById('pwBtn').addEventListener('click', check);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') check(); });
+}
+
+// ===== TIER-WAHL ONBOARDING =====
+function showCreatureOnboarding() {
+    initTheme();
+    const creatures = ZP10.CREATURES;
+    const cards = Object.entries(creatures).map(([key, cr]) => `
+        <div onclick="chooseCreatureOnboarding('${key}')"
+            style="background:var(--surface);border:2px solid ${cr.color}40;border-radius:16px;padding:1rem;cursor:pointer;
+            transition:all 0.2s;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;"
+            onmouseover="this.style.borderColor='${cr.color}';this.style.transform='translateY(-4px)'"
+            onmouseout="this.style.borderColor='${cr.color}40';this.style.transform='none'">
+            <img src="companion-img/${key}-0.png" alt="${cr.name}"
+                style="width:90px;height:90px;object-fit:contain;"
+                onerror="this.outerHTML='<div style=\'font-size:3.5rem\'>${cr.emoji}</div>'">
+            <div style="font-weight:800;color:${cr.color};font-size:0.95rem;">${cr.emoji} ${cr.name}</div>
+            <div style="font-size:0.78rem;color:var(--text-secondary);">${cr.stages[0]}</div>
+        </div>
+    `).join('');
+
+    document.body.innerHTML = `
+        <div style="min-height:100vh;background:var(--bg);padding:2rem;display:flex;align-items:center;justify-content:center;">
+            <div style="max-width:560px;width:100%;text-align:center;">
+                <div style="font-size:3rem;margin-bottom:0.5rem;">🐾</div>
+                <h1 style="color:var(--primary);margin-bottom:0.5rem;font-size:1.6rem;font-family:'Nunito Sans',sans-serif;">Wähle deinen Begleiter!</h1>
+                <p style="color:var(--text-secondary);margin-bottom:1.5rem;font-size:0.9rem;line-height:1.6;">
+                    Dein Begleiter wächst mit dir — je mehr Fehlvorstellungen du meisterst, desto stärker wird er.
+                </p>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:1.5rem;">
+                    ${cards}
+                </div>
+                <button onclick="skipCreatureOnboarding()"
+                    style="background:none;border:none;color:var(--text-tertiary,#94a3b8);font-size:0.85rem;cursor:pointer;text-decoration:underline;">
+                    Ohne Begleiter spielen
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+function chooseCreatureOnboarding(type) {
+    ZP10.setCreature(type);
+    location.reload();
+}
+
+function skipCreatureOnboarding() {
+    const hubData = loadHubData();
+    if (!hubData.creature) hubData.creature = {};
+    hubData.creature.skipped = true;
+    hubData.creature.unlocked = false;
+    saveHubData(hubData);
+    location.reload();
+}
+
 // ===== INITIALIZATION =====
 function init() {
+    const params = new URLSearchParams(window.location.search);
+    const skipCodeGate = params.has('lehrer');
+    const skipGate     = params.has('hub');
+
     // ===== CODE GATE =====
     const studentCode = getStudentCode();
-    const skipCodeGate = new URLSearchParams(window.location.search).has('lehrer');
-
     if (!studentCode && !skipCodeGate) {
         showCodeGate();
+        return;
+    }
+
+    // ===== PROFIL-SETUP (einmalig nach erstem Login) =====
+    const storedPw = localStorage.getItem('zp10_password');
+    if (!storedPw && !skipCodeGate) {
+        showProfilSetup();
+        return;
+    }
+
+    // ===== PASSWORT-GATE (bei Rückkehr) =====
+    const authenticated = sessionStorage.getItem('zp10_authenticated');
+    if (storedPw && storedPw !== 'NONE' && !authenticated && !skipCodeGate) {
+        showPasswordGate();
+        return;
+    }
+
+    // ===== TIER-WAHL ONBOARDING (einmalig) =====
+    const hubData = loadHubData();
+    const creatureData = hubData.creature;
+    const creatureChosen = creatureData && (creatureData.type || creatureData.skipped);
+    if (!creatureChosen && !skipCodeGate) {
+        showCreatureOnboarding();
         return;
     }
 
     // ===== ESCAPE ROOM GATE (flexibel) =====
     const escapeResults = localStorage.getItem('zp10_escape_results');
     const escapeState = localStorage.getItem('zp10_escape_state');
-    const skipGate = new URLSearchParams(window.location.search).has('hub');
 
     if (!escapeResults && !skipGate) {
         showEscapeGate(escapeState);
@@ -701,11 +858,45 @@ function renderCreatureHubWidget() {
         const mood = ZP10.getCreatureMood(hubData);
         const weakest = ZP10.getWeakestModule(hubData, modulesMetadata);
 
-        // Sprite
-        const sprite = (typeof CREATURE_SPRITES !== 'undefined' && CREATURE_SPRITES[creature.type])
-            ? CREATURE_SPRITES[creature.type][level] : null;
+        // Sprite + Glow-Farbe
+        const spritePath = ZP10.getCreatureSprite(creature.type, level);
+        document.getElementById('creatureHubImg').src = spritePath;
+        widget.style.setProperty('--creature-color', cr.color + '33');
 
-        if (sprite) document.getElementById('creatureHubImg').src = sprite.src;
+        // Mood-Badge
+        const moodBadge = document.getElementById('creatureHubMoodBadge');
+        if (moodBadge) moodBadge.textContent = mood.emoji;
+
+        // Sprech-Blase bei Klick auf Sprite
+        const spriteImg = document.getElementById('creatureHubImg');
+        if (spriteImg && !spriteImg._speechBound) {
+            spriteImg._speechBound = true;
+            spriteImg.style.cursor = 'pointer';
+            spriteImg.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const msgs = [
+                    'Du schaffst das! 💪',
+                    progress.next ? 'Noch ' + (progress.next - progress.current) + ' MVs bis zur Entwicklung!' : 'Du bist auf Maximum! 🏆',
+                    'Jeder Fehler bringt dich weiter! ✨',
+                    'Heute trainiert, morgen gemeistert! 🌟',
+                    'Ich glaube an dich! 🐾',
+                ];
+                const msg = msgs[Math.floor(Math.random() * msgs.length)];
+                let bubble = document.getElementById('creatureSpeechBubble');
+                if (!bubble) {
+                    bubble = document.createElement('div');
+                    bubble.id = 'creatureSpeechBubble';
+                    bubble.className = 'creature-speech-bubble';
+                    const wrap = document.querySelector('.creature-hub-sprite-wrap');
+                    if (wrap) wrap.appendChild(bubble);
+                }
+                bubble.textContent = msg;
+                bubble.classList.add('visible');
+                clearTimeout(bubble._timer);
+                bubble._timer = setTimeout(() => bubble.classList.remove('visible'), 3000);
+            });
+        }
+
         document.getElementById('creatureHubName').textContent = cr.emoji + ' ' + cr.stages[level];
         document.getElementById('creatureHubName').style.color = cr.color;
         const nextNeeded = progress.next !== null ? (progress.next - progress.current + ' MV bis ' + cr.stages[Math.min(level+1, cr.stages.length-1)]) : 'Vollständig gemeistert!';
@@ -785,10 +976,7 @@ function renderGuardianWidgetWithData(gd, widget) {
     const pct = nextThr ? Math.round((xp - currentThr) / (nextThr - currentThr) * 100) : 100;
 
     // Wolf sprite
-    const sprite = (typeof CREATURE_SPRITES !== 'undefined' && CREATURE_SPRITES['wolf'])
-        ? CREATURE_SPRITES['wolf'][level] : null;
-
-    if (sprite) document.getElementById('guardianImg').src = sprite.src;
+    document.getElementById('guardianImg').src = ZP10.getGuardianSprite(level);
     document.getElementById('guardianName').textContent = G.emoji + ' ' + (gd.name || 'Nebelwolf');
     document.getElementById('guardianStage').textContent = G.stages[level] + ' · Stufe ' + (level + 1) + '/' + G.stages.length;
     document.getElementById('guardianXpFill').style.width = Math.min(100, pct) + '%';
@@ -815,15 +1003,7 @@ function updateCreatureMini() {
             return;
         }
 
-        const CREATURES = {
-            fox:     { name:'Blitzfuchs',    emoji:'⚡', color:'#f4a61a', stages:['Voltino','Sparkling','Fulminox','Thunderex'], thresholds:[0,500,1500,3000] },
-            water:   { name:'Wasserdrache',  emoji:'🌊', color:'#4fc3f7', stages:['Bubblin','Wavekin','Tidalon','Abysshar'],   thresholds:[0,500,1500,3000] },
-            forest:  { name:'Waldgeist',     emoji:'🌿', color:'#66bb6a', stages:['Sprouta','Leafling','Arboros','Ancienta'],   thresholds:[0,500,1500,3000] },
-            phoenix: { name:'Phönix',        emoji:'🔥', color:'#ff7043', stages:['Emberkin','Cindross','Flamara','Phoenara'],  thresholds:[0,500,1500,3000] },
-            gecko:   { name:'Kaktusgecko',   emoji:'🌵', color:'#8bc34a', stages:['Pricklet','Spikeliz','Cactudon','Thornlord'], thresholds:[0,500,1500,3000] },
-        };
-
-        const cr = CREATURES[creature.type];
+        const cr = ZP10.CREATURES[creature.type];
         if (!cr) { miniEl.style.display = 'none'; return; }
 
         // G1: Use mastered MV count for mini creature level
@@ -836,10 +1016,8 @@ function updateCreatureMini() {
         let moodEmoji = '😐';
         if (streak >= 3) moodEmoji = '😊';
 
-        // Try to load sprite
-        if (typeof CREATURE_SPRITES !== 'undefined' && CREATURE_SPRITES[creature.type] && CREATURE_SPRITES[creature.type][level]) {
-            document.getElementById('creatureMiniImg').src = CREATURE_SPRITES[creature.type][level].src;
-        }
+        // Sprite laden
+        document.getElementById('creatureMiniImg').src = ZP10.getCreatureSprite(creature.type, level);
 
         document.getElementById('creatureMiniName').textContent = cr.emoji + ' ' + cr.stages[level];
         document.getElementById('creatureMiniName').style.color = cr.color;

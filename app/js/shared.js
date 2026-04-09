@@ -102,15 +102,17 @@ const ZP10 = {
     },
 
     // ===== CREATURE SYSTEM =====
-    // G1: Thresholds are now mastered misconception counts (not XP)
-    // 0→5→20→50 mastered MVs across Leitner boxes 4+
+    // Thresholds: gemeisterte Fehlvorstellungen (0→3→15→35)
     CREATURES: {
-        fox:     { name:'Blitzfuchs',    emoji:'⚡', color:'#f4a61a', stages:['Voltino','Sparkling','Fulminox','Thunderex'], thresholds:[0,5,20,50] },
-        water:   { name:'Wasserdrache',  emoji:'🌊', color:'#4fc3f7', stages:['Bubblin','Wavekin','Tidalon','Abysshar'],   thresholds:[0,5,20,50] },
-        forest:  { name:'Waldgeist',     emoji:'🌿', color:'#66bb6a', stages:['Sprouta','Leafling','Arboros','Ancienta'],   thresholds:[0,5,20,50] },
-        phoenix: { name:'Phönix',        emoji:'🔥', color:'#ff7043', stages:['Emberkin','Cindross','Flamara','Phoenara'],  thresholds:[0,5,20,50] },
-        gecko:   { name:'Kaktusgecko',   emoji:'🌵', color:'#8bc34a', stages:['Pricklet','Spikeliz','Cactudon','Thornlord'], thresholds:[0,5,20,50] },
+        fox:     { name:'Blitzfuchs',    emoji:'⚡', color:'#f4a61a', stages:['Voltino','Sparkling','Fulminox','Thunderex'],  thresholds:[0,3,15,35] },
+        water:   { name:'Wasserdrache',  emoji:'🌊', color:'#4fc3f7', stages:['Bubblin','Wavekin','Tidalon','Abysshar'],    thresholds:[0,3,15,35] },
+        forest:  { name:'Waldgeist',     emoji:'🌿', color:'#66bb6a', stages:['Sprouta','Leafling','Arboros','Ancienta'],    thresholds:[0,3,15,35] },
+        phoenix: { name:'Phönix',        emoji:'🔥', color:'#ff7043', stages:['Emberkin','Cindross','Flamara','Phoenara'],   thresholds:[0,3,15,35] },
+        gecko:   { name:'Kaktusgecko',   emoji:'🌵', color:'#8bc34a', stages:['Pricklet','Spikeliz','Cactudon','Thornlord'], thresholds:[0,3,15,35] },
     },
+
+    // Basis-Pfad für Tier-Sprites (von Unterseiten auf '../companion-img' überschreiben)
+    SPRITE_BASE: 'companion-img',
 
     getCreature() {
         const d = this.getHubData();
@@ -179,11 +181,13 @@ const ZP10 = {
         return { pct: Math.min(100, pct), current: masteredCount - currentThr, next: nextThr - currentThr, nextTotal: nextThr };
     },
 
+    // Gibt Pfad-String zurück (kein Base64 mehr)
     getCreatureSprite(type, level) {
-        if (typeof CREATURE_SPRITES !== 'undefined' && CREATURE_SPRITES[type]) {
-            return CREATURE_SPRITES[type][level] || CREATURE_SPRITES[type][0];
-        }
-        return null;
+        return `${this.SPRITE_BASE}/${type}-${level}.png`;
+    },
+
+    getGuardianSprite(level) {
+        return `${this.SPRITE_BASE}/wolf-${level}.png`;
     },
 
     getCreatureMood(hubData) {
@@ -191,19 +195,24 @@ const ZP10 = {
         const c = hubData.creature;
         if (!c || !c.type) return { mood: 'neutral', emoji: '😐', label: 'Neutral', color: '#94a3b8' };
 
-        // Check for recently overcome misconception (strahlend)
         const modules = hubData.modules || {};
-        let recentOvercome = false;
-        let unsolvedMV = 0;
+        const now = new Date();
+        const DAY = 86400000;
+
+        // Daten sammeln
+        let recentOvercome = false, recentPerfect = false, unsolvedMV = 0;
+        let lastActivity = null, lastScore = 0;
         Object.values(modules).forEach(m => {
+            if (m.lastDate) {
+                const d = new Date(m.lastDate);
+                if (!lastActivity || d > lastActivity) lastActivity = d;
+            }
+            if (m.lastScore) lastScore = Math.max(lastScore, m.lastScore);
+            if (m.lastScore === 100 && m.lastDate && (now - new Date(m.lastDate)) < DAY) recentPerfect = true;
             if (m.fehlvorstellungen) {
                 m.fehlvorstellungen.forEach(mv => {
                     if (mv.overcome) {
-                        if (mv.overcomeDate) {
-                            const d = new Date(mv.overcomeDate);
-                            const now = new Date();
-                            if ((now - d) < 24 * 60 * 60 * 1000) recentOvercome = true;
-                        }
+                        if (mv.overcomeDate && (now - new Date(mv.overcomeDate)) < DAY) recentOvercome = true;
                     } else {
                         unsolvedMV++;
                     }
@@ -211,35 +220,37 @@ const ZP10 = {
             }
         });
 
+        const daysSince = lastActivity ? Math.floor((now - lastActivity) / DAY) : 999;
+
+        // 1. Gerade entwickelt?
+        const masteredCount = this.getMasteredMVCount();
+        const currentLevel = this.getCreatureLevel(masteredCount);
+        const storedLevel = c.level !== undefined ? c.level : currentLevel;
+        if (currentLevel > storedLevel) {
+            const d = this.getHubData();
+            if (d.creature) { d.creature.level = currentLevel; this.saveHubData(d); }
+            return { mood: 'begeistert', emoji: '🎉', label: 'Begeistert', color: '#ffd166' };
+        }
+
+        // 2. Perfekte Punktzahl heute?
+        if (recentPerfect) return { mood: 'stolz', emoji: '🏆', label: 'Stolz', color: '#f59e0b' };
+
+        // 3. MV kürzlich überwunden?
         if (recentOvercome) return { mood: 'shining', emoji: '✨', label: 'Strahlend', color: '#fbbf24' };
 
-        // Check for unresolved misconceptions (verletzt)
+        // 4. Rückkehr nach langer Pause?
+        if (daysSince >= 5 && lastActivity) return { mood: 'motivated', emoji: '💪', label: 'Motiviert', color: '#10b981' };
+
+        // 5. Viele ungelöste Fehlvorstellungen?
         if (unsolvedMV >= 3) return { mood: 'hurt', emoji: '🤕', label: 'Verletzt', color: '#ef4444' };
 
-        // Check streak and last session
-        const daily = JSON.parse(localStorage.getItem('zp10_daily_data') || '{"streak":0}');
-        const streak = daily.streak || 0;
-
-        // Check last activity date
-        let lastActivity = null;
-        Object.values(modules).forEach(m => {
-            if (m.lastDate) {
-                const d = new Date(m.lastDate);
-                if (!lastActivity || d > lastActivity) lastActivity = d;
-            }
-        });
-
-        const daysSinceActivity = lastActivity ? Math.floor((new Date() - lastActivity) / (1000 * 60 * 60 * 24)) : 999;
-
-        if (daysSinceActivity > 5) return { mood: 'tired', emoji: '😴', label: 'Müde', color: '#64748b' };
-
-        // Check last score
-        let lastScore = 0;
-        Object.values(modules).forEach(m => {
-            if (m.lastScore) lastScore = Math.max(lastScore, m.lastScore);
-        });
-
+        // 6. Guter Streak + Score?
+        let streak = 0;
+        try { streak = (JSON.parse(localStorage.getItem('zp10_daily_data') || '{}')).streak || 0; } catch(e) {}
         if (streak >= 3 && lastScore >= 70) return { mood: 'happy', emoji: '😊', label: 'Fröhlich', color: '#10b981' };
+
+        // 7. Lange inaktiv (kein Rückkehr-Flag = neuer User oder wirklich müde)?
+        if (daysSince > 5 && !lastActivity) return { mood: 'tired', emoji: '😴', label: 'Müde', color: '#64748b' };
 
         return { mood: 'neutral', emoji: '😐', label: 'Neutral', color: '#94a3b8' };
     },

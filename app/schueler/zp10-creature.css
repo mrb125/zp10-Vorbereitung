@@ -31,19 +31,24 @@
 .creature-sprite-wrap {
     position: relative;
     flex-shrink: 0;
-    width: 100px;
-    height: 100px;
+    width: 160px;
+    height: 160px;
     display: flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
 }
 
 .creature-sprite {
-    max-width: 100px;
-    max-height: 100px;
+    max-width: 160px;
+    max-height: 160px;
     object-fit: contain;
-    filter: drop-shadow(0 4px 12px rgba(124,106,245,0.3));
+    filter: drop-shadow(0 6px 16px rgba(124,106,245,0.3));
     animation: creatureBob 3s ease-in-out infinite;
+    transition: transform 0.15s;
+}
+.creature-sprite:hover {
+    transform: scale(1.06) translateY(-4px);
 }
 
 @keyframes creatureBob {

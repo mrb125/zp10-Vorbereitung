@@ -112,7 +112,10 @@
 
         <!-- Kreatur Hub Widget -->
         <div class="creature-hub-card" id="creatureHubWidget" style="display:none;" onclick="window.location.href='schueler/zp10-profil.html'">
-            <img id="creatureHubImg" class="creature-hub-sprite" src="" alt="">
+            <div class="creature-hub-sprite-wrap">
+                <img id="creatureHubImg" class="creature-hub-sprite" src="" alt="" onerror="this.style.display='none'">
+                <div class="creature-hub-mood-badge" id="creatureHubMoodBadge"></div>
+            </div>
             <div class="creature-hub-info">
                 <div class="creature-hub-name" id="creatureHubName"></div>
                 <div class="creature-hub-stage" id="creatureHubStage"></div>
@@ -475,7 +478,6 @@
     <script src="js/theme.js?v=20260409"></script>
     <script src="js/spaced-repetition.js?v=20260409"></script>
     <script src="js/shared.js?v=20260409"></script>
-    <script src="js/creature-sprites.js?v=20260409"></script>
     <script src="js/hub.js?v=20260409"></script>
 
     <!-- W1: KaTeX Accessibility -->

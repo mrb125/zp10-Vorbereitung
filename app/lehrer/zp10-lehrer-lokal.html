@@ -200,6 +200,21 @@
 
     <!-- CODES TAB -->
     <div id="codes" class="tab-content">
+      <!-- PASSWORT-RESET (lokal, am Gerät des Schülers) -->
+      <div class="card" style="border:2px solid var(--warning,#f59e0b);margin-bottom:1.5rem;">
+        <h2>🔓 Schüler-Passwort zurücksetzen</h2>
+        <p style="color:var(--text-secondary);margin-bottom:1rem;font-size:0.9rem;">
+          Wenn ein Schüler sein Passwort vergessen hat, öffne diese Seite <strong>auf dem Gerät des Schülers</strong> und klicke auf Reset. Das Passwort wird gelöscht und der Schüler kann beim nächsten Start ein neues vergeben.
+        </p>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <button onclick="resetStudentPassword()"
+              style="padding:10px 20px;background:var(--warning,#f59e0b);color:#000;border:none;border-radius:8px;font-weight:700;cursor:pointer;">
+            🔓 Passwort auf diesem Gerät zurücksetzen
+          </button>
+          <span id="resetPwStatus" style="font-size:0.85rem;color:var(--text-secondary);"></span>
+        </div>
+      </div>
+
       <div class="card">
         <h2>🔑 Schüler-Codes verwalten</h2>
         <p style="color:var(--text-secondary);margin-bottom:1.5rem;">
@@ -1176,6 +1191,15 @@
       const d = await r.json();
       if (d.ok) { codesStatus(`✅ ${d.added} Codes gespeichert`); loadCodes(); }
       else { codesStatus('Fehler: ' + (d.error || '?'), false); }
+    }
+
+    function resetStudentPassword() {
+      if (!confirm('Passwort auf diesem Gerät wirklich zurücksetzen? Der Schüler kann beim nächsten Start ein neues vergeben.')) return;
+      localStorage.removeItem('zp10_password');
+      sessionStorage.removeItem('zp10_authenticated');
+      const el = document.getElementById('resetPwStatus');
+      el.textContent = '✅ Passwort gelöscht! Schüler kann jetzt ein neues vergeben.';
+      el.style.color = 'var(--success,#10b981)';
     }
 
     function generateCodes() {
