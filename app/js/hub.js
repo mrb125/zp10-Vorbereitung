@@ -860,7 +860,9 @@ function renderCreatureHubWidget() {
 
         // Sprite + Glow-Farbe
         const spritePath = ZP10.getCreatureSprite(creature.type, level);
-        document.getElementById('creatureHubImg').src = spritePath;
+        const hubImg = document.getElementById('creatureHubImg');
+        hubImg.style.display = '';
+        hubImg.src = spritePath;
         widget.style.setProperty('--creature-color', cr.color + '33');
 
         // Mood-Badge
