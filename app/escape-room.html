@@ -2524,6 +2524,18 @@
         }
         .print-header-info { display: none; }
     </style>
+    <script src="js/zp10-storage.js"></script>
+    <script>
+    (function(){
+      const url = localStorage.getItem('zp10_server_url');
+      const key = localStorage.getItem('zp10_server_key');
+      if(url && key){
+        ZP10Storage.SERVER_URL = url;
+        ZP10Storage.API_KEY   = key;
+        ZP10Storage.flushSyncQueue?.();
+      }
+    })();
+    </script>
 </head>
 <body>
     <div class="app-container">
@@ -4896,6 +4908,17 @@
                 timestamp: new Date().toISOString()
             };
             localStorage.setItem('zp10_escape_results', JSON.stringify(finalResults));
+
+            // Server-Sync: Ergebnis ans PHP-Backend senden
+            ZP10Storage.saveModuleResult('ESCAPE', {
+                studentCode: finalResults.studentCode || localStorage.getItem('zp10_student_code') || 'GAST',
+                score:       Math.round(finalResults.successRate),
+                maxScore:    100,
+                percentage:  Math.round(finalResults.successRate),
+                xp:          finalResults.totalXP || 0,
+                mode:        'diagnose',
+                confidence:  finalResults.kompetenzScores || null,
+            });
 
             // IndexedDB: Session-Protokoll speichern (Phase 3A)
             zp10db.ready().then(() => zp10db.saveSession({
