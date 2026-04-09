@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZP10 Mathematik - Das verschlossene Archiv</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#D4A843">
+    <meta name="theme-color" content="#5B6CF0">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,89 +33,34 @@
             --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.7);
         }
 
-        /* ===== Theme: Archiv Gold (Default) ===== */
-        [data-theme="gold"], :root {
-            --primary: #C8A45C; --primary-light: #DBBF7A; --primary-dark: #A68840;
-            --accent: #D4443C; --accent-light: #E06860; --accent-dark: #B33830;
-            --success: #5C9B6D; --success-light: #7DB88C; --success-dark: #3E7A50;
-            --warning: #D4943C; --warning-light: #E0AD5C; --warning-dark: #B37830;
-            --danger: #C0392B; --danger-light: #D35A4E; --danger-dark: #A03020;
-            --bg: #1A1510; --bg-secondary: #231E16;
-            --surface: #2A2318; --surface-secondary: #33291E;
-            --text-primary: #E8DCC8; --text-secondary: #B8A88C; --text-tertiary: #8C7A60;
-            --border: #4A3C2A; --border-light: #3A2E1E;
-            --room-0: #C8A45C; --room-1: #8B6F47; --room-2: #6B8C7A; --room-3: #7A6B8C; --room-4: #8C7A5C;
-            --room-5: #A0522D; --room-6: #C8A45C; --room-7: #6B7A8C; --room-8: #8C5C5C; --room-9: #5C6B8C;
-            --glow-color: rgba(200, 164, 92, 0.3);
-            --ink: #2A1F14;
+        /* ===== Dark Mode (default) ===== */
+        :root, body, [data-theme="dark"] {
+            --primary: #5B6CF0; --primary-light: rgba(91,108,240,0.15); --primary-dark: #4A5AD0;
+            --accent:  #8B5CF6; --accent-light: rgba(139,92,246,0.15);
+            --success: #10B981; --warning: #F59E0B; --danger: #EF4444;
+            --bg: #0F172A; --bg-secondary: #1E293B;
+            --surface: #1E293B; --surface-secondary: #273549;
+            --text: #F1F5F9; --text-primary: #F1F5F9;
+            --text-secondary: #94A3B8; --text-tertiary: #64748B;
+            --border: #334155; --border-light: #1E293B;
+            --glow-color: rgba(91,108,240,0.25);
+            --ink: #0F172A;
+            --room-0:#5B6CF0;--room-1:#8B5CF6;--room-2:#06B6D4;--room-3:#10B981;--room-4:#F59E0B;
         }
 
-        /* ===== Theme: Mitternachtsblau + Gold ===== */
-        [data-theme="midnight"] {
-            --primary: #D4A843; --primary-light: #E0C06A; --primary-dark: #B08A30;
-            --accent: #4A90D9; --accent-light: #6AAAF0; --accent-dark: #3070B0;
-            --success: #5C9B6D; --success-light: #7DB88C; --success-dark: #3E7A50;
-            --warning: #D4943C; --warning-light: #E0AD5C; --warning-dark: #B37830;
-            --danger: #C0392B; --danger-light: #D35A4E; --danger-dark: #A03020;
-            --bg: #0D1B2A; --bg-secondary: #132438;
-            --surface: #1B2A3D; --surface-secondary: #223448;
-            --text-primary: #C8D6E5; --text-secondary: #8FA8C4; --text-tertiary: #5A7A9A;
-            --border: #2A3E58; --border-light: #1E3048;
-            --room-0: #D4A843; --room-1: #4A90D9; --room-2: #5CB88C; --room-3: #9A7AD4; --room-4: #D4943C;
-            --room-5: #D45A5A; --room-6: #D4A843; --room-7: #5A8CB8; --room-8: #B85C8C; --room-9: #5C8CB8;
-            --glow-color: rgba(212, 168, 67, 0.3);
-            --ink: #0D1B2A;
-        }
-
-        /* ===== Theme: Smaragdgrün + Bronze ===== */
-        [data-theme="emerald"] {
-            --primary: #CD7F32; --primary-light: #DDA050; --primary-dark: #A66828;
-            --accent: #3CB371; --accent-light: #5CD490; --accent-dark: #2A8A55;
-            --success: #5C9B6D; --success-light: #7DB88C; --success-dark: #3E7A50;
-            --warning: #D4943C; --warning-light: #E0AD5C; --warning-dark: #B37830;
-            --danger: #C0392B; --danger-light: #D35A4E; --danger-dark: #A03020;
-            --bg: #0A1F14; --bg-secondary: #102A1C;
-            --surface: #142E20; --surface-secondary: #1C3828;
-            --text-primary: #C8D8C4; --text-secondary: #8CAA84; --text-tertiary: #5A7A54;
-            --border: #2A4A34; --border-light: #1E3A28;
-            --room-0: #CD7F32; --room-1: #3CB371; --room-2: #7A9B8C; --room-3: #9B8C5C; --room-4: #5C8C7A;
-            --room-5: #A0522D; --room-6: #CD7F32; --room-7: #5C9B6D; --room-8: #8C5C7A; --room-9: #5C7A8C;
-            --glow-color: rgba(205, 127, 50, 0.3);
-            --ink: #0A1F14;
-        }
-
-        /* ===== Theme: Weinrot + Silber ===== */
-        [data-theme="wine"] {
-            --primary: #B8C4D0; --primary-light: #D0D8E0; --primary-dark: #8CA0B8;
-            --accent: #C44D58; --accent-light: #D87080; --accent-dark: #A03040;
-            --success: #5C9B6D; --success-light: #7DB88C; --success-dark: #3E7A50;
-            --warning: #D4943C; --warning-light: #E0AD5C; --warning-dark: #B37830;
-            --danger: #C0392B; --danger-light: #D35A4E; --danger-dark: #A03020;
-            --bg: #1A0A10; --bg-secondary: #24121A;
-            --surface: #2A141C; --surface-secondary: #341C26;
-            --text-primary: #E0D0D4; --text-secondary: #B8A0A8; --text-tertiary: #8A6A74;
-            --border: #4A2A38; --border-light: #3A1E2A;
-            --room-0: #B8C4D0; --room-1: #C44D58; --room-2: #8C7A9B; --room-3: #9B8C7A; --room-4: #7A8C9B;
-            --room-5: #A05040; --room-6: #B8C4D0; --room-7: #7A6B8C; --room-8: #8C5C5C; --room-9: #5C6B8C;
-            --glow-color: rgba(184, 196, 208, 0.3);
-            --ink: #1A0A10;
-        }
-
-        /* ===== Theme: Lila + Kupfer ===== */
-        [data-theme="mystic"] {
-            --primary: #C87533; --primary-light: #DD9050; --primary-dark: #A06028;
-            --accent: #9B59B6; --accent-light: #B87ACC; --accent-dark: #7D3F9A;
-            --success: #5C9B6D; --success-light: #7DB88C; --success-dark: #3E7A50;
-            --warning: #D4943C; --warning-light: #E0AD5C; --warning-dark: #B37830;
-            --danger: #C0392B; --danger-light: #D35A4E; --danger-dark: #A03020;
-            --bg: #12091A; --bg-secondary: #1A1024;
-            --surface: #1E1228; --surface-secondary: #281A34;
-            --text-primary: #D4C8E0; --text-secondary: #A898B8; --text-tertiary: #7A688C;
-            --border: #3A2850; --border-light: #2A1E3A;
-            --room-0: #C87533; --room-1: #9B59B6; --room-2: #6B8C9B; --room-3: #B89858; --room-4: #8C6B9B;
-            --room-5: #A05840; --room-6: #C87533; --room-7: #6B7A9B; --room-8: #9B5C7A; --room-9: #5C6B9B;
-            --glow-color: rgba(200, 117, 51, 0.3);
-            --ink: #12091A;
+        /* ===== Light Mode ===== */
+        [data-theme="light"] {
+            --primary: #5B6CF0; --primary-light: rgba(91,108,240,0.12); --primary-dark: #4A5AD0;
+            --accent:  #8B5CF6; --accent-light: rgba(139,92,246,0.12);
+            --success: #10B981; --warning: #F59E0B; --danger: #EF4444;
+            --bg: #F0F4FF; --bg-secondary: #E8EEFF;
+            --surface: #FFFFFF; --surface-secondary: #F8FAFF;
+            --text: #1A1D3B; --text-primary: #1A1D3B;
+            --text-secondary: #6B7199; --text-tertiary: #9CA3C4;
+            --border: #E4E8F7; --border-light: #F0F4FF;
+            --glow-color: rgba(91,108,240,0.15);
+            --ink: #FFFFFF;
+            --room-0:#5B6CF0;--room-1:#8B5CF6;--room-2:#06B6D4;--room-3:#10B981;--room-4:#F59E0B;
         }
 
         /* ============== ANIMATIONS ============== */
@@ -294,27 +239,6 @@
             align-items: center;
             gap: var(--spacing-xs);
             animation: pulse 2s ease-in-out infinite;
-        }
-
-        .theme-cycle-btn {
-            background: var(--bg);
-            border: 1px solid var(--border);
-            width: 44px;
-            height: 44px;
-            border-radius: var(--radius-lg);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            font-size: 1.25rem;
-        }
-
-        .theme-cycle-btn:hover {
-            background: var(--bg-secondary);
-            transform: scale(1.1) rotate(15deg);
-            border-color: var(--primary);
-            box-shadow: 0 0 12px var(--glow-color);
         }
 
         .main-content {
@@ -2548,12 +2472,10 @@
                 <div class="logo-small">Mathematik Diagnostic</div>
             </div>
             <div class="header-right">
-                <div class="timer-display" id="globalTimer">150:00</div>
                 <div class="xp-badge">
                     <span>⭐</span>
                     <span id="xpDisplay">0</span> XP
                 </div>
-                <button class="theme-cycle-btn" id="themeCycleBtn" title="Design wechseln" onclick="cycleTheme()">🎨</button>
             </div>
         </div>
 
@@ -2731,11 +2653,6 @@
                             <div class="result-value" id="successRate">0%</div>
                             <div class="result-description">Richtige Antworten</div>
                         </div>
-                        <div class="result-card success">
-                            <div class="result-label">Gesamtzeit</div>
-                            <div class="result-value" id="totalTime">0:00</div>
-                            <div class="result-description">Benötigte Zeit</div>
-                        </div>
                     </div>
 
                     <div class="competency-matrix">
@@ -2793,28 +2710,7 @@
     </div>
 
     <script>
-        // ============== THEME SYSTEM ==============
-        const THEMES = ['gold', 'midnight', 'emerald', 'wine', 'mystic'];
-        const THEME_NAMES = { gold: 'Archiv Gold', midnight: 'Mitternacht', emerald: 'Smaragd', wine: 'Weinrot', mystic: 'Mystisch' };
-
-        function setTheme(themeName) {
-            document.documentElement.setAttribute('data-theme', themeName);
-            localStorage.setItem('zp10_escape_theme', themeName);
-            document.querySelectorAll('.theme-swatch').forEach(s => {
-                s.classList.toggle('active', s.dataset.theme === themeName);
-            });
-        }
-
-        function cycleTheme() {
-            const current = localStorage.getItem('zp10_escape_theme') || 'gold';
-            const idx = THEMES.indexOf(current);
-            const next = THEMES[(idx + 1) % THEMES.length];
-            setTheme(next);
-        }
-
-        // Load saved theme immediately
-        const savedTheme = localStorage.getItem('zp10_escape_theme') || 'gold';
-        document.documentElement.setAttribute('data-theme', savedTheme);
+        // Theme is handled globally by theme.js (ZP10Theme)
 
         // ============== INDEXEDDB ABSTRACTION LAYER (Phase 3A) ==============
         class ZP10Database {
@@ -5160,29 +5056,7 @@
             window.location.href = 'index.html?hub';
         }
 
-        // ============== THEME CYCLING ==============
-        // Theme cycling is handled by the themeCycleBtn button with onclick="cycleTheme()"
 
-        // ============== TIMER ==============
-        let globalTimer = setInterval(() => {
-            if (!AppState.global.startTime) return;
-            const elapsed = Math.floor((Date.now() - AppState.global.startTime) / 1000);
-            const remaining = 9000 - elapsed;
-            if (remaining <= 0) {
-                clearInterval(globalTimer);
-                document.getElementById('globalTimer').textContent = '0:00';
-                return;
-            }
-            const timerDisplay = document.getElementById('globalTimer');
-            timerDisplay.textContent = formatTime(remaining);
-            timerDisplay.classList.remove('warning', 'danger');
-            if (remaining < 300) {
-                timerDisplay.classList.add('warning');
-            }
-            if (remaining < 60) {
-                timerDisplay.classList.add('danger');
-            }
-        }, 1000);
 
         // ============== FORMELSAMMLUNG ==============
         function toggleFormelsammlung() {
@@ -5240,12 +5114,6 @@
                 navigator.serviceWorker.register('./sw.js').catch(() => {});
             }
 
-            // Theme selector
-            const savedTheme = localStorage.getItem('zp10_escape_theme') || 'gold';
-            document.querySelectorAll('.theme-swatch').forEach(swatch => {
-                swatch.classList.toggle('active', swatch.dataset.theme === savedTheme);
-                swatch.addEventListener('click', () => setTheme(swatch.dataset.theme));
-            });
         });
     </script>
 
