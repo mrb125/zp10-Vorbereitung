@@ -33,23 +33,8 @@
             --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.7);
         }
 
-        /* ===== Dark Mode (default) ===== */
-        :root, body, [data-theme="dark"] {
-            --primary: #5B6CF0; --primary-light: rgba(91,108,240,0.15); --primary-dark: #4A5AD0;
-            --accent:  #8B5CF6; --accent-light: rgba(139,92,246,0.15);
-            --success: #10B981; --warning: #F59E0B; --danger: #EF4444;
-            --bg: #0F172A; --bg-secondary: #1E293B;
-            --surface: #1E293B; --surface-secondary: #273549;
-            --text: #F1F5F9; --text-primary: #F1F5F9;
-            --text-secondary: #94A3B8; --text-tertiary: #64748B;
-            --border: #334155; --border-light: #1E293B;
-            --glow-color: rgba(91,108,240,0.25);
-            --ink: #0F172A;
-            --room-0:#5B6CF0;--room-1:#8B5CF6;--room-2:#06B6D4;--room-3:#10B981;--room-4:#F59E0B;
-        }
-
-        /* ===== Light Mode ===== */
-        [data-theme="light"] {
+        /* ===== Light Mode (default) ===== */
+        :root, body, [data-theme="light"] {
             --primary: #5B6CF0; --primary-light: rgba(91,108,240,0.12); --primary-dark: #4A5AD0;
             --accent:  #8B5CF6; --accent-light: rgba(139,92,246,0.12);
             --success: #10B981; --warning: #F59E0B; --danger: #EF4444;
@@ -60,6 +45,21 @@
             --border: #E4E8F7; --border-light: #F0F4FF;
             --glow-color: rgba(91,108,240,0.15);
             --ink: #FFFFFF;
+            --room-0:#5B6CF0;--room-1:#8B5CF6;--room-2:#06B6D4;--room-3:#10B981;--room-4:#F59E0B;
+        }
+
+        /* ===== Dark Mode ===== */
+        [data-theme="dark"] {
+            --primary: #5B6CF0; --primary-light: rgba(91,108,240,0.15); --primary-dark: #4A5AD0;
+            --accent:  #8B5CF6; --accent-light: rgba(139,92,246,0.15);
+            --success: #10B981; --warning: #F59E0B; --danger: #EF4444;
+            --bg: #0F172A; --bg-secondary: #1E293B;
+            --surface: #1E293B; --surface-secondary: #273549;
+            --text: #F1F5F9; --text-primary: #F1F5F9;
+            --text-secondary: #94A3B8; --text-tertiary: #64748B;
+            --border: #334155; --border-light: #1E293B;
+            --glow-color: rgba(91,108,240,0.25);
+            --ink: #0F172A;
             --room-0:#5B6CF0;--room-1:#8B5CF6;--room-2:#06B6D4;--room-3:#10B981;--room-4:#F59E0B;
         }
 
@@ -4606,6 +4606,21 @@
 
             AppState.global.currentRoom++;
             saveToLocalStorage();
+
+            // Zwischenstand nach jedem Raum ans Backend senden
+            const completedRoom = ROOMS[AppState.global.currentRoom - 1];
+            const roomStats = AppState.global.allRoomStats[completedRoom?.id] || {};
+            ZP10Storage.saveModuleResult('ESCAPE_ROOM_' + (AppState.global.currentRoom), {
+                studentCode: localStorage.getItem('zp10_student_code') || 'GAST',
+                score:       roomStats.correct || 0,
+                maxScore:    roomStats.total || 0,
+                percentage:  roomStats.total ? Math.round((roomStats.correct / roomStats.total) * 100) : 0,
+                xp:          AppState.global.totalXP,
+                mode:        'escape_partial',
+                roomId:      completedRoom?.id || '',
+                roomsDone:   AppState.global.currentRoom,
+                roomsTotal:  ROOMS.length,
+            });
 
             if (AppState.global.currentRoom >= ROOMS.length) {
                 setTimeout(showFinalEvaluation, 1500);
