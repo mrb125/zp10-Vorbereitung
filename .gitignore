@@ -1,2 +1,4 @@
 # Datenbank-Konfiguration NIEMALS committen!
 api/config.php
+# Auto-generiert beim Deploy
+app/js/api-config.js

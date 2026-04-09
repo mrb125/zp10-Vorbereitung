@@ -18,9 +18,23 @@ const ZP10Storage = {
   _ready: false,
 
   // ─── Server-Sync Konfiguration ───────────────────────────────────────────
-  // In index.html setzen: ZP10Storage.SERVER_URL = 'https://domain.de/api';
-  SERVER_URL: null,
-  API_KEY: null,
+  // Priorität: 1. explizit gesetzt, 2. localStorage, 3. api-config.js (deploy-generiert)
+  get SERVER_URL() {
+    return this._SERVER_URL
+      || localStorage.getItem('zp10_server_url')
+      || window.ZP10_SERVER_URL
+      || null;
+  },
+  set SERVER_URL(v) { this._SERVER_URL = v; },
+  get API_KEY() {
+    return this._API_KEY
+      || localStorage.getItem('zp10_server_key')
+      || window.ZP10_API_KEY
+      || null;
+  },
+  set API_KEY(v) { this._API_KEY = v; },
+  _SERVER_URL: null,
+  _API_KEY: null,
 
   async init() {
     if (this._db) return this._db;

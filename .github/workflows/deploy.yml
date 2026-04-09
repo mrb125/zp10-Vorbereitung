@@ -27,6 +27,14 @@ jobs:
           date_default_timezone_set('Europe/Berlin');
           EOF
 
+      - name: api-config.js aus Secrets generieren
+        run: |
+          cat > app/js/api-config.js << 'EOF'
+          // Auto-generiert beim Deploy — nicht committen
+          window.ZP10_SERVER_URL = 'https://mrbl.4lima.de/api';
+          window.ZP10_API_KEY    = '${{ secrets.API_KEY }}';
+          EOF
+
       - name: FTP Deploy API
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
