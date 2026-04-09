@@ -85,10 +85,17 @@
             <input type="text" class="input" id="nameFilter" placeholder="Name eingeben..." onchange="filterTable()">
           </div>
           <div class="filter-group">
+            <label>Klasse:</label>
+            <select class="input" id="classFilter" onchange="filterTable()" style="min-width:110px;">
+              <option value="">Alle Klassen</option>
+            </select>
+          </div>
+          <div class="filter-group">
             <label>Min. Score:</label>
             <input type="number" class="input" id="minScore" placeholder="0" min="0" max="100" onchange="filterTable()">
           </div>
           <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <button class="btn btn--primary btn--sm" onclick="addNewClass()">➕ Neue Klasse</button>
             <button class="btn btn--primary btn--sm" onclick="exportCSV()">📥 CSV Export</button>
             <button class="btn btn--secondary btn--sm" onclick="window.print()">🖨️ Drucken</button>
             <button class="btn btn--secondary btn--sm" onclick="loadDemo()">🎮 Demo laden</button>
@@ -516,6 +523,12 @@
         updateStats();
         return;
       }
+      // Populate class filter dropdown
+      const classes = extractClasses(s);
+      const cf = document.getElementById('classFilter');
+      const prevClass = cf.value;
+      cf.innerHTML = '<option value="">Alle Klassen</option>' + classes.map(c => `<option value="${c}"${c === prevClass ? ' selected' : ''}>${c}</option>`).join('');
+
       tb.innerHTML = s.map(st => {
         const ms = Object.values(st.modules || {}).map(m => m.score || 0);
         const as = ms.length > 0 ? Math.round(ms.reduce((a, b) => a + b, 0) / ms.length) : 0;
@@ -533,7 +546,8 @@
         } else {
           statusBadge = '<span style="color:#94a3b8;font-size:1rem;" title="Noch nie eingeloggt">⚪</span>';
         }
-        return `<tr><td><span class="student-name" onclick="openProfile('${st.name}')">${st.name}</span></td><td>${statusBadge}</td><td><span class="score-badge ${abc}">${as}%</span></td><td><span class="score-badge ${gbc}">Note ${ag}</span></td><td>${Object.keys(st.modules).length}</td><td><strong>${st.totalXP || 0}</strong></td><td>${mc > 0 ? `<span class="badge badge--danger">${mc}</span>` : '—'}</td><td style="font-size: 0.8125rem; color: var(--text-secondary);">${la}</td></tr>`;
+        const classPrefix = extractClassFromCode(st.code || '');
+        return `<tr data-code="${st.code || ''}" data-class="${classPrefix}"><td><span class="student-name" onclick="openProfile('${st.name}')">${st.name}</span></td><td>${statusBadge}</td><td><span class="score-badge ${abc}">${as}%</span></td><td><span class="score-badge ${gbc}">Note ${ag}</span></td><td>${Object.keys(st.modules).length}</td><td><strong>${st.totalXP || 0}</strong></td><td>${mc > 0 ? `<span class="badge badge--danger">${mc}</span>` : '—'}</td><td style="font-size: 0.8125rem; color: var(--text-secondary);">${la}</td></tr>`;
       }).join('');
       updateStats();
     }
@@ -550,11 +564,37 @@
     function filterTable() {
       const nf = document.getElementById('nameFilter').value.toLowerCase();
       const ms = parseInt(document.getElementById('minScore').value) || 0;
+      const cf = document.getElementById('classFilter').value;
       document.querySelectorAll('#classTableBody tr').forEach(r => {
+        if (!r.cells || r.cells.length < 3) return;
         const nm = r.cells[0].textContent.toLowerCase();
-        const sc = parseInt(r.cells[1].textContent) || 0;
-        r.style.display = (nm.includes(nf) && sc >= ms) ? '' : 'none';
+        const sc = parseInt(r.cells[2].textContent) || 0;
+        const cls = r.dataset.class || '';
+        r.style.display = (nm.includes(nf) && sc >= ms && (!cf || cls === cf)) ? '' : 'none';
       });
+    }
+
+    function extractClassFromCode(code) {
+      if (!code) return '';
+      const parts = code.split('-');
+      return parts.length > 1 ? parts.slice(0, -1).join('-') : code;
+    }
+
+    function extractClasses(students) {
+      const classes = new Set();
+      students.forEach(st => {
+        const cls = extractClassFromCode(st.code || '');
+        if (cls) classes.add(cls);
+      });
+      return [...classes].sort();
+    }
+
+    function addNewClass() {
+      switchTab('codes');
+      setTimeout(() => {
+        const el = document.getElementById('genPrefix');
+        if (el) { el.focus(); el.select(); }
+      }, 100);
     }
 
     let sd = {};
