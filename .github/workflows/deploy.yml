@@ -13,6 +13,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: config.php aus Secrets generieren
+        run: |
+          cat > api/config.php << 'EOF'
+          <?php
+          define('DB_HOST', 'localhost');
+          define('DB_NAME', '${{ secrets.DB_NAME }}');
+          define('DB_USER', '${{ secrets.DB_USER }}');
+          define('DB_PASS', '${{ secrets.DB_PASS }}');
+          define('API_KEY', '${{ secrets.API_KEY }}');
+          define('ALLOWED_ORIGIN', '*');
+          date_default_timezone_set('Europe/Berlin');
+          EOF
+
       - name: FTP Deploy
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
