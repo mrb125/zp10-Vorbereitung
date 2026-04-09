@@ -70,177 +70,147 @@
 
     <!-- Main Content -->
     <main>
-        <!-- Hero Section: Countdown + Progress Ring + Quick Stats -->
-        <div class="hero-section">
-            <!-- Countdown Card -->
-            <div class="countdown-card">
-                <div class="countdown-label">Zeit bis ZP10</div>
-                <div class="countdown-value" id="countdownDays">-</div>
-                <div class="countdown-date">Mai 2026</div>
-            </div>
 
-            <!-- Progress Ring Card -->
-            <div class="progress-ring-card">
-                <div class="progress-ring-container">
-                    <svg class="progress-ring-svg" viewBox="0 0 160 160">
-                        <defs>
-                            <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:var(--secondary);stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:var(--primary);stop-opacity:1" />
-                            </linearGradient>
-                        </defs>
-                        <circle class="progress-ring-background" cx="80" cy="80" r="70"></circle>
-                        <circle class="progress-ring-fill" id="progressRing" cx="80" cy="80" r="70" style="stroke-dasharray: 440; stroke-dashoffset: 440;"></circle>
-                    </svg>
-                    <div class="progress-ring-text">
-                        <div class="progress-ring-percent" id="progressPercent">0%</div>
-                        <div class="progress-ring-label">Fortschritt</div>
-                    </div>
+        <!-- ===== HERO BANNER ===== -->
+        <section id="hub-hero" class="hub-hero">
+            <div class="hub-hero-inner">
+                <div class="hub-hero-greeting">
+                    <div class="hub-hero-title">Hallo, <span id="heroName">Schüler</span>! 👋</div>
+                    <div class="hub-hero-sub">Dein ZP10-Dashboard</div>
                 </div>
-                <div class="progress-quick-stats">
-                    <div class="quick-stat">
-                        <div class="quick-stat-label">Module</div>
-                        <div class="quick-stat-value"><span id="modulesCompleted">0</span>/<span id="modulesTotal">13</span></div>
+                <div class="hub-hero-stats">
+                    <div class="hub-stat-box">
+                        <div class="hub-stat-value" id="heroXP">0</div>
+                        <div class="hub-stat-label">XP</div>
                     </div>
-                    <div class="quick-stat">
-                        <div class="quick-stat-label">Erfolge</div>
-                        <div class="quick-stat-value" id="achievementCount">0</div>
+                    <div class="hub-stat-box">
+                        <div class="hub-stat-value"><span id="modulesCompleted">0</span>/<span id="modulesTotal">13</span></div>
+                        <div class="hub-stat-label">Module</div>
+                    </div>
+                    <div class="hub-stat-box">
+                        <div class="hub-stat-value" id="heroStreak">0</div>
+                        <div class="hub-stat-label">🔥 Streak</div>
+                    </div>
+                    <div class="hub-stat-box hub-stat-box--countdown">
+                        <div class="hub-stat-value" id="countdownDays">-</div>
+                        <div class="hub-stat-label">Tage bis ZP10</div>
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <!-- Kreatur Hub Widget -->
-        <div class="creature-hub-card" id="creatureHubWidget" style="display:none;" onclick="window.location.href='schueler/zp10-profil.html'">
-            <div class="creature-hub-sprite-wrap">
-                <img id="creatureHubImg" class="creature-hub-sprite" src="" alt="" onerror="this.style.display='none'">
-                <div class="creature-hub-mood-badge" id="creatureHubMoodBadge"></div>
-            </div>
-            <div class="creature-hub-info">
-                <div class="creature-hub-name" id="creatureHubName"></div>
-                <div class="creature-hub-stage" id="creatureHubStage"></div>
-                <div class="creature-hub-mood" id="creatureHubMood"></div>
-                <div class="creature-hub-hint" id="creatureHubHint" style="display:none;"></div>
-                <div class="creature-hub-xp-section">
-                    <div class="creature-hub-xp-bar"><div class="creature-hub-xp-fill" id="creatureHubXpFill"></div></div>
+        <!-- ===== TIER + NEBELWOLF nebeneinander ===== -->
+        <section id="hub-creatures" class="hub-creatures">
+            <!-- Kreatur Hub Widget -->
+            <div class="creature-hub-card" id="creatureHubWidget" style="display:none;" onclick="window.location.href='schueler/zp10-profil.html'">
+                <div class="creature-hub-sprite-wrap">
+                    <img id="creatureHubImg" class="creature-hub-sprite" src="" alt="" onerror="this.style.display='none'">
+                    <div class="creature-hub-mood-badge" id="creatureHubMoodBadge"></div>
+                </div>
+                <div class="creature-hub-info">
+                    <div class="creature-hub-name" id="creatureHubName"></div>
+                    <div class="creature-hub-stage" id="creatureHubStage"></div>
+                    <div class="creature-hub-mood" id="creatureHubMood"></div>
+                    <div class="creature-hub-hint" id="creatureHubHint" style="display:none;"></div>
+                    <div class="creature-hub-xp-section">
+                        <div class="creature-hub-xp-bar"><div class="creature-hub-xp-fill" id="creatureHubXpFill"></div></div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Guardian (Klassen-Nebelwolf) -->
-        <div class="guardian-card" id="guardianWidget" style="display:none;">
-            <img id="guardianImg" class="guardian-sprite" src="" alt="">
-            <div class="guardian-info">
-                <div class="guardian-name" id="guardianName">🐺 Nebelwolf</div>
-                <div class="guardian-stage" id="guardianStage"></div>
-                <div class="guardian-xp-section">
-                    <div class="guardian-xp-bar"><div class="guardian-xp-fill" id="guardianXpFill"></div></div>
-                    <div class="guardian-xp-text" id="guardianXpText"></div>
+            <!-- Guardian (Klassen-Nebelwolf) -->
+            <div class="guardian-card" id="guardianWidget" style="display:none;">
+                <img id="guardianImg" class="guardian-sprite" src="" alt="">
+                <div class="guardian-info">
+                    <div class="guardian-name" id="guardianName">🐺 Nebelwolf</div>
+                    <div class="guardian-stage" id="guardianStage"></div>
+                    <div class="guardian-xp-section">
+                        <div class="guardian-xp-bar"><div class="guardian-xp-fill" id="guardianXpFill"></div></div>
+                        <div class="guardian-xp-text" id="guardianXpText"></div>
+                    </div>
+                    <div class="guardian-contributors">Gefüttert von der ganzen Klasse</div>
                 </div>
-                <div class="guardian-contributors">Gefüttert von der ganzen Klasse</div>
             </div>
-        </div>
+        </section>
 
-        <!-- Featured Cards: Exam Simulator & Daily Challenge -->
-        <div class="featured-cards">
-            <!-- Exam Simulator Card -->
-            <a href="schueler/zp10-pruefung.html" class="featured-card featured-card-exam">
-                <div class="featured-card-header">
-                    <div class="featured-card-icon">
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <!-- ===== QUICK ACTIONS STRIP ===== -->
+        <section id="hub-quick-actions" class="hub-quick-actions-section">
+            <div class="hub-quick-actions-strip">
+
+                <!-- Prüfungssimulation -->
+                <a href="schueler/zp10-pruefung.html" class="quick-action-tile quick-action-tile--exam">
+                    <div class="quick-action-icon">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="10"></circle>
                             <polyline points="12 6 12 12 16 14"></polyline>
                         </svg>
                     </div>
-                </div>
-                <h3 class="featured-card-title">Prüfungssimulation</h3>
-                <p class="featured-card-description">Trainiere unter echten Bedingungen mit vollständigen Prüfungsbedingungen</p>
-                <div class="featured-card-meta">
-                    <div class="featured-card-meta-item">
-                        ⏱️ <span class="featured-card-meta-value">180 Min</span>
-                    </div>
-                    <div class="featured-card-meta-item" id="examResultInfo">
-                        Noch nicht versucht
-                    </div>
-                </div>
-                <button class="featured-card-cta">Starten →</button>
-            </a>
+                    <div class="quick-action-label">Prüfungs&shy;simulation</div>
+                </a>
 
-            <!-- Daily Challenge Card -->
-            <a href="extras/zp10-daily.html" class="featured-card featured-card-challenge" id="dailyChallengeCard">
-                <div class="featured-card-header">
-                    <div class="featured-card-icon">
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <!-- Daily Challenge -->
+                <a href="extras/zp10-daily.html" class="quick-action-tile quick-action-tile--daily" id="dailyChallengeCard">
+                    <div class="quick-action-icon">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
                             <polyline points="13 2 13 9 20 9"></polyline>
                         </svg>
                     </div>
-                </div>
-                <h3 class="featured-card-title" id="dailyChallengeTitle">5-Minuten-Challenge</h3>
-                <p class="featured-card-description" id="dailyChallengeDescription">5 Aufgaben aus allen Themen</p>
-                <div class="featured-card-meta">
-                    <div class="featured-card-meta-item">
-                        🔥 Streak: <span class="featured-card-meta-value" id="streakDisplay">0</span>
+                    <div class="quick-action-label" id="dailyChallengeTitle">Daily Challenge</div>
+                    <div class="quick-action-badge" id="streakDisplay" style="display:none;"></div>
+                </a>
+
+                <!-- Formelsammlung -->
+                <a href="schueler/zp10-formelsammlung.html" class="quick-action-tile quick-action-tile--formula">
+                    <div class="quick-action-icon">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                        </svg>
                     </div>
-                    <div class="featured-card-meta-item" id="todayStatus">
-                        Offen
+                    <div class="quick-action-label">Formel&shy;sammlung</div>
+                </a>
+
+                <!-- Lernplaner -->
+                <a href="schueler/zp10-lernplaner.html" class="quick-action-tile quick-action-tile--planer">
+                    <div class="quick-action-icon">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"></path>
+                            <polyline points="9 5 9 19"></polyline>
+                            <polyline points="15 5 15 19"></polyline>
+                        </svg>
                     </div>
-                </div>
-                <button class="featured-card-cta" id="dailyChallengeBtn">Starten →</button>
-            </a>
-        </div>
+                    <div class="quick-action-label">Lernplaner</div>
+                </a>
 
-        <!-- Quick Actions -->
-        <div class="quick-actions-grid">
-            <a href="schueler/zp10-formelsammlung.html" class="action-card">
-                <div class="action-card-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                    </svg>
-                </div>
-                <div class="action-card-title">Formelsammlung</div>
-                <div class="action-card-subtitle">Alle wichtigen Formeln</div>
-            </a>
+                <!-- Guide -->
+                <a href="schueler/zp10-guide.html" class="quick-action-tile quick-action-tile--guide">
+                    <div class="quick-action-icon">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
+                    </div>
+                    <div class="quick-action-label">Guide</div>
+                </a>
 
-            <a href="schueler/zp10-lernplaner.html" class="action-card">
-                <div class="action-card-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"></path>
-                        <polyline points="9 5 9 19"></polyline>
-                        <polyline points="15 5 15 19"></polyline>
-                    </svg>
-                </div>
-                <div class="action-card-title">Lernplaner</div>
-                <div class="action-card-subtitle">Dein persönlicher Plan</div>
-            </a>
+                <!-- Lehrer-Dashboard (hidden by default) -->
+                <a href="" class="quick-action-tile quick-action-tile--lehrer" id="lehrerActionCard" style="display: none;">
+                    <div class="quick-action-icon">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                    <div class="quick-action-label">Lehrer-Dashboard</div>
+                </a>
 
-            <a href="schueler/zp10-guide.html" class="action-card">
-                <div class="action-card-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <line x1="12" y1="16" x2="12" y2="12"></line>
-                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                    </svg>
-                </div>
-                <div class="action-card-title">Guide</div>
-                <div class="action-card-subtitle">Hilfe & Tipps</div>
-            </a>
+            </div>
+        </section>
 
-            <a href="" class="action-card" id="lehrerActionCard" style="display: none;">
-                <div class="action-card-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="12" cy="7" r="4"></circle>
-                    </svg>
-                </div>
-                <div class="action-card-title">Lehrer-Dashboard</div>
-                <div class="action-card-subtitle">Schülerübersicht</div>
-            </a>
-        </div>
-
-        <!-- Modules Section -->
-        <section>
+        <!-- ===== MODULE GRID ===== -->
+        <section id="hub-modules">
             <h2 class="section-title">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="3" width="7" height="7"></rect>
@@ -253,14 +223,9 @@
             <div class="modules-grid" id="modulesContainer"></div>
         </section>
 
-        <!-- Extra Modules Section -->
-        <section class="collapsible-section">
+        <!-- Extra Modules Section (hidden, kept for JS compatibility) -->
+        <section class="collapsible-section" style="display:none;">
             <button class="collapsible-header" id="extraModulesToggle" aria-expanded="false">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="1"></circle>
-                    <circle cx="19" cy="12" r="1"></circle>
-                    <circle cx="5" cy="12" r="1"></circle>
-                </svg>
                 Zusätzliche Übungsmodule
                 <div class="collapsible-toggle">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -273,186 +238,14 @@
             </div>
         </section>
 
-        <!-- Extras & Tools Section -->
-        <section>
-            <h2 class="section-title">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 2v20M2 12h20"/>
-                </svg>
-                Extras & Tools
-            </h2>
-            <div class="modules-grid">
-                <!-- Üben für Zuhause -->
-                <a href="extras/zp10-ueben.html" class="module-card" style="border: 2px solid var(--primary); background: var(--primary-light);">
-                    <div class="module-header">
-                        <div>
-                            <h3 style="margin-bottom: 0.25rem;">Üben für Zuhause</h3>
-                            <p style="font-size: 0.8125rem; color: var(--text-secondary);">Persönliches Training</p>
-                        </div>
-                        <div class="module-icon-wrapper" style="background: linear-gradient(135deg, #5B6CF0, #8B5CF6);">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                                <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                            </svg>
-                        </div>
-                    </div>
-                    <p style="font-size: 0.8125rem; color: var(--text-secondary); margin: 0;">Schwächen trainieren, gemischt üben & mehr</p>
-                </a>
-
-                <!-- Daily Challenge -->
-                <a href="extras/zp10-daily.html" class="module-card">
-                    <div class="module-header">
-                        <div>
-                            <h3 style="margin-bottom: 0.25rem;">Tägliche Challenge</h3>
-                            <p style="font-size: 0.8125rem; color: var(--text-secondary);">5 Min Training</p>
-                        </div>
-                        <div class="module-icon-wrapper">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <polyline points="12 6 12 12 16 14"></polyline>
-                            </svg>
-                        </div>
-                    </div>
-                    <p style="font-size: 0.8125rem; color: var(--text-secondary); margin: 0;">Spaced Repetition & Streak</p>
-                </a>
-
-                <!-- Escape Room -->
-                <a href="extras/zp10-escape-room.html" class="module-card">
-                    <div class="module-header">
-                        <div>
-                            <h3 style="margin-bottom: 0.25rem;">Escape Room</h3>
-                            <p style="font-size: 0.8125rem; color: var(--text-secondary);">Rätsel</p>
-                        </div>
-                        <div class="module-icon-wrapper" style="background: linear-gradient(135deg, #FF6B8A, #E85A7D);">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="3" y="11" width="18" height="11"></rect>
-                                <path d="M7 11V7a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v4"></path>
-                            </svg>
-                        </div>
-                    </div>
-                    <p style="font-size: 0.8125rem; color: var(--text-secondary); margin: 0;">Löse Rätsel und knacke den Code</p>
-                </a>
-
-                <!-- Interleaving (Gemischtes Training) -->
-                <a href="extras/zp10-interleaving.html" class="module-card">
-                    <div class="module-header">
-                        <div>
-                            <h3 style="margin-bottom: 0.25rem;">Gemischtes Training</h3>
-                            <p style="font-size: 0.8125rem; color: var(--text-secondary);">Bunt gemischt</p>
-                        </div>
-                        <div class="module-icon-wrapper" style="background: linear-gradient(135deg, #06B6D4, #0891B2);">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="23 6 13.5 15.5 8 10 1 17"></polyline>
-                                <polyline points="17 6 23 6 23 12"></polyline>
-                            </svg>
-                        </div>
-                    </div>
-                    <p style="font-size: 0.8125rem; color: var(--text-secondary); margin: 0;">Fragen aus allen Themen gemischt</p>
-                </a>
-
-                <!-- Error Detective (Fehlerdetektiv) -->
-                <a href="extras/zp10-fehleranalyse.html" class="module-card">
-                    <div class="module-header">
-                        <div>
-                            <h3 style="margin-bottom: 0.25rem;">Fehlerdetektiv</h3>
-                            <p style="font-size: 0.8125rem; color: var(--text-secondary);">Fehleranalyse</p>
-                        </div>
-                        <div class="module-icon-wrapper" style="background: linear-gradient(135deg, #8B5CF6, #7C3AED);">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="11" cy="11" r="8"></circle>
-                                <path d="m21 21-4.35-4.35"></path>
-                            </svg>
-                        </div>
-                    </div>
-                    <p style="font-size: 0.8125rem; color: var(--text-secondary); margin: 0;">Finde und korrigiere Fehler</p>
-                </a>
-
-                <!-- Exam Anxiety Coach (Prüfungscoach) -->
-                <a href="extras/zp10-pruefungsangst.html" class="module-card">
-                    <div class="module-header">
-                        <div>
-                            <h3 style="margin-bottom: 0.25rem;">Prüfungscoach</h3>
-                            <p style="font-size: 0.8125rem; color: var(--text-secondary);">Mentales Training</p>
-                        </div>
-                        <div class="module-icon-wrapper" style="background: linear-gradient(135deg, #EC4899, #DB2777);">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                            </svg>
-                        </div>
-                    </div>
-                    <p style="font-size: 0.8125rem; color: var(--text-secondary); margin: 0;">Atemübungen & Strategien</p>
-                </a>
-
-                <!-- Highscore -->
-                <a href="extras/zp10-highscore.html" class="module-card">
-                    <div class="module-header">
-                        <div>
-                            <h3 style="margin-bottom: 0.25rem;">Highscore</h3>
-                            <p style="font-size: 0.8125rem; color: var(--text-secondary);">Rangliste</p>
-                        </div>
-                        <div class="module-icon-wrapper" style="background: linear-gradient(135deg, #F59E0B, #EF4444);">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                            </svg>
-                        </div>
-                    </div>
-                    <p style="font-size: 0.8125rem; color: var(--text-secondary); margin: 0;">Vergleiche dich mit der Klasse</p>
-                </a>
-
-                <!-- Math Duel (Mathe-Duell) + Tages-Duell -->
-                <a href="extras/zp10-duell.html" class="module-card" style="border: 2px solid #F59E0B;">
-                    <div class="module-header">
-                        <div>
-                            <h3 style="margin-bottom: 0.25rem;">Mathe-Duell</h3>
-                            <p style="font-size: 0.8125rem; color: var(--text-secondary);">Wettbewerb + Tages-Duell</p>
-                        </div>
-                        <div class="module-icon-wrapper" style="background: linear-gradient(135deg, #F59E0B, #D97706);">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M15 6H9a6 6 0 0 0 0 12h6a6 6 0 0 0 0-12Z"></path>
-                                <circle cx="12" cy="12" r="3"></circle>
-                            </svg>
-                        </div>
-                    </div>
-                    <p style="font-size: 0.8125rem; color: var(--text-secondary); margin: 0;">Fordere Freunde heraus oder spiele das Tages-Duell</p>
-                </a>
-
-                <!-- Prüfungssimulation -->
-                <a href="extras/zp10-pruefungssimulation.html" class="module-card" style="border: 2px solid #8B5CF6;">
-                    <div class="module-header">
-                        <div>
-                            <h3 style="margin-bottom: 0.25rem;">Prüfungssimulation</h3>
-                            <p style="font-size: 0.8125rem; color: var(--text-secondary);">ZP10-Generalprobe</p>
-                        </div>
-                        <div class="module-icon-wrapper" style="background: linear-gradient(135deg, #8B5CF6, #6D28D9);">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                <polyline points="14 2 14 8 20 8"></polyline>
-                                <line x1="16" y1="13" x2="8" y2="13"></line>
-                                <line x1="16" y1="17" x2="8" y2="17"></line>
-                            </svg>
-                        </div>
-                    </div>
-                    <p style="font-size: 0.8125rem; color: var(--text-secondary); margin: 0;">Realistische ZP10-Simulation mit Timer und Bewertung</p>
-                </a>
-
-                <!-- Lücken-Trainer -->
-                <a href="extras/zp10-lueckentrainer.html" class="module-card" style="border: 2px solid #10B981;">
-                    <div class="module-header">
-                        <div>
-                            <h3 style="margin-bottom: 0.25rem;">Lücken-Trainer</h3>
-                            <p style="font-size: 0.8125rem; color: var(--text-secondary);">Täglich 5 Minuten</p>
-                        </div>
-                        <div class="module-icon-wrapper" style="background: linear-gradient(135deg, #10B981, #059669);">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M12 20h9"></path>
-                                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                            </svg>
-                        </div>
-                    </div>
-                    <p style="font-size: 0.8125rem; color: var(--text-secondary); margin: 0;">Personalisiertes Training deiner Schwachstellen mit Streak-System</p>
-                </a>
-            </div>
-        </section>
+        <!-- Hidden elements kept for JS compatibility -->
+        <span id="todayStatus" style="display:none;"></span>
+        <span id="dailyChallengeDescription" style="display:none;"></span>
+        <span id="dailyChallengeBtn" style="display:none;"></span>
+        <span id="examResultInfo" style="display:none;"></span>
+        <span id="achievementCount" style="display:none;"></span>
+        <span id="progressPercent" style="display:none;"></span>
+        <svg style="display:none;"><circle id="progressRing"></circle></svg>
 
         <!-- Reset Data Button -->
         <section style="display: flex; gap: 1rem; justify-content: center; margin-top: 3rem;">

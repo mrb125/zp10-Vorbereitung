@@ -5,23 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZP10 Formelsammlung – NRW Mathematik</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="schueler-shared.css">
     <link rel="stylesheet" href="zp10-formelsammlung.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
 </head>
 <body>
     <!-- Header -->
-    <header>
-        <div class="header-content">
-            <div class="header-title">
-                <div>
-                    <h1>Formelsammlung</h1>
-                    <div class="official-badge">
-                        <span>📋</span>
-                        <span>Offizielle NRW ZP10</span>
-                    </div>
-                </div>
+    <nav class="sub-nav">
+        <div class="sub-nav-inner">
+            <a href="../index.html" class="back-btn" aria-label="Zurück zum Hub">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </a>
+            <div class="sub-nav-title">
+                <span class="sub-nav-emoji">📐</span>
+                Formelsammlung
             </div>
-            <div class="header-controls">
+            <div class="sub-nav-actions">
                 <div class="search-box">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="11" cy="11" r="8"></circle>
@@ -29,13 +28,12 @@
                     </svg>
                     <input type="text" id="searchInput" placeholder="Formeln durchsuchen...">
                 </div>
-                <button class="theme-toggle" id="themeToggle" title="Design umschalten">
+                <button class="icon-btn" id="themeToggle" aria-label="Theme wechseln" title="Theme wechseln">
                     <span id="themeIcon">🌙</span>
                 </button>
-                <a href="../index.html" class="back-to-hub">← Zurück zum Hub</a>
             </div>
         </div>
-    </header>
+    </nav>
 
     <!-- Main Content -->
     <main>

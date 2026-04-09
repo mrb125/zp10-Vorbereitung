@@ -4,21 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZP10 Diagnose-App - Schüler-Anleitung</title>
-      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="schueler-shared.css">
 
 </head>
 <body>
-    <header>
-        <div class="header-content">
-            <div class="logo">📊</div>
-            <div class="header-text">
-                <h1>ZP10 Diagnose-App</h1>
-                <p>Dein Weg zum Erfolg in der Prüfung</p>
+    <nav class="sub-nav">
+        <div class="sub-nav-inner">
+            <a href="../index.html" class="back-btn" aria-label="Zurück zum Hub">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </a>
+            <div class="sub-nav-title">
+                <span class="sub-nav-emoji">📖</span>
+                Anleitung
+            </div>
+            <div class="sub-nav-actions">
+                <button class="icon-btn" id="themeToggle" aria-label="Theme wechseln" title="Theme wechseln">🌙</button>
             </div>
         </div>
-        <button class="theme-toggle" onclick="toggleTheme()">🌙 Dunkel</button>
-    </header>
+    </nav>
 
     <div class="container">
         <!-- Welcome Section -->
@@ -220,76 +224,32 @@
     </div>
 
     <script>
-        // Theme Toggle
-        function toggleTheme() {
-            const body = document.body;
-            const toggle = document.querySelector('.theme-toggle');
-
-            body.classList.toggle('light-mode');
-
-            if (body.classList.contains('light-mode')) {
-                toggle.textContent = '☀️ Hell';
-                localStorage.setItem('theme', 'light');
-            } else {
-                toggle.textContent = '🌙 Dunkel';
-                localStorage.setItem('theme', 'dark');
-            }
-        }
-
-        // Load saved theme on page load
-        function loadTheme() {
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'light') {
-                document.body.classList.add('light-mode');
-                document.querySelector('.theme-toggle').textContent = '☀️ Hell';
-            }
-        }
-
         // FAQ Toggle
         function toggleFAQ(element) {
             element.classList.toggle('active');
         }
 
-        // Initialize
-        loadTheme();
+        // Theme Toggle
+        function toggleTheme() {
+            const body = document.body;
+            const isDark = body.classList.toggle('dark');
+            const btn = document.getElementById('themeToggle');
+            if (btn) btn.textContent = isDark ? '☀️' : '🌙';
+            localStorage.setItem('zp10_theme', isDark ? 'dark' : 'light');
+        }
+
+        document.getElementById('themeToggle')?.addEventListener('click', toggleTheme);
+
+        // Apply saved theme on load
+        (function() {
+            const saved = localStorage.getItem('zp10_theme') || 'light';
+            if (saved === 'dark') {
+                document.body.classList.add('dark');
+                const btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = '☀️';
+            }
+        })();
     </script>
-
-<button id="theme-toggle" aria-label="Toggle theme" style="
-  position: fixed;
-  top: 1rem;
-  right: 1rem;
-  z-index: 9999;
-  background-color: var(--surface);
-  border: 1px solid var(--border);
-  color: var(--text);
-  border-radius: 50%;
-  width: 44px;
-  height: 44px;
-  cursor: pointer;
-  font-size: 1.25rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  transition: all 150ms ease;
-" onclick="toggleTheme()">
-  ☀️
-</button>
-
-<script>
-function toggleTheme(){
-  const body = document.body;
-  const isDark = body.classList.toggle('dark');
-  localStorage.setItem('zp10_theme', isDark ? 'dark' : 'light');
-}
-// Apply saved theme on load
-(function(){
-  const saved = localStorage.getItem('zp10_theme') || 'light';
-  if(saved === 'dark'){
-    document.body.classList.add('dark');
-  }
-})();
-</script>
 
 </body>
 </html>

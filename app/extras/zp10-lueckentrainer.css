@@ -2,6 +2,76 @@
    ZP10 LÜCKEN-TRAINER CSS
    ============================================ */
 
+/* ===== SUB-PAGE NAVIGATION ===== */
+.sub-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--surface, #ffffff);
+    border-bottom: 1px solid var(--border, #E2E8F0);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    padding: 0.625rem 1rem;
+}
+.sub-nav-inner {
+    max-width: 720px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+.back-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--primary-light, #EEF2FF);
+    color: var(--primary, #5B6CF0);
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.15s;
+}
+.back-btn:hover { background: var(--primary, #5B6CF0); color: white; }
+.back-btn svg { width: 18px; height: 18px; }
+.sub-nav-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text, #1E293B);
+}
+.sub-nav-emoji { font-size: 1.1rem; }
+.sub-nav-actions { display: flex; gap: 0.5rem; }
+.icon-btn {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    background: var(--surface-hover, #F8FAFC);
+    border: 1px solid var(--border, #E2E8F0);
+    color: var(--text, #1E293B);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    transition: background 0.15s;
+}
+.icon-btn:hover { background: var(--primary-light, #EEF2FF); color: var(--primary, #5B6CF0); }
+[data-theme="dark"] .sub-nav { background: #1E293B; border-color: #334155; color: #F1F5F9; }
+[data-theme="dark"] .sub-nav-title { color: #F1F5F9; }
+[data-theme="dark"] .icon-btn { background: #334155; border-color: #475569; color: #F1F5F9; }
+
+:root {
+    --primary: #5B6CF0;
+    --primary-light: #EEF2FF;
+    --surface: #ffffff;
+    --surface-hover: #F8FAFC;
+    --text: #1E293B;
+    --border: #E2E8F0;
+}
+
 :root {
     /* Primary Colors */
     --color-primary: #F59E0B;

@@ -24,7 +24,20 @@
 <link rel="stylesheet" href="zp10-interleaving.css">
 </head>
 <body>
-<button class="theme-toggle" onclick="toggleDarkMode()">🌙</button>
+<nav class="sub-nav">
+    <div class="sub-nav-inner">
+        <a href="../index.html" class="back-btn" aria-label="Zurück zum Hub">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </a>
+        <div class="sub-nav-title">
+            <span class="sub-nav-emoji">🔀</span>
+            Interleaving
+        </div>
+        <div class="sub-nav-actions">
+            <button class="icon-btn" id="themeToggle" aria-label="Theme wechseln" onclick="toggleDarkMode()">🌙</button>
+        </div>
+    </div>
+</nav>
 <header>
   <div class="hdr-inner">
     <div class="hdr-title">
@@ -225,11 +238,16 @@ let darkMode = localStorage.getItem('darkMode') === 'true';
 function toggleDarkMode(){
   darkMode = !darkMode;
   localStorage.setItem('darkMode', darkMode);
+  localStorage.setItem('zp10_theme', darkMode ? 'dark' : 'light');
   if(darkMode) document.body.classList.add('dark');
   else document.body.classList.remove('dark');
+  const btn = document.getElementById('themeToggle');
+  if (btn) btn.textContent = darkMode ? '☀️' : '🌙';
 }
 
 if(darkMode) document.body.classList.add('dark');
+// Also check shared theme key
+if(localStorage.getItem('zp10_theme') === 'dark') { darkMode = true; document.body.classList.add('dark'); }
 
 // ==================== LOGIC ====================
 function selectQuestionCount(n) {

@@ -7,6 +7,20 @@
     <link rel="stylesheet" href="zp10-stationen.css">
 </head>
 <body>
+<nav class="sub-nav">
+    <div class="sub-nav-inner">
+        <a href="../index.html" class="back-btn" aria-label="Zurück zum Hub">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </a>
+        <div class="sub-nav-title">
+            <span class="sub-nav-emoji">🗺️</span>
+            Lernstationen
+        </div>
+        <div class="sub-nav-actions">
+            <button class="icon-btn" id="themeToggle" aria-label="Theme wechseln">🌙</button>
+        </div>
+    </div>
+</nav>
 
 <!-- Landing Page -->
 <div id="landingPage" class="landing-container">
@@ -946,6 +960,18 @@
         a.download = `ZP10_Diagnose_${studentName}.csv`;
         a.click();
     }
+</script>
+<script>
+(function(){
+    const t = document.getElementById('themeToggle');
+    const saved = localStorage.getItem('zp10_theme');
+    if (saved === 'dark') document.body.classList.add('dark');
+    if (t) t.addEventListener('click', () => {
+        document.body.classList.toggle('dark');
+        localStorage.setItem('zp10_theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+        t.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
+    });
+})();
 </script>
 
 </body>

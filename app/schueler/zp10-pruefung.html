@@ -8,8 +8,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="zp10-pruefung.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
 
-</head>
 </head>
 <body>
 
@@ -95,36 +95,36 @@ const TOPICS = {
 };
 
 const QUESTIONS_PART1 = [
-  {id:'p1q1',type:'input',cat:'Term',xp:1,text:'Vereinfache: (3x + 2)² - (2x - 1)² = ?',hint:'Verwende die Binomischen Formeln.',answers:['5x² + 12x + 3'],correct:'5x² + 12x + 3',sol:'Nach Binomischen Formeln: (3x)² + 2·3x·2 + 4 - (4x² - 4x + 1) = 9x² + 12x + 4 - 4x² + 4x - 1 = 5x² + 16x + 3',fb_ok:'Richtig!',fb_nok:'Überprüfe die Binomischen Formeln und Vorzeichenwechsel.'},
-  {id:'p1q2',type:'input',cat:'Term',xp:1,text:'Löse: (x + 3)² = 25',hint:'Ziehe die Wurzel aus beiden Seiten.',answers:['x = 2 und x = -8','2 und -8'],correct:'x = 2 und x = -8',sol:'x + 3 = ±5. Also x = 2 oder x = -8.',fb_ok:'Korrekt gelöst!',fb_nok:'Beachte: Wenn (x+3)² = 25, dann x+3 = ±5.'},
+  {id:'p1q1',type:'input',cat:'Term',xp:1,text:'Vereinfache: \((3x + 2)^2 - (2x - 1)^2\) = ?',hint:'Verwende die Binomischen Formeln.',answers:['5x² + 12x + 3'],correct:'5x² + 12x + 3',sol:'Nach Binomischen Formeln: (3x)² + 2·3x·2 + 4 - (4x² - 4x + 1) = 9x² + 12x + 4 - 4x² + 4x - 1 = 5x² + 16x + 3',fb_ok:'Richtig!',fb_nok:'Überprüfe die Binomischen Formeln und Vorzeichenwechsel.'},
+  {id:'p1q2',type:'input',cat:'Term',xp:1,text:'Löse: \((x + 3)^2 = 25\)',hint:'Ziehe die Wurzel aus beiden Seiten.',answers:['x = 2 und x = -8','2 und -8'],correct:'x = 2 und x = -8',sol:'\(x + 3 = \pm 5\). Also \(x = 2\) oder \(x = -8\).',fb_ok:'Korrekt gelöst!',fb_nok:'Beachte: Wenn (x+3)² = 25, dann x+3 = ±5.'},
   {id:'p1q3',type:'mc',cat:'LinFkt',xp:1,text:'Eine Gerade hat m = -2 und geht durch P(1|3). Welche Aussage ist richtig?',options:['Der y-Achsenabschnitt ist b = 5','Der y-Achsenabschnitt ist b = 1','Die Steigung ist positiv','Parallel zur x-Achse'],correct:0,sol:'Mit y = mx + b: 3 = -2·1 + b → b = 5.',fb_ok:'Richtig!',fb_nok:'Nutze y = mx + b und setze P ein.'},
-  {id:'p1q4',type:'input',cat:'Term',xp:1,text:'Löse mit p-q-Formel: x² + 3x - 4 = 0',hint:'Die Lösungen sind ganzzahlig.',answers:['x = 1 und x = -4','1 und -4'],correct:'x = 1 und x = -4',sol:'x = -3/2 ± √(9/4 + 4) = -3/2 ± 5/2. Also x₁ = 1, x₂ = -4',fb_ok:'Perfekt!',fb_nok:'Überprüfe p = 3 und q = -4.'},
-  {id:'p1q5',type:'input',cat:'Pot',xp:1,text:'Vereinfache: 2⁻³ · 4 = ?',hint:'Beachte: 2⁻³ = 1/8 und 4 = 2²',answers:['1/2','0.5'],correct:'1/2',sol:'2⁻³ · 4 = (1/8) · 4 = 4/8 = 1/2',fb_ok:'Richtig!',fb_nok:'2⁻³ = 1/8. Also 1/8 · 4 = 1/2.'},
+  {id:'p1q4',type:'input',cat:'Term',xp:1,text:'Löse mit p-q-Formel: \(x^2 + 3x - 4 = 0\)',hint:'Die Lösungen sind ganzzahlig.',answers:['x = 1 und x = -4','1 und -4'],correct:'x = 1 und x = -4',sol:'\(x = -\frac{3}{2} \pm \sqrt{\frac{9}{4} + 4} = -\frac{3}{2} \pm \frac{5}{2}\). Also \(x_1 = 1, x_2 = -4\)',fb_ok:'Perfekt!',fb_nok:'Überprüfe p = 3 und q = -4.'},
+  {id:'p1q5',type:'input',cat:'Pot',xp:1,text:'Vereinfache: \(2^{-3} \cdot 4 = ?\)',hint:'Beachte: \(2^{-3} = \frac{1}{8}\) und \(4 = 2^2\)',answers:['1/2','0.5'],correct:'1/2',sol:'\(2^{-3} \cdot 4 = \frac{1}{8} \cdot 4 = \frac{4}{8} = \frac{1}{2}\)',fb_ok:'Richtig!',fb_nok:'2⁻³ = 1/8. Also 1/8 · 4 = 1/2.'},
   {id:'p1q6',type:'input',cat:'LGS',xp:1,text:'Löse: 2x + y = 7 und y = x + 1',hint:'Setze die zweite in die erste Gleichung ein.',answers:['x = 2 und y = 3','x = 2, y = 3'],correct:'x = 2 und y = 3',sol:'2x + (x+1) = 7 → 3x = 6 → x = 2, y = 3',fb_ok:'Korrekt!',fb_nok:'Nutze Einsetzungsverfahren.'},
   {id:'p1q7',type:'input',cat:'Geom',xp:1,text:'Rechtwinkliges Dreieck: a = 3 cm, b = 4 cm. Hypotenuse c = ?',hint:'Satz des Pythagoras: c² = a² + b²',answers:['5 cm','5'],correct:'5 cm',sol:'c² = 9 + 16 = 25 → c = 5 cm',fb_ok:'Perfekt!',fb_nok:'c² = 3² + 4² = 25.'},
   {id:'p1q8',type:'mc',cat:'Stoch',xp:1,text:'Würfel zweimal geworfen. Wie viele Ergebnisse ergeben Summe 7?',options:['3 Ergebnisse','4 Ergebnisse','6 Ergebnisse','5 Ergebnisse'],correct:2,sol:'(1,6), (2,5), (3,4), (4,3), (5,2), (6,1) = 6 Ergebnisse',fb_ok:'Richtig!',fb_nok:'Zähle systematisch alle Möglichkeiten.'},
   {id:'p1q9',type:'input',cat:'Proz',xp:1,text:'Artikel kostet nach 20% Rabatt 64 Euro. Ursprünglicher Preis?',hint:'80% = 64 Euro. Also 100% = 64/0,8',answers:['80 Euro','80'],correct:'80 Euro',sol:'0,8 · P = 64 → P = 80 Euro',fb_ok:'Richtig!',fb_nok:'Denke: 64 entspricht 80%.'},
   {id:'p1q10',type:'mc',cat:'Proz',xp:1,text:'Kapital 1000 Euro mit Wachstumsfaktor q = 1,05. Nach 1 Jahr?',options:['1005 Euro','1050 Euro','1500 Euro','1100 Euro'],correct:1,sol:'K(t) = 1000 · 1,05¹ = 1050 Euro',fb_ok:'Korrekt!',fb_nok:'Wachstumsfaktor 1,05 bedeutet +5%.'},
-  {id:'p1q11',type:'input',cat:'Term',xp:1,text:'Faktorisiere: 3x² + 6x = ?',hint:'Klammere 3x aus.',answers:['3x(x + 2)','3x(x+2)'],correct:'3x(x + 2)',sol:'3x² + 6x = 3x(x + 2)',fb_ok:'Richtig!',fb_nok:'Größter gemeinsamer Faktor ist 3x.'},
+  {id:'p1q11',type:'input',cat:'Term',xp:1,text:'Faktorisiere: \(3x^2 + 6x\) = ?',hint:'Klammere 3x aus.',answers:['3x(x + 2)','3x(x+2)'],correct:'3x(x + 2)',sol:'\(3x^2 + 6x = 3x(x + 2)\)',fb_ok:'Richtig!',fb_nok:'Größter gemeinsamer Faktor ist 3x.'},
   {id:'p1q12',type:'input',cat:'Geom',xp:1,text:'Zylinder: Radius r = 3 cm, Höhe h = 5 cm. Volumen?',hint:'V = πr²h',answers:['45π cm³','45π'],correct:'45π cm³',sol:'V = π · 9 · 5 = 45π cm³ ≈ 141,4 cm³',fb_ok:'Richtig!',fb_nok:'V = πr²h mit r=3, h=5.'}
 ];
 
 const QUESTIONS_PART2 = [
   {id:'p2q1',type:'input',cat:'LGS',xp:1,text:'Mischungsaufgabe: 7€/kg Kaffee mit 4€/kg gemischt. 10 kg zu 5,50€/kg. Wie viel kg der teureren Sorte?',hint:'x + y = 10 und 7x + 4y = 55',answers:['5 kg','5'],correct:'5 kg',sol:'7x + 4(10-x) = 55 → 3x = 15 → x = 5',fb_ok:'Richtig!',fb_nok:'Stelle das LGS auf.'},
-  {id:'p2q2',type:'input',cat:'QuadFkt',xp:1,text:'f(x) = x² - 4x + 3: Scheitelpunkt?',hint:'Nutze quadratische Ergänzung.',answers:['S(2|-1)','(2|-1)'],correct:'(2|-1)',sol:'f(x) = (x-2)² - 1. Scheitelpunkt: S(2|-1)',fb_ok:'Korrekt!',fb_nok:'Scheitelpunktform: f(x) = (x-h)² + k.'},
+  {id:'p2q2',type:'input',cat:'QuadFkt',xp:1,text:'\(f(x) = x^2 - 4x + 3\): Scheitelpunkt?',hint:'Nutze quadratische Ergänzung.',answers:['S(2|-1)','(2|-1)'],correct:'(2|-1)',sol:'\(f(x) = (x-2)^2 - 1\). Scheitelpunkt: \(S(2|-1)\)',fb_ok:'Korrekt!',fb_nok:'Scheitelpunktform: f(x) = (x-h)² + k.'},
   {id:'p2q3',type:'mc',cat:'Geom',xp:1,text:'Leiter: 5 m lang, 3 m von Wand entfernt. Höhe an Wand?',options:['4 m','3,5 m','3 m','6 m'],correct:0,sol:'h² + 9 = 25 → h = 4 m',fb_ok:'Richtig!',fb_nok:'Pythagoras: h² + 3² = 5²'},
   {id:'p2q4',type:'input',cat:'Stoch',xp:1,text:'Klasse 20 Schüler: 12 Fußball, 8 Tennis, 5 beide. Weder noch?',hint:'|F ∪ T| = 12 + 8 - 5 = 15',answers:['5 Schüler','5'],correct:'5 Schüler',sol:'20 - 15 = 5 Schüler',fb_ok:'Richtig!',fb_nok:'Nutze Einschluss-Ausschluss-Prinzip.'},
   {id:'p2q5',type:'input',cat:'Proz',xp:1,text:'Kapital 10000 Euro mit 3% Zinseszins. Nach wie vielen Jahren verdoppelt?',hint:'2 = 1,03ⁿ → n = ln(2)/ln(1,03)',answers:['ca. 23 Jahre','23 Jahre','23'],correct:'23 Jahre',sol:'n ≈ 23,45 Jahre',fb_ok:'Richtig!',fb_nok:'Löse mit Logarithmen.'},
   {id:'p2q6',type:'input',cat:'Geom',xp:1,text:'Zylinder (r=2 cm, h=5 cm) mit Kegel (r=2 cm, h=3 cm). Gesamtvolumen?',hint:'V_ges = V_Zyl + V_Keg. V_Keg = 1/3·πr²h',answers:['24π cm³','24π'],correct:'24π cm³',sol:'V_Z = 20π, V_K = 4π, Total = 24π',fb_ok:'Richtig!',fb_nok:'Addiere beide Volumen.'},
   {id:'p2q7',type:'input',cat:'LinFkt',xp:1,text:'P(1|2), Q(3|6) auf Gerade. Gleichung? Schnittpunkt mit y = -x + 6?',hint:'m = (6-2)/(3-1) = 2. Gleichung: y = 2x',answers:['y = 2x; (2|4)','y=2x; S(2|4)'],correct:'y = 2x; (2|4)',sol:'y = 2x. Schnittpunkt: 2x = -x + 6 → x = 2, y = 4',fb_ok:'Richtig!',fb_nok:'Zwei-Punkte-Form für Gerade.'},
-  {id:'p2q8',type:'input',cat:'QuadFkt',xp:1,text:'f(x) = x² - 6x + 8 in Scheitelpunktform?',hint:'x² - 6x = (x-3)² - 9',answers:['f(x) = (x-3)² - 1','(x-3)²-1'],correct:'(x-3)² - 1',sol:'f(x) = (x-3)² - 1',fb_ok:'Richtig!',fb_nok:'Quadratische Ergänzung.'},
+  {id:'p2q8',type:'input',cat:'QuadFkt',xp:1,text:'\(f(x) = x^2 - 6x + 8\) in Scheitelpunktform?',hint:'\(x^2 - 6x = (x-3)^2 - 9\)',answers:['f(x) = (x-3)^2 - 1','(x-3)^2-1'],correct:'(x-3)^2 - 1',sol:'\(f(x) = (x-3)^2 - 1\)',fb_ok:'Richtig!',fb_nok:'Quadratische Ergänzung.'},
   {id:'p2q9',type:'mc',cat:'Geom',xp:1,text:'Mensch wirft 2 m Schatten. Sonnenwinkel 40°. Körpergröße?',options:['1,68 m','1,48 m','2,38 m','1,28 m'],correct:0,sol:'tan(40°) = h/2 → h ≈ 1,68 m',fb_ok:'Richtig!',fb_nok:'tan(40°) ≈ 0,839.'},
-  {id:'p2q10',type:'input',cat:'Proz',xp:1,text:'Radioaktive Substanz, Halbwertszeit 5 Jahre, Start 100 g. Nach 10 Jahren?',hint:'Zwei Halbwertszeiten: 100 · (1/2)²',answers:['25 g','25'],correct:'25 g',sol:'Nach 10 Jahren: 100 · (1/2)² = 25 g',fb_ok:'Richtig!',fb_nok:'Jede Halbwertszeit wird halbiert.'},
+  {id:'p2q10',type:'input',cat:'Proz',xp:1,text:'Radioaktive Substanz, Halbwertszeit 5 Jahre, Start 100 g. Nach 10 Jahren?',hint:'Zwei Halbwertszeiten: \(100 \cdot \left(\frac{1}{2}\right)^2\)',answers:['25 g','25'],correct:'25 g',sol:'Nach 10 Jahren: 100 · (1/2)² = 25 g',fb_ok:'Richtig!',fb_nok:'Jede Halbwertszeit wird halbiert.'},
   {id:'p2q11',type:'mc',cat:'Stoch',xp:1,text:'Glücksspiel: 30% × 10€ Gewinn, 70% × 5€ Verlust. Erwartungswert?',options:['1,50 Euro','-0,50 Euro','3,50 Euro','2,50 Euro'],correct:1,sol:'E = 0,3·10 + 0,7·(-5) = 3 - 3,5 = -0,5',fb_ok:'Richtig!',fb_nok:'E(X) = p₁·x₁ + p₂·x₂'},
   {id:'p2q12',type:'input',cat:'Proz',xp:1,text:'Netto 100€, 19% MwSt, 10% Mengenrabatt auf Brutto. Endpreis?',hint:'Brutto = 100·1,19. Mit Rabatt: Brutto·0,9',answers:['107,10 Euro','107.1'],correct:'107,10 Euro',sol:'100 · 1,19 · 0,9 = 107,10 Euro',fb_ok:'Richtig!',fb_nok:'Erst MwSt, dann Rabatt.'},
   {id:'p2q13',type:'mc',cat:'QuadFkt',xp:1,text:'Population verdreifacht sich alle 2 Jahre. Welche Funktion?',options:['Linear','Quadratisch','Exponentiell','Kubisch'],correct:2,sol:'Konstanter Vermehrungsfaktor = exponentiell.',fb_ok:'Richtig!',fb_nok:'Exponentielles Wachstum mit Faktor 3.'},
   {id:'p2q14',type:'input',cat:'Geom',xp:1,text:'Pyramide: quadrat. Grundfläche Seitenlänge 4 cm, Höhe 6 cm. Mantelfläche?',hint:'Seitenhöhe h_s = √(6² + 2²). Mantel = 4 · (1/2 · 4 · h_s)',answers:['80 cm²','80'],correct:'80 cm²',sol:'h_s = √40 ≈ 6,32. Mantelfläche ≈ 50,6 cm² (mit Basis: ~67 cm²)',fb_ok:'Versuchen Sie eine Neuberechnungan!',fb_nok:'Seitenhöhe mit Pythagoras.'},
-  {id:'p2q15',type:'input',cat:'Pot',xp:1,text:'Löse: x² = 49',hint:'Beide Lösungen: positiv und negativ.',answers:['x = 7 und x = -7','7 und -7','±7'],correct:'x = 7 und x = -7',sol:'x = ±√49 = ±7',fb_ok:'Richtig!',fb_nok:'Beim Wurzelziehen gibt es zwei Lösungen.'},
+  {id:'p2q15',type:'input',cat:'Pot',xp:1,text:'Löse: \(x^2 = 49\)',hint:'Beide Lösungen: positiv und negativ.',answers:['x = 7 und x = -7','7 und -7','±7'],correct:'x = 7 und x = -7',sol:'\(x = \pm\sqrt{49} = \pm 7\)',fb_ok:'Richtig!',fb_nok:'Beim Wurzelziehen gibt es zwei Lösungen.'},
   {id:'p2q16',type:'input',cat:'QuadFkt',xp:1,text:'40 m Zaun, rechteckige Fläche (eine Seite ist Mauer). Maximale Fläche: Abmessungen?',hint:'2x + y = 40. A(x) = x(40-2x). Maximum: x = 10',answers:['10m × 20m','x=10, y=20','10m und 20m'],correct:'10m × 20m',sol:'A(x) = 40x - 2x². A\'(x) = 0 → x = 10, y = 20',fb_ok:'Perfekt!',fb_nok:'Nutze Differenziation oder Scheitelformel.'}
 ];
 
@@ -220,6 +220,7 @@ function showQuestion() {
   }
   html += `<div class="feedback" id="feedback"></div>`;
   document.getElementById('question-card').innerHTML = html;
+  if(typeof ZP10!=='undefined') ZP10.renderMath(document.getElementById('question-card'));
 
   let btnHtml = '';
   if (state.submitted) {
@@ -446,6 +447,9 @@ function startTimer() {
   }, 1000);
 }
 </script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+<script src="../js/shared.js"></script>
 </body>
 </html>
 

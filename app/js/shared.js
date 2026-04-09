@@ -304,6 +304,18 @@ const ZP10 = {
             }
         });
         return weakest;
+    },
+
+    // KaTeX Math Rendering
+    renderMath(container) {
+        if (typeof renderMathInElement === 'undefined') return;
+        renderMathInElement(container, {
+            delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '\\(', right: '\\)', display: false}
+            ],
+            throwOnError: false
+        });
     }
 };
 

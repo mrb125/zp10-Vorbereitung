@@ -506,9 +506,12 @@ body.dark .ab-3 {
 }
 .q-text {
     font-size:1.05rem;
-    line-height:1.8;
+    line-height:2;  /* Platz für display math */
     margin-bottom:20px;
     font-weight:500;
+}
+.q-text .katex-display {
+    margin: 0.35em 0;
 }
 body.dark .q-text {
     color:var(--text-dark);

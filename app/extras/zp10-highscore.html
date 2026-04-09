@@ -9,17 +9,28 @@
     <link rel="stylesheet" href="zp10-highscore.css">
 </head>
 <body>
+
+<nav class="sub-nav">
+    <div class="sub-nav-inner">
+        <a href="../index.html" class="back-btn" aria-label="Zurück zum Hub">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </a>
+        <div class="sub-nav-title">
+            <span class="sub-nav-emoji">🏆</span>
+            Bestenliste
+        </div>
+        <div class="sub-nav-actions">
+            <button class="icon-btn" id="themeToggle" aria-label="Theme wechseln">🌙</button>
+        </div>
+    </div>
+</nav>
     <div class="container">
-        <header>
-            <h1>🏆 Highscore</h1>
-            <div class="header-actions">
-                <a href="../index.html">← Zurück</a>
-                <div class="view-toggle">
-                    <button class="toggle-btn active" onclick="switchView('student')">Schüler</button>
-                    <button class="toggle-btn" onclick="promptTeacherPassword()">Lehrer</button>
-                </div>
+        <div class="view-toggle-bar">
+            <div class="view-toggle">
+                <button class="toggle-btn active" onclick="switchView('student')">Schüler</button>
+                <button class="toggle-btn" onclick="promptTeacherPassword()">Lehrer</button>
             </div>
-        </header>
+        </div>
 
         <!-- Personal Stats Card -->
         <div class="personal-stats">
@@ -739,5 +750,17 @@
             if (e.target.id === 'nameModal') return; // Prevent closing name modal
         });
     </script>
+<script>
+(function(){
+    const t = document.getElementById('themeToggle');
+    const saved = localStorage.getItem('zp10_theme');
+    if (saved === 'dark') document.body.classList.add('dark');
+    if (t) t.addEventListener('click', () => {
+        document.body.classList.toggle('dark');
+        localStorage.setItem('zp10_theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+        t.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
+    });
+})();
+</script>
 </body>
 </html>

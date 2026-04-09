@@ -25,6 +25,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito+Sans:wght@700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
 <link rel="stylesheet" href="../css/module.css">
 </head>
 <body>
@@ -193,6 +194,7 @@ function renderPFQuestion(){
     html+=`<div class="mc-grid">${q.opts.map((opt,i)=>`<button class="mc-opt" onclick="selectPFOption(${i})">${opt}</button>`).join('')}</div>`;
   }
   document.getElementById('pf-question-card').innerHTML=html;
+  ZP10.renderMath(document.getElementById('pf-question-card'));
 }
 
 function selectPFOption(idx){
@@ -346,6 +348,7 @@ function renderTestQuestion(){
   if(fb) html+=fb;
 
   document.getElementById('question-card').innerHTML=html;
+  ZP10.renderMath(document.getElementById('question-card'));
   updateProgress();
   updateExamNav();
   updateTestButtons();
@@ -969,5 +972,7 @@ window.addEventListener('load',()=>{
 <script src="../js/theme.js"></script>
     <link rel="stylesheet" href="../css/wolf-helper.css">
     <script src="../js/wolf-helper.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
 </body>
 </html>

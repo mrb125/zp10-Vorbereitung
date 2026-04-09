@@ -1,10 +1,74 @@
 
+/* ===== SUB-PAGE NAVIGATION ===== */
+.sub-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--surface, #ffffff);
+    border-bottom: 1px solid var(--border, #E2E8F0);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    padding: 0.625rem 1rem;
+    width: 100%;
+}
+.sub-nav-inner {
+    max-width: 720px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+.sub-nav .back-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--primary-light, #EEF2FF);
+    color: var(--primary, #5B6CF0);
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.15s;
+}
+.sub-nav .back-btn:hover { background: var(--primary, #5B6CF0); color: white; }
+.sub-nav .back-btn svg { width: 18px; height: 18px; }
+.sub-nav-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text, #1E293B);
+}
+.sub-nav-emoji { font-size: 1.1rem; }
+.sub-nav-actions { display: flex; gap: 0.5rem; }
+.sub-nav .icon-btn {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    background: var(--surface-hover, #F8FAFC);
+    border: 1px solid var(--border, #E2E8F0);
+    color: var(--text, #1E293B);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    transition: background 0.15s;
+}
+.sub-nav .icon-btn:hover { background: var(--primary-light, #EEF2FF); color: var(--primary, #5B6CF0); }
+body.dark .sub-nav { background: var(--surface-dark, #161B25); border-color: #2D333B; }
+body.dark .sub-nav-title { color: var(--text-dark, #E4E8F7); }
+body.dark .sub-nav .icon-btn { background: #2D333B; border-color: #444C56; color: #E4E8F7; }
+
 :root {
   --primary: #5B6CF0;
+  --primary-light: #EEF2FF;
   --accent: #FF6B8A;
   --bg: #F0F4FF;
   --surface: #FFFFFF;
   --surface-alt: #F8FAFF;
+  --surface-hover: #F8FAFC;
   --text: #1A1D3B;
   --text-secondary: #6B7199;
   --border: #E4E8F7;

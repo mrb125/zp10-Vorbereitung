@@ -1551,3 +1551,322 @@ body.dark .progress-ring-fill {
         transition-duration: 0.01ms !important;
     }
 }
+
+/* ===================================================
+   LAYOUT D – DASHBOARD HERO (v1)
+   =================================================== */
+
+/* ===== HUB HERO BANNER ===== */
+.hub-hero {
+    background: linear-gradient(135deg, #5B6CF0 0%, #7C3AED 50%, #4338CA 100%);
+    border-radius: 24px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 8px 32px rgba(91,108,240,0.35);
+}
+
+.hub-hero::before {
+    content: '';
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 260px;
+    height: 260px;
+    background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.hub-hero::after {
+    content: '';
+    position: absolute;
+    bottom: -40px;
+    left: -40px;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(255,107,138,0.15) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.hub-hero-inner {
+    position: relative;
+    z-index: 1;
+    padding: 1.75rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+}
+
+.hub-hero-greeting {
+    color: white;
+}
+
+.hub-hero-title {
+    font-family: 'Nunito Sans', sans-serif;
+    font-size: 1.75rem;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 0.25rem;
+}
+
+.hub-hero-sub {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    font-weight: 500;
+}
+
+/* Stats row in the hero banner */
+.hub-hero-stats {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.hub-stat-box {
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 14px;
+    padding: 0.6rem 1rem;
+    text-align: center;
+    color: white;
+    min-width: 72px;
+    transition: background 0.2s;
+}
+
+.hub-stat-box:hover {
+    background: rgba(255,255,255,0.22);
+}
+
+.hub-stat-box--countdown {
+    background: rgba(255,107,138,0.3);
+    border-color: rgba(255,107,138,0.4);
+}
+
+.hub-stat-value {
+    font-family: 'Nunito Sans', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 800;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+}
+
+.hub-stat-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.85;
+    margin-top: 2px;
+}
+
+/* Dark mode hero */
+body.dark .hub-hero {
+    background: linear-gradient(135deg, rgba(91,108,240,0.7) 0%, rgba(124,58,237,0.75) 50%, rgba(67,56,202,0.7) 100%);
+    box-shadow: 0 8px 32px rgba(91,108,240,0.2);
+}
+
+/* ===== CREATURES SECTION – side by side ===== */
+.hub-creatures {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+/* When only guardian or creature is visible, stretch full width */
+.hub-creatures > *:only-child {
+    grid-column: 1 / -1;
+}
+
+/* Compact creature hub card in new layout */
+#hub-creatures .creature-hub-card {
+    margin-bottom: 0;
+}
+
+#hub-creatures .guardian-card {
+    margin-bottom: 0;
+}
+
+/* Smaller sprite in side-by-side layout */
+#hub-creatures .creature-hub-sprite-wrap,
+#hub-creatures .creature-hub-sprite {
+    width: 100px;
+    height: 100px;
+}
+
+@media (max-width: 640px) {
+    .hub-creatures {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ===== QUICK ACTIONS STRIP ===== */
+.hub-quick-actions-section {
+    margin-bottom: 2rem;
+}
+
+.hub-quick-actions-strip {
+    display: flex;
+    gap: 0.75rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0.5rem;
+    /* hide scrollbar but keep functionality */
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+}
+
+.hub-quick-actions-strip::-webkit-scrollbar {
+    height: 4px;
+}
+.hub-quick-actions-strip::-webkit-scrollbar-track {
+    background: transparent;
+}
+.hub-quick-actions-strip::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 2px;
+}
+
+.quick-action-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-width: 96px;
+    max-width: 110px;
+    padding: 0.9rem 0.6rem 0.75rem;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    text-decoration: none;
+    color: var(--text);
+    cursor: pointer;
+    scroll-snap-align: start;
+    flex-shrink: 0;
+    transition: var(--transition);
+    text-align: center;
+}
+
+.quick-action-tile:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary);
+}
+
+.quick-action-tile:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+.quick-action-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: white;
+}
+
+.quick-action-icon svg {
+    width: 22px;
+    height: 22px;
+}
+
+.quick-action-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--text);
+}
+
+.quick-action-badge {
+    font-size: 0.7rem;
+    font-weight: 800;
+    background: var(--danger);
+    color: white;
+    border-radius: 20px;
+    padding: 1px 7px;
+    margin-top: -2px;
+}
+
+/* Tile accent colors */
+.quick-action-tile--exam .quick-action-icon {
+    background: linear-gradient(135deg, #F59E0B, #D97706);
+}
+.quick-action-tile--daily .quick-action-icon {
+    background: linear-gradient(135deg, #06B6D4, #0891B2);
+}
+.quick-action-tile--daily.completed .quick-action-icon {
+    background: linear-gradient(135deg, #10B981, #059669);
+}
+.quick-action-tile--formula .quick-action-icon {
+    background: linear-gradient(135deg, #5B6CF0, #4338CA);
+}
+.quick-action-tile--planer .quick-action-icon {
+    background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+}
+.quick-action-tile--guide .quick-action-icon {
+    background: linear-gradient(135deg, #10B981, #059669);
+}
+.quick-action-tile--lehrer .quick-action-icon {
+    background: linear-gradient(135deg, #FF6B8A, #E85A7D);
+}
+
+/* Dark mode tiles */
+body.dark .quick-action-tile {
+    background: rgba(30,41,59,0.85);
+    border-color: rgba(255,255,255,0.08);
+}
+body.dark .quick-action-tile:hover {
+    background: rgba(40,52,72,0.9);
+    border-color: rgba(255,255,255,0.18);
+}
+body.dark .quick-action-label {
+    color: var(--text);
+}
+
+/* ===== MODULE GRID – 2 columns ===== */
+#hub-modules .modules-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 520px) {
+    #hub-modules .modules-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ===== HERO RESPONSIVE ===== */
+@media (max-width: 600px) {
+    .hub-hero-inner {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 1.25rem 1.25rem;
+    }
+    .hub-hero-title {
+        font-size: 1.4rem;
+    }
+    .hub-hero-stats {
+        width: 100%;
+        justify-content: space-between;
+    }
+    .hub-stat-box {
+        flex: 1;
+        min-width: 60px;
+        padding: 0.5rem 0.4rem;
+    }
+    .hub-stat-value {
+        font-size: 1.1rem;
+    }
+}

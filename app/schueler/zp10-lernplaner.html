@@ -5,25 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZP10 Lernplaner - Spaced Repetition & Adaptive Learning</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="schueler-shared.css">
 
 </head>
 <body>
-    <header>
-        <div class="header-content">
-            <div class="header-title">
-                <div class="emoji">📚</div>
-                <h1>ZP10 Lernplaner</h1>
+    <nav class="sub-nav">
+        <div class="sub-nav-inner">
+            <a href="../index.html" class="back-btn" aria-label="Zurück zum Hub">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </a>
+            <div class="sub-nav-title">
+                <span class="sub-nav-emoji">📚</span>
+                Lernplaner
             </div>
-            <div class="header-controls">
-                <div class="countdown-box" id="countdownBox">
-                    Lädt...
-                </div>
-                <button class="theme-toggle" id="themeToggle">🌙</button>
+            <div class="sub-nav-actions">
+                <button class="icon-btn" id="themeToggle" aria-label="Theme wechseln" title="Theme wechseln">🌙</button>
             </div>
         </div>
-    </header>
+    </nav>
+
+    <!-- countdownBox preserved for JS compatibility -->
+    <div id="countdownBox" style="display:none;"></div>
 
     <main>
         <!-- OVERVIEW STATISTICS -->

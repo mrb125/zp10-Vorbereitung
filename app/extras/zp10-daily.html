@@ -13,6 +13,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="zp10-daily.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
 </head>
 <body>
     <button class="icon-btn" id="themeToggle" aria-label="Theme toggle">☀️</button>
@@ -366,7 +367,7 @@
             const q = appState.questions[appState.currentQuestion];
             document.getElementById('questionNumber').textContent = `Frage ${appState.currentQuestion + 1} von 5`;
             document.getElementById('questionTopic').textContent = q.topic;
-            document.getElementById('questionText').textContent = q.question;
+            document.getElementById('questionText').innerHTML = q.question;
             document.getElementById('progressFill').style.width = ((appState.currentQuestion) / 5 * 100) + '%';
 
             const optionsHtml = q.options.map((opt, idx) => `
@@ -376,6 +377,7 @@
                 </label>
             `).join('');
             document.getElementById('optionsContainer').innerHTML = optionsHtml;
+            if(typeof ZP10!=='undefined') ZP10.renderMath(document.getElementById('questionScreen'));
             document.getElementById('feedback').classList.remove('show');
             document.getElementById('explanation').style.display = 'none';
             document.getElementById('submitBtn').style.display = 'block';
@@ -531,5 +533,8 @@
             showStartScreen();
         })();
     </script>
+<script src="../js/shared.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
 </body>
 </html>

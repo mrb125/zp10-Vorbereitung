@@ -296,19 +296,25 @@ function updateProgress() {
     });
 
     const overallPercent = Math.round(totalPercent / totalModules);
-    document.getElementById('progressPercent').textContent = overallPercent + '%';
-    document.getElementById('modulesCompleted').textContent = completedModules;
+    const ppEl = document.getElementById('progressPercent');
+    if (ppEl) ppEl.textContent = overallPercent + '%';
+    const mcEl = document.getElementById('modulesCompleted');
+    if (mcEl) mcEl.textContent = completedModules;
     const totalEl = document.getElementById('modulesTotal');
     if (totalEl) totalEl.textContent = totalModules;
 
-    // Update progress ring
-    const circumference = 440;
-    const offset = circumference - (overallPercent / 100) * circumference;
-    document.getElementById('progressRing').style.strokeDashoffset = offset;
+    // Update progress ring (legacy, now hidden)
+    const ringEl = document.getElementById('progressRing');
+    if (ringEl) {
+        const circumference = 440;
+        const offset = circumference - (overallPercent / 100) * circumference;
+        ringEl.style.strokeDashoffset = offset;
+    }
 
-    // Update achievement count
+    // Update achievement count (legacy, now hidden)
     const achievements = hubData.achievements || [];
-    document.getElementById('achievementCount').textContent = achievements.length;
+    const achEl = document.getElementById('achievementCount');
+    if (achEl) achEl.textContent = achievements.length;
 }
 
 // ===== COUNTDOWN =====
@@ -317,7 +323,85 @@ function updateCountdown() {
     const today = new Date();
     const diff = exam - today;
     const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-    document.getElementById('countdownDays').textContent = Math.max(0, days);
+    const el = document.getElementById('countdownDays');
+    if (el) el.textContent = Math.max(0, days);
+}
+
+// ===== HERO RENDER =====
+function renderHero() {
+    const hubData = loadHubData();
+    const code = getStudentCode();
+    const displayName = code && code !== 'GAST' ? (hubData.studentName || code) : (hubData.studentName || 'Schüler');
+
+    // Name
+    const heroNameEl = document.getElementById('heroName');
+    if (heroNameEl) {
+        heroNameEl.textContent = displayName;
+        heroNameEl.style.cursor = 'pointer';
+        heroNameEl.title = 'Klicken um Code zu ändern';
+        heroNameEl.onclick = () => {
+            const newCode = prompt('Neuen Code eingeben (oder leer lassen zum Behalten):', code || '');
+            if (newCode !== null && newCode.trim() !== '') {
+                localStorage.setItem('zp10_student_code', newCode.trim().toUpperCase());
+                const hd = loadHubData();
+                hd.studentCode = newCode.trim().toUpperCase();
+                saveHubData(hd);
+                location.reload();
+            }
+        };
+    }
+
+    // XP
+    const heroXPEl = document.getElementById('heroXP');
+    if (heroXPEl) heroXPEl.textContent = hubData.totalXP || 0;
+
+    // Streak
+    const daily = JSON.parse(localStorage.getItem('zp10_daily_data') || '{"streak":0}');
+    const heroStreakEl = document.getElementById('heroStreak');
+    if (heroStreakEl) heroStreakEl.textContent = daily.streak || 0;
+
+    // Countdown
+    updateCountdown();
+
+    // Module counts (also updated by updateProgress)
+    let completedModules = 0;
+    modulesMetadata.forEach(module => {
+        const latest = localStorage.getItem(`zp10_${module.id}_latest`);
+        const data = latest ? JSON.parse(latest) : null;
+        if (data && data.score && data.maxScore) {
+            const percent = (data.score / data.maxScore) * 100;
+            if (percent >= 70) completedModules++;
+        }
+    });
+    const mcEl = document.getElementById('modulesCompleted');
+    const mtEl = document.getElementById('modulesTotal');
+    if (mcEl) mcEl.textContent = completedModules;
+    if (mtEl) mtEl.textContent = modulesMetadata.length;
+
+    // Keep header in sync (studentName + rankBadge)
+    const nameEl = document.getElementById('studentName');
+    if (nameEl) {
+        const fullDisplay = code && code !== 'GAST' ? `${hubData.studentName || 'Schüler'} (${code})` : hubData.studentName || 'Schüler';
+        nameEl.textContent = fullDisplay;
+        nameEl.style.cursor = 'pointer';
+        nameEl.title = 'Klicken um Code zu ändern';
+        nameEl.onclick = heroNameEl ? heroNameEl.onclick : null;
+    }
+    const xpEl = document.getElementById('totalXP');
+    if (xpEl) xpEl.textContent = hubData.totalXP || 0;
+
+    const ranks = [
+        { min: 0, name: 'Einsteiger' },
+        { min: 500, name: 'Schüler' },
+        { min: 1500, name: 'Meister' },
+        { min: 3000, name: 'Champion' }
+    ];
+    let rank = ranks[0].name;
+    for (let r of ranks) {
+        if ((hubData.totalXP || 0) >= r.min) rank = r.name;
+    }
+    const rankEl = document.getElementById('rankBadge');
+    if (rankEl) rankEl.textContent = '🚀 ' + rank;
 }
 
 // ===== DAILY CHALLENGE =====
@@ -327,29 +411,42 @@ function updateDailyChallenge() {
 
     const today = new Date().toDateString();
     const isCompletedToday = data.lastDate === today;
+    const streak = data.streak || 0;
 
-    const card = document.getElementById('dailyChallengeCard');
-    const streakDisplay = document.getElementById('streakDisplay');
-    const statusDisplay = document.getElementById('todayStatus');
+    // New quick-action tile elements
+    const tile = document.getElementById('dailyChallengeCard');
     const titleEl = document.getElementById('dailyChallengeTitle');
+    const badgeEl = document.getElementById('streakDisplay');
+
+    // Legacy elements (now hidden spans, but kept for compatibility)
+    const statusDisplay = document.getElementById('todayStatus');
     const descEl = document.getElementById('dailyChallengeDescription');
     const btnEl = document.getElementById('dailyChallengeBtn');
 
-    streakDisplay.textContent = data.streak || 0;
-
-    if (isCompletedToday) {
-        card.classList.add('completed');
-        statusDisplay.innerHTML = '✓ Erledigt';
-        titleEl.textContent = 'Challenge erledigt!';
-        descEl.textContent = 'Gute Arbeit! Komm morgen wieder.';
-        btnEl.textContent = 'Ergebnisse →';
-    } else {
-        card.classList.remove('completed');
-        statusDisplay.textContent = 'Offen';
-        titleEl.textContent = '5-Minuten-Challenge';
-        descEl.textContent = '5 Aufgaben aus allen Themen';
-        btnEl.textContent = 'Starten →';
+    if (tile) {
+        if (isCompletedToday) {
+            tile.classList.add('completed');
+        } else {
+            tile.classList.remove('completed');
+        }
     }
+
+    if (titleEl) titleEl.textContent = isCompletedToday ? 'Erledigt! ✓' : 'Daily Challenge';
+
+    // Show streak badge on tile if streak > 0
+    if (badgeEl) {
+        if (streak > 0) {
+            badgeEl.textContent = '🔥 ' + streak;
+            badgeEl.style.display = 'inline-block';
+        } else {
+            badgeEl.style.display = 'none';
+        }
+    }
+
+    // Legacy hidden elements
+    if (statusDisplay) statusDisplay.textContent = isCompletedToday ? '✓ Erledigt' : 'Offen';
+    if (descEl) descEl.textContent = isCompletedToday ? 'Gute Arbeit! Komm morgen wieder.' : '5 Aufgaben aus allen Themen';
+    if (btnEl) btnEl.textContent = isCompletedToday ? 'Ergebnisse →' : 'Starten →';
 }
 
 // ===== HEADER DATA =====
@@ -755,8 +852,8 @@ function init() {
 
     initTheme();
     setupLehrerAccess();
-    updateCountdown();
-    updateHeader();
+    renderHero();          // new: hero banner + countdown + stats
+    updateHeader();        // keep header in sync (rankBadge etc.)
     updateCreatureMini();
     updateDailyChallenge();
     renderModules();
@@ -772,8 +869,8 @@ function init() {
         showEscapeReminder();
     }
 
-    // Update every minute
-    setInterval(updateCountdown, 60000);
+    // Update hero countdown every minute
+    setInterval(() => { updateCountdown(); }, 60000);
 }
 
 function showEscapeGate(escapeState) {

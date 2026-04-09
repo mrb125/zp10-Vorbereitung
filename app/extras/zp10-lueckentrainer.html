@@ -8,13 +8,22 @@
     <link rel="stylesheet" href="zp10-lueckentrainer.css">
 </head>
 <body>
-    <div class="app-container">
-        <!-- Theme Toggle -->
-        <div class="theme-toggle">
-            <button id="themeBtn" class="theme-btn" aria-label="Design wechseln">
-                <span class="theme-icon">🌙</span>
-            </button>
+
+<nav class="sub-nav">
+    <div class="sub-nav-inner">
+        <a href="../index.html" class="back-btn" aria-label="Zurück zum Hub">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </a>
+        <div class="sub-nav-title">
+            <span class="sub-nav-emoji">📋</span>
+            Lückentrainer
         </div>
+        <div class="sub-nav-actions">
+            <button class="icon-btn" id="themeToggle" aria-label="Theme wechseln">🌙</button>
+        </div>
+    </div>
+</nav>
+    <div class="app-container">
 
         <!-- Start Screen -->
         <div id="startScreen" class="screen screen-active">
@@ -291,12 +300,12 @@
 
         function updateThemeButton() {
             const theme = document.documentElement.getAttribute('data-theme');
-            document.getElementById('themeBtn').querySelector('.theme-icon').textContent =
-                theme === 'dark' ? '☀️' : '🌙';
+            const btn = document.getElementById('themeToggle');
+            if (btn) btn.textContent = theme === 'dark' ? '☀️' : '🌙';
         }
 
         function setupEventListeners() {
-            document.getElementById('themeBtn').addEventListener('click', toggleTheme);
+            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
             document.getElementById('startBtn').addEventListener('click', startSession);
             document.getElementById('submitBtn').addEventListener('click', submitAnswer);
             document.getElementById('nextBtn').addEventListener('click', nextQuestion);
