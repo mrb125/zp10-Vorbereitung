@@ -2451,6 +2451,121 @@
             .print-header-info { display: block !important; }
         }
         .print-header-info { display: none; }
+
+        /* ===== FALSCHE AUFGABEN REVIEW ===== */
+        .wrong-review-section {
+            margin-top: 1.5rem;
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            border: 2px solid var(--danger);
+        }
+        .wrong-review-header {
+            background: var(--danger);
+            color: white;
+            padding: 12px 18px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            user-select: none;
+        }
+        .wrong-review-header .chevron { transition: transform 0.2s; }
+        .wrong-review-header.open .chevron { transform: rotate(180deg); }
+        .wrong-review-body { background: var(--surface); }
+        .wrong-item {
+            padding: 16px 18px;
+            border-bottom: 1px solid var(--border);
+        }
+        .wrong-item:last-child { border-bottom: none; }
+        .wrong-item-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--text);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .wrong-item-content {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            background: var(--bg);
+            border-radius: var(--radius-md);
+            padding: 8px 12px;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+        .wrong-answers-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+        .answer-box {
+            flex: 1;
+            min-width: 120px;
+            border-radius: var(--radius-md);
+            padding: 8px 12px;
+            font-size: 0.85rem;
+        }
+        .answer-box.wrong-ans { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); }
+        .answer-box.right-ans { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); }
+        .answer-box-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 3px; }
+        .answer-box.wrong-ans .answer-box-label { color: var(--danger); }
+        .answer-box.right-ans .answer-box-label { color: var(--success); }
+        .wrong-tip {
+            font-size: 0.83rem;
+            color: var(--text-secondary);
+            background: var(--primary-light);
+            border-left: 3px solid var(--primary);
+            padding: 8px 12px;
+            border-radius: 0 var(--radius-md) var(--radius-md) 0;
+        }
+        /* Finale Zusammenfassung */
+        .final-wrong-section {
+            background: var(--surface);
+            border-radius: var(--radius-xl);
+            border: 2px solid var(--border);
+            margin: 24px 0;
+            overflow: hidden;
+        }
+        .final-wrong-header {
+            background: linear-gradient(135deg, var(--danger), #ff6b6b);
+            color: white;
+            padding: 16px 20px;
+            font-weight: 700;
+            font-size: 1.05rem;
+        }
+        .final-wrong-summary {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .summary-chip {
+            background: var(--bg);
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .final-wrong-rooms { padding: 0 20px 16px; }
+        .room-wrong-group { margin-top: 16px; }
+        .room-wrong-title {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
     </style>
     <script src="js/api-config.js"></script>
     <script src="js/zp10-storage.js"></script>
@@ -2677,6 +2792,9 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- FALSCHE AUFGABEN ÜBERSICHT -->
+                    <div id="finalWrongAnswers"></div>
 
                     <!-- DETAILLIERTE ANALYSE ZUM AUSDRUCKEN -->
                     <div id="printAnalysis" class="print-analysis">
@@ -4318,66 +4436,200 @@
             }
         }
 
+        // Hilfsfunktionen für Antwort-Formatierung
+        function formatUserAnswer(puzzle, answer) {
+            if (!answer && answer !== 0) return '(keine Antwort)';
+            try {
+                if (puzzle.type === 'mc') {
+                    const idx = parseInt(answer);
+                    return puzzle.options?.[idx]?.text || answer;
+                }
+                if (puzzle.type === 'tf') {
+                    const parts = String(answer).split('|');
+                    return parts[0] === 'true' ? 'Wahr' : 'Falsch';
+                }
+                if (puzzle.type === 'order') return '(Reihenfolge falsch)';
+                if (puzzle.type === 'match') return '(Zuordnung falsch)';
+                if (puzzle.type === 'reason') {
+                    const s = String(answer);
+                    return s.length > 80 ? s.slice(0, 80) + '…' : s;
+                }
+            } catch(e) {}
+            return String(answer);
+        }
+
+        function formatCorrectAnswer(puzzle) {
+            try {
+                if (puzzle.type === 'mc') {
+                    return puzzle.options?.find(o => o.correct)?.text || '—';
+                }
+                if (puzzle.type === 'tf') {
+                    const correct = puzzle.options?.find(o => o.correct);
+                    return correct ? (correct.value === 'true' ? 'Wahr' : 'Falsch') : '—';
+                }
+                if (puzzle.type === 'order') return '(richtige Reihenfolge)';
+                if (puzzle.type === 'match') return '(richtige Zuordnung)';
+                if (puzzle.type === 'reason') return '(offene Aufgabe)';
+                if (puzzle.correctAnswer !== undefined) {
+                    if (puzzle.tolerance) return `${puzzle.correctAnswer} (±${puzzle.tolerance})`;
+                    return String(puzzle.correctAnswer);
+                }
+                if (puzzle.acceptedAnswers?.length) return puzzle.acceptedAnswers.join(' oder ');
+            } catch(e) {}
+            return '—';
+        }
+
         function renderErrorAnalysis() {
             const room = ROOMS[AppState.currentRoom.roomId];
             const answers = AppState.currentRoom.answers;
             const container = document.getElementById('errorAnalysisContainer');
 
-            const errors = [];
+            const wrongs = [];
             room.puzzles.forEach((puzzle, idx) => {
                 const answer = answers[idx];
-                if (answer && !answer.correct && answer.errorInfo) {
-                    errors.push({
-                        puzzleTitle: puzzle.title,
-                        userAnswer: answer.answer,
-                        errorType: answer.errorInfo.type,
-                        feedback: answer.errorInfo.feedback
-                    });
+                if (answer && !answer.correct) {
+                    wrongs.push({ puzzle, answer, idx });
                 }
             });
 
-            if (errors.length === 0) {
-                container.innerHTML = '';
+            if (wrongs.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align:center;padding:16px;background:rgba(16,185,129,0.1);border-radius:var(--radius-lg);margin-top:1rem;color:var(--success);font-weight:700;">
+                        🎉 Alle Aufgaben richtig gelöst!
+                    </div>`;
                 return;
             }
 
-            // Group errors by type
-            const errorsByType = {};
-            errors.forEach(err => {
-                if (!errorsByType[err.errorType]) {
-                    errorsByType[err.errorType] = [];
-                }
-                errorsByType[err.errorType].push(err);
+            const isOpen = true;
+            let html = `
+                <div class="wrong-review-section">
+                    <div class="wrong-review-header open" onclick="this.classList.toggle('open');this.nextElementSibling.style.display=this.classList.contains('open')?'block':'none'">
+                        <span>❌ ${wrongs.length} falsch gelöste Aufgabe${wrongs.length>1?'n':''}</span>
+                        <span class="chevron">▲</span>
+                    </div>
+                    <div class="wrong-review-body">`;
+
+            wrongs.forEach(({ puzzle, answer }) => {
+                const userAns = formatUserAnswer(puzzle, answer.answer);
+                const correctAns = formatCorrectAnswer(puzzle);
+                const tip = answer.errorInfo?.feedback || '';
+                html += `
+                    <div class="wrong-item">
+                        <div class="wrong-item-title">
+                            <span style="background:var(--danger);color:white;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:0.75rem;flex-shrink:0;">✗</span>
+                            ${puzzle.title}
+                        </div>
+                        <div class="wrong-item-content">${puzzle.content || ''}</div>
+                        <div class="wrong-answers-row">
+                            <div class="answer-box wrong-ans">
+                                <div class="answer-box-label">Deine Antwort</div>
+                                <div>${userAns}</div>
+                            </div>
+                            <div class="answer-box right-ans">
+                                <div class="answer-box-label">Richtige Antwort</div>
+                                <div>${correctAns}</div>
+                            </div>
+                        </div>
+                        ${tip ? `<div class="wrong-tip">💡 ${tip}</div>` : ''}
+                    </div>`;
             });
 
-            let html = '<div class="error-analysis"><div class="error-analysis-title">⚠️ Fehleranalyse</div>';
+            html += '</div></div>';
+            container.innerHTML = html;
+        }
 
-            Object.entries(errorsByType).forEach(([errorType, errorList]) => {
-                html += `<div class="error-grouped-section"><div class="error-grouped-title">${errorType}</div><div class="error-items">`;
+        function renderFinalWrongAnswers() {
+            const container = document.getElementById('finalWrongAnswers');
+            if (!container) return;
 
-                errorList.forEach(err => {
-                    html += `
-                        <div class="error-item">
-                            <div class="error-item-header">
-                                <div class="error-item-title">${err.puzzleTitle}</div>
-                                <div class="error-type-badge">${errorType}</div>
+            // Alle falschen Antworten über alle Räume sammeln
+            const allWrongs = [];
+            AppState.global.allRoomStats.forEach(roomStat => {
+                const room = ROOMS[roomStat.roomId];
+                if (!room) return;
+                room.puzzles.forEach((puzzle, idx) => {
+                    const answer = roomStat.answers[idx];
+                    if (answer && !answer.correct) {
+                        allWrongs.push({ room, puzzle, answer, roomId: roomStat.roomId });
+                    }
+                });
+            });
+
+            if (allWrongs.length === 0) {
+                container.innerHTML = `
+                    <div class="final-wrong-section">
+                        <div class="final-wrong-header">🎉 Keine Fehler — perfekte Diagnose!</div>
+                    </div>`;
+                return;
+            }
+
+            // Fehlerschwerpunkte ermitteln
+            const errorTypeCounts = {};
+            allWrongs.forEach(w => {
+                const t = w.answer.errorInfo?.type;
+                if (t) errorTypeCounts[t] = (errorTypeCounts[t] || 0) + 1;
+            });
+            const topErrors = Object.entries(errorTypeCounts)
+                .sort((a,b) => b[1]-a[1])
+                .slice(0, 4);
+
+            // Schwerpunkt-Chips
+            let chipsHtml = `
+                <div class="summary-chip" style="background:rgba(239,68,68,0.1);color:var(--danger);">
+                    ❌ ${allWrongs.length} falsche Antwort${allWrongs.length>1?'en':''}
+                </div>`;
+            topErrors.forEach(([type, count]) => {
+                chipsHtml += `<div class="summary-chip">⚠️ ${type} (${count}×)</div>`;
+            });
+
+            // Aufgaben gruppiert nach Raum
+            const byRoom = {};
+            allWrongs.forEach(w => {
+                if (!byRoom[w.roomId]) byRoom[w.roomId] = { room: w.room, items: [] };
+                byRoom[w.roomId].items.push(w);
+            });
+
+            let roomsHtml = '';
+            Object.entries(byRoom).forEach(([roomId, { room, items }]) => {
+                roomsHtml += `
+                    <div class="room-wrong-group">
+                        <div class="room-wrong-title">
+                            <span style="background:var(--primary);color:white;border-radius:8px;padding:2px 10px;font-size:0.8rem;">${room.name || 'Raum ' + (parseInt(roomId)+1)}</span>
+                            <span>${items.length} Fehler</span>
+                        </div>`;
+                items.forEach(({ puzzle, answer }) => {
+                    const userAns = formatUserAnswer(puzzle, answer.answer);
+                    const correctAns = formatCorrectAnswer(puzzle);
+                    const tip = answer.errorInfo?.feedback || '';
+                    roomsHtml += `
+                        <div class="wrong-item" style="margin-left:8px;border-left:3px solid var(--border);padding-left:14px;margin-bottom:12px;">
+                            <div class="wrong-item-title">
+                                <span style="background:var(--danger);color:white;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:0.7rem;flex-shrink:0;">✗</span>
+                                ${puzzle.title}
                             </div>
-                            <div class="error-details">
-                                <div class="error-detail-row">
-                                    <div class="error-detail-label">Deine Antwort:</div>
-                                    <div>${err.userAnswer}</div>
+                            <div class="wrong-item-content">${puzzle.content || ''}</div>
+                            <div class="wrong-answers-row">
+                                <div class="answer-box wrong-ans">
+                                    <div class="answer-box-label">Deine Antwort</div>
+                                    <div>${userAns}</div>
+                                </div>
+                                <div class="answer-box right-ans">
+                                    <div class="answer-box-label">Richtige Antwort</div>
+                                    <div>${correctAns}</div>
                                 </div>
                             </div>
-                            <div class="error-feedback">💡 ${err.feedback}</div>
-                        </div>
-                    `;
+                            ${tip ? `<div class="wrong-tip">💡 ${tip}</div>` : ''}
+                        </div>`;
                 });
-
-                html += '</div></div>';
+                roomsHtml += '</div>';
             });
 
-            html += '</div>';
-            container.innerHTML = html;
+            container.innerHTML = `
+                <div class="final-wrong-section">
+                    <div class="final-wrong-header">📋 Falsch gelöste Aufgaben — Gesamtübersicht</div>
+                    <div class="final-wrong-summary">${chipsHtml}</div>
+                    <div class="final-wrong-rooms">${roomsHtml}</div>
+                </div>`;
         }
 
         // ============== KI-FEEDBACK-SYSTEM (vorgeneriert) ==============
@@ -4833,6 +5085,7 @@
             };
 
             showScreen('finalEvaluationScreen');
+            renderFinalWrongAnswers();
         }
 
         // ============== PRINTABLE ANALYSIS ==============
