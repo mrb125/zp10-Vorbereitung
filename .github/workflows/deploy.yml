@@ -59,3 +59,26 @@ jobs:
           local-dir: app/
           server-dir: /html/app/
           dangerous-clean-slate: false
+
+      - name: Root-Redirect erstellen
+        run: |
+          mkdir -p root-redirect
+          cat > root-redirect/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html><head><meta charset="utf-8">
+          <meta http-equiv="refresh" content="0;url=/app/">
+          <script>location.replace('/app/');</script>
+          </head><body></body></html>
+          EOF
+
+      - name: FTP Deploy Root-Redirect
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          local-dir: root-redirect/
+          server-dir: /html/
+          dangerous-clean-slate: false
