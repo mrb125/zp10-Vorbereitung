@@ -22,20 +22,19 @@ const RANK_THRESHOLDS = [
 
 // ===== THEME TOGGLE =====
 function setupTheme() {
-    const saved = localStorage.getItem('zp10_theme');
-    const isDark = saved !== 'light';
-    if (!isDark) {
-        document.body.classList.add('light-theme');
-        document.getElementById('themeToggle').textContent = '☀️';
-    }
+    const t = localStorage.getItem('zp10_theme');
+    if (t === 'dark') document.body.classList.add('dark');
+    else if (t === 'light') document.body.classList.remove('dark');
+    else if (window.matchMedia('(prefers-color-scheme: dark)').matches) document.body.classList.add('dark');
+    const isDark = document.body.classList.contains('dark');
+    document.getElementById('themeToggle').textContent = isDark ? '☀️' : '🌙';
     document.getElementById('themeToggle').addEventListener('click', toggleTheme);
 }
 
 function toggleTheme() {
-    document.body.classList.toggle('light-theme');
-    const isDark = !document.body.classList.contains('light-theme');
+    const isDark = document.body.classList.toggle('dark');
     localStorage.setItem('zp10_theme', isDark ? 'dark' : 'light');
-    document.getElementById('themeToggle').textContent = isDark ? '🌙' : '☀️';
+    document.getElementById('themeToggle').textContent = isDark ? '☀️' : '🌙';
 }
 
 // ===== DATA LOADING =====

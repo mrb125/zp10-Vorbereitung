@@ -44,6 +44,81 @@ function loadHubData() {
 
 function saveHubData(data) {
     localStorage.setItem('zp10_hub_data', JSON.stringify(data));
+    _scheduleHubPush();
+}
+
+// ===== SERVER SYNC (hub_data geräteübergreifend) =====
+let _hubPushTimer = null;
+
+function _scheduleHubPush() {
+    clearTimeout(_hubPushTimer);
+    _hubPushTimer = setTimeout(_pushHubToServer, 3000);
+}
+
+function _serverBase() {
+    return localStorage.getItem('zp10_server_url') || window.ZP10_SERVER_URL || null;
+}
+function _serverKey() {
+    return localStorage.getItem('zp10_server_key') || window.ZP10_API_KEY || null;
+}
+
+async function _pushHubToServer() {
+    const base = _serverBase(), key = _serverKey();
+    if (!base || !key) return;
+    const code = getStudentCode();
+    if (!code || code === 'GAST') return;
+    try {
+        await fetch(base + '/hub-sync.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-API-Key': key },
+            body: JSON.stringify({ code, hub_data: loadHubData() }),
+            keepalive: true
+        });
+    } catch(e) { /* offline – wird beim nächsten Pull nachgeholt */ }
+}
+
+async function _pullHubFromServer(code) {
+    const base = _serverBase();
+    if (!base) return;
+    try {
+        const res = await fetch(base + '/hub-sync.php?code=' + encodeURIComponent(code));
+        if (!res.ok) return;
+        const json = await res.json();
+        if (!json.found || !json.hub_data) return;
+
+        // Merge: server-Daten mit lokalem Stand zusammenführen (additiv)
+        const local  = loadHubData();
+        const server = json.hub_data;
+        const merged = _mergeHubData(local, server);
+        localStorage.setItem('zp10_hub_data', JSON.stringify(merged));
+    } catch(e) { /* offline */ }
+}
+
+function _mergeHubData(local, server) {
+    const m = { ...local };
+    // XP: Maximum
+    m.totalXP = Math.max(local.totalXP || 0, server.totalXP || 0);
+    // mvScores: pro Modul höchsten lastScore
+    const ls = local.mvScores || {}, ss = server.mvScores || {};
+    const allMods = new Set([...Object.keys(ls), ...Object.keys(ss)]);
+    m.mvScores = {};
+    for (const mod of allMods) {
+        const lv = ls[mod], sv = ss[mod];
+        if (!lv)                                              m.mvScores[mod] = sv;
+        else if (!sv)                                         m.mvScores[mod] = lv;
+        else m.mvScores[mod] = ((sv.lastScore || 0) >= (lv.lastScore || 0)) ? sv : lv;
+    }
+    // completedModules: Union
+    m.completedModules = [...new Set([...(local.completedModules || []), ...(server.completedModules || [])])];
+    // creature: server-first
+    if (server.creature?.type) {
+        m.creature = { ...server.creature };
+        if (!m.creature.customName && local.creature?.customName)
+            m.creature.customName = local.creature.customName;
+    }
+    // studentName: server-Wert bevorzugen
+    if (server.studentName && server.studentName !== 'Schüler') m.studentName = server.studentName;
+    return m;
 }
 
 // ===== MODULE DATA =====
@@ -832,6 +907,18 @@ function init() {
         return;
     }
 
+    // ===== SERVER SYNC (einmal pro Session, bevor Hub gerendert wird) =====
+    if (studentCode && !sessionStorage.getItem('zp10_hub_pulled')) {
+        sessionStorage.setItem('zp10_hub_pulled', '1');
+        const beforePull = localStorage.getItem('zp10_hub_data');
+        _pullHubFromServer(studentCode).then(() => {
+            const afterPull = localStorage.getItem('zp10_hub_data');
+            if (afterPull !== beforePull) location.reload(); // neue Daten → frisch rendern
+            else init();                                      // keine Änderung → normal weiter
+        });
+        return; // warten auf Pull
+    }
+
     // ===== TIER-WAHL ONBOARDING (einmalig) =====
     const hubData = loadHubData();
     const creatureData = hubData.creature;
@@ -996,8 +1083,29 @@ function renderCreatureHubWidget() {
             });
         }
 
-        document.getElementById('creatureHubName').textContent = cr.emoji + ' ' + cr.stages[level];
-        document.getElementById('creatureHubName').style.color = cr.color;
+        // Custom name or stage name
+        const customName = creature.customName;
+        const displayCreatureName = customName || cr.stages[level];
+        const nameEl = document.getElementById('creatureHubName');
+        nameEl.style.color = cr.color;
+        nameEl.style.cursor = 'pointer';
+        nameEl.title = 'Klicken um Namen zu ändern';
+        nameEl.innerHTML = cr.emoji + ' ' + displayCreatureName + ' <span style="font-size:0.75em;opacity:0.6;">✏️</span>';
+        if (!nameEl._renameBound) {
+            nameEl._renameBound = true;
+            nameEl.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const current = (loadHubData().creature || {}).customName || '';
+                const newName = prompt('Namen für deinen Begleiter:', current);
+                if (newName === null) return; // abgebrochen
+                const hd = loadHubData();
+                if (!hd.creature) hd.creature = {};
+                hd.creature.customName = newName.trim().slice(0, 20);
+                saveHubData(hd);
+                renderCreatureHubWidget();
+            });
+        }
+
         const nextNeeded = progress.next !== null ? (progress.next - progress.current + ' MV bis ' + cr.stages[Math.min(level+1, cr.stages.length-1)]) : 'Vollständig gemeistert!';
         document.getElementById('creatureHubStage').textContent = cr.name + ' · ' + masteredCount + ' Fehlvorstellungen gemeistert · ' + nextNeeded;
         document.getElementById('creatureHubMood').innerHTML = 'Stimmung: <span style="color:' + mood.color + ';font-weight:700;">' + mood.emoji + ' ' + mood.label + '</span>';
@@ -1118,7 +1226,8 @@ function updateCreatureMini() {
         // Sprite laden
         document.getElementById('creatureMiniImg').src = ZP10.getCreatureSprite(creature.type, level);
 
-        document.getElementById('creatureMiniName').textContent = cr.emoji + ' ' + cr.stages[level];
+        const miniCustomName = (hubData.creature || {}).customName;
+        document.getElementById('creatureMiniName').textContent = cr.emoji + ' ' + (miniCustomName || cr.stages[level]);
         document.getElementById('creatureMiniName').style.color = cr.color;
         document.getElementById('creatureMiniMood').textContent = moodEmoji + ' ' + masteredCount + ' MV';
 
