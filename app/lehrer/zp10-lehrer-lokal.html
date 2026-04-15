@@ -33,7 +33,21 @@
       <button class="tab-btn" onclick="switchTab('recommendations')">Förderempfehlungen</button>
       <button class="tab-btn" onclick="switchTab('import')">Daten importieren</button>
       <button class="tab-btn" onclick="switchTab('codes');loadCodes()">🔑 Schüler-Codes</button>
+      <button class="tab-btn" onclick="switchTab('companions');loadCompanions()">🐾 Begleiter</button>
       <button class="tab-btn" onclick="switchTab('reasoning')" style="background:linear-gradient(135deg,#FF6B8A,#8B5CF6);color:white;">✍️ Begründungen bewerten</button>
+    </div>
+
+    <!-- BEGLEITER TAB -->
+    <div id="companions" class="tab-content">
+      <div class="card">
+        <h2>🐾 Begleiter-Übersicht</h2>
+        <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:1.5rem;">
+          Alle Schüler-Sprites aus dem Server — wird beim Öffnen des Tabs geladen.
+        </p>
+        <div id="companionsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:16px;">
+          <p style="color:var(--text-secondary);">Lade…</p>
+        </div>
+      </div>
     </div>
 
     <!-- REASONING/BEGRÜNDUNGEN TAB -->
@@ -368,6 +382,7 @@
 
   <script>
     const MODULES = {
+      // Kurz-IDs (lokal importiert)
       'M1': 'Terme & Gleichungen',
       'M2': 'Terme & Muster',
       'M3': 'Terme vereinfachen',
@@ -380,8 +395,24 @@
       'M10': 'Strahlensatz',
       'M11': 'Prozent & Wachstum',
       'M12': 'Expo-Grundlagen',
-      'M13': 'Exponentialfunktionen'
+      'M13': 'Exponentialfunktionen',
+      // Voll-IDs (Server / App)
+      'zp10-terme-gleichungen':        'Terme & Gleichungen',
+      'zp10-terme-muster':             'Terme & Muster',
+      'zp10-terme-vereinfachen':       'Terme vereinfachen',
+      'zp10-lineare-funktionen':       'Lineare Funktionen',
+      'zp10-quadratische-funktionen':  'Quadratische Funktionen',
+      'zp10-potenzen-wurzeln':         'Potenzen & Wurzeln',
+      'zp10-lgs':                      'LGS',
+      'zp10-geometrie':                'Geometrie',
+      'zp10-strahlensatz':             'Strahlensatz',
+      'zp10-stochastik':               'Stochastik',
+      'zp10-prozent-wachstum':         'Prozent & Wachstum',
+      'zp10-expo-grundlagen':          'Expo-Grundlagen',
+      'zp10-exponentialfunktionen':    'Exponentialfunktionen',
     };
+    // Lookup-Hilfsfunktion — gibt Klarnamen oder die ID selbst zurück
+    function moduleName(mid) { return moduleName(mid) || mid || '—'; }
 
     const COMPETENCIES = {'K1': 'Modellieren', 'K2': 'Problemlösen', 'K3': 'Reasoning', 'K4': 'Darstellen', 'K5': 'Kommunikation', 'K6': 'Werkzeuge'};
 
@@ -836,9 +867,9 @@
     function openHeatmapDetail(vc, mid) {
       const s = loadData();
       const af = s.filter(st => (st.fehlvorstellungen || []).some(f => f.code === vc && f.moduleId === mid));
-      let html = `<p style="margin-bottom: 1rem;"><strong>${vc}</strong> in <strong>${MODULES[mid]}</strong> (${af.length}):</p>`;
+      let html = `<p style="margin-bottom: 1rem;"><strong>${vc}</strong> in <strong>${moduleName(mid)}</strong> (${af.length}):</p>`;
       html += '<ul class="mv-list">';
-      af.forEach(st => html += `<li class="mv-item" onclick="openProfile('${st.name}'); closeModal('heatmapModal');" style="cursor: pointer;"><strong style="color: var(--primary);">${st.name}</strong><div class="mv-module">Modul: ${MODULES[mid]}</div></li>`);
+      af.forEach(st => html += `<li class="mv-item" onclick="openProfile('${st.name}'); closeModal('heatmapModal');" style="cursor: pointer;"><strong style="color: var(--primary);">${st.name}</strong><div class="mv-module">Modul: ${moduleName(mid)}</div></li>`);
       html += '</ul>';
       document.getElementById('heatmapModalTitle').textContent = `MV-Details: ${vc}`;
       document.getElementById('heatmapModalBody').innerHTML = html;
@@ -868,7 +899,7 @@
         const ms = Object.entries(st.modules || {});
         const wm = ms.filter(([, d]) => (d.score || 0) < 50);
         if (wm.length > 0) {
-          const tls = wm.map(([mid]) => MODULES[mid]);
+          const tls = wm.map(([mid]) => moduleName(mid));
           rcs.push({priority: 'medium', title: `${st.name}: ${wm.length} schwache Modul(e)`, desc: `${tls.join(', ')}. Unterstützung empfohlen.`, impact: 1});
         }
       });
@@ -881,6 +912,19 @@
       document.getElementById('recommendationsContainer').innerHTML = html;
     }
 
+    const CREATURES = {
+      fox:     { name:'Blitzfuchs',   emoji:'⚡', color:'#f4a61a', stages:['Voltino','Sparkling','Fulminox','Thunderex'] },
+      water:   { name:'Wasserdrache', emoji:'🌊', color:'#4fc3f7', stages:['Bubblin','Wavekin','Tidalon','Abysshar'] },
+      forest:  { name:'Waldgeist',    emoji:'🌿', color:'#66bb6a', stages:['Sprouta','Leafling','Arboros','Ancienta'] },
+      phoenix: { name:'Phönix',       emoji:'🔥', color:'#ff7043', stages:['Emberkin','Cindross','Flamara','Phoenara'] },
+      gecko:   { name:'Kaktusgecko',  emoji:'🌵', color:'#8bc34a', stages:['Pricklet','Spikeliz','Cactudon','Thornlord'] },
+    };
+    function getCreatureLevel(mvCount) {
+      const t = [0,3,15,35]; let l = 0;
+      t.forEach((v,i) => { if (mvCount >= v) l = i; });
+      return Math.min(l, 3);
+    }
+
     function openProfile(sn) {
       const s = loadData();
       const st = s.find(x => x.name === sn);
@@ -888,7 +932,14 @@
       document.getElementById('profileName').textContent = `📋 ${st.name}`;
       const ms = Object.values(st.modules || {}).map(m => m.score || 0);
       const as = ms.length > 0 ? Math.round(ms.reduce((a, b) => a + b, 0) / ms.length) : 0;
-      let html = `<div class="profile-stats">
+
+      let html = `<div id="creatureProfileBox" style="display:none;text-align:center;padding:0.75rem 0;border-bottom:1px solid var(--border);margin-bottom:1rem;">
+        <img id="creatureProfileImg" src="" alt="" style="width:80px;height:80px;object-fit:contain;">
+        <div id="creatureProfileName" style="font-weight:700;font-size:1rem;margin-top:4px;"></div>
+        <div id="creatureProfileStage" style="font-size:0.8rem;color:var(--text-secondary);"></div>
+      </div>`;
+
+      html += `<div class="profile-stats">
         <div class="stat-box"><div class="stat-value">${st.totalXP}</div><div class="stat-label">XP</div></div>
         <div class="stat-box"><div class="stat-value">${Object.keys(st.modules).length}</div><div class="stat-label">Module</div></div>
         <div class="stat-box"><div class="stat-value">${(st.fehlvorstellungen || []).length}</div><div class="stat-label">MVs</div></div>
@@ -899,24 +950,54 @@
         const sc = md.score || 0;
         const gr = getGradeFromScore(sc);
         const bdc = sc >= 70 ? 'score-green' : sc >= 45 ? 'score-yellow' : 'score-red';
-        html += `<tr><td>${MODULES[mid]}</td><td><span class="score-badge ${bdc}">${sc}%</span></td><td><span class="score-badge ${bdc}">${gr}</span></td><td>${md.xp || 0}</td></tr>`;
+        html += `<tr><td>${moduleName(mid)}</td><td><span class="score-badge ${bdc}">${sc}%</span></td><td><span class="score-badge ${bdc}">${gr}</span></td><td>${md.xp || 0}</td></tr>`;
       });
       html += `</tbody></table></div></div>`;
       if ((st.fehlvorstellungen || []).length > 0) {
         html += `<div class="profile-section"><h4>⚠️ MVs</h4><ul class="mv-list">`;
         (st.fehlvorstellungen || []).forEach(f => {
-          html += `<li class="mv-item"><div class="mv-code">${f.code}</div><div class="mv-title">${f.title}</div><div class="mv-module">${MODULES[f.moduleId]}</div></li>`;
+          html += `<li class="mv-item"><div class="mv-code">${f.code}</div><div class="mv-title">${f.title}</div><div class="mv-module">${moduleName(f.moduleId)}</div></li>`;
         });
         html += `</ul></div>`;
       }
       html += `<div class="foerder-box"><div class="foerder-label">📝 Förderempfehlung:</div><div class="foerder-text" id="foerderText">${genFoerderText(st)}</div><button class="copy-btn" onclick="copyFoerderText()">📋 Kopieren</button></div>`;
       document.getElementById('profileContent').innerHTML = html;
       document.getElementById('profileModal').classList.add('active');
+
+      // Sprite asynchron laden
+      _loadCreatureForProfile(st.code || st.name);
+    }
+
+    async function _loadCreatureForProfile(code) {
+      const serverUrl = localStorage.getItem('zp10_server_url') || window.ZP10_SERVER_URL;
+      if (!serverUrl) return;
+      try {
+        const res = await fetch(serverUrl + '/hub-sync.php?code=' + encodeURIComponent(code));
+        if (!res.ok) return;
+        const json = await res.json();
+        const creature = json.hub_data?.creature;
+        if (!creature?.type || !creature?.unlocked) return;
+        const cr = CREATURES[creature.type];
+        if (!cr) return;
+        const mvScores = json.hub_data?.mvScores || {};
+        const mvCount = Object.values(mvScores).filter(m => (m.lastScore||0) >= 80).length;
+        const level = getCreatureLevel(mvCount);
+        const spriteSrc = `https://mrbl.4lima.de/app/companion-img/${creature.type}-${level}.png`;
+        const customName = creature.customName;
+        const box = document.getElementById('creatureProfileBox');
+        if (!box) return;
+        document.getElementById('creatureProfileImg').src = spriteSrc;
+        document.getElementById('creatureProfileName').innerHTML =
+          `<span style="color:${cr.color}">${cr.emoji} ${customName || cr.stages[level]}</span>`;
+        document.getElementById('creatureProfileStage').textContent =
+          customName ? `${cr.name} · ${cr.stages[level]}` : cr.name;
+        box.style.display = 'block';
+      } catch(e) {}
     }
 
     function genFoerderText(st) {
       const ms = Object.entries(st.modules || {});
-      const wm = ms.filter(([, d]) => (d.score || 0) < 50).map(([mid]) => MODULES[mid]);
+      const wm = ms.filter(([, d]) => (d.score || 0) < 50).map(([mid]) => moduleName(mid));
       const as = ms.length > 0 ? Math.round(ms.reduce((s, [, d]) => s + (d.score || 0), 0) / ms.length) : 0;
       const gr = getGradeFromScore(as);
       let t = `Förder-Empfehlung für ${st.name}\nDatum: ${new Date().toLocaleDateString('de-DE')}\n\nNotenschlüssel (NRW ZP10):\n≥87%→1, ≥73%→2, ≥59%→3, ≥45%→4, ≥18%→5, <18%→6\n\nDurchschnitt: ${as}% → Note ${gr}\n`;
@@ -972,6 +1053,76 @@
     }
 
     function closeModal(mi) { document.getElementById(mi).classList.remove('active'); }
+
+    // ===== BEGLEITER-ÜBERSICHT =====
+    async function loadCompanions() {
+      const grid = document.getElementById('companionsGrid');
+      const serverUrl = localStorage.getItem('zp10_server_url') || window.ZP10_SERVER_URL;
+      const apiKey    = localStorage.getItem('zp10_server_key') || window.ZP10_API_KEY;
+      if (!serverUrl || !apiKey) {
+        grid.innerHTML = '<p style="color:var(--warning)">⚠️ Kein Server konfiguriert. Bitte Server-Sync einrichten.</p>';
+        return;
+      }
+      grid.innerHTML = '<p style="color:var(--text-secondary)">Lade Schüler…</p>';
+
+      // Alle Codes laden
+      let codes = [];
+      try {
+        const r = await fetch(serverUrl + '/codes.php', { headers: { 'X-API-Key': apiKey } });
+        const data = await r.json();
+        codes = data.map(d => d.code);
+      } catch(e) {
+        grid.innerHTML = '<p style="color:var(--danger)">❌ Fehler beim Laden der Codes.</p>'; return;
+      }
+
+      if (!codes.length) {
+        grid.innerHTML = '<p style="color:var(--text-secondary)">Keine Schüler-Codes gefunden.</p>'; return;
+      }
+
+      // Alle Hub-Daten parallel laden
+      const results = await Promise.allSettled(
+        codes.map(code =>
+          fetch(serverUrl + '/hub-sync.php?code=' + encodeURIComponent(code))
+            .then(r => r.json())
+            .then(j => ({ code, hub: j.hub_data }))
+        )
+      );
+
+      let cards = '';
+      let noSprite = 0;
+      results.forEach(r => {
+        if (r.status !== 'fulfilled') return;
+        const { code, hub } = r.value;
+        const creature = hub?.creature;
+        if (!creature?.type || !creature?.unlocked) { noSprite++; return; }
+        const cr = CREATURES[creature.type];
+        if (!cr) { noSprite++; return; }
+        const mvCount = Object.values(hub.mvScores || {}).filter(m => (m.lastScore||0) >= 80).length;
+        const level = getCreatureLevel(mvCount);
+        const customName = creature.customName;
+        const displayName = customName || cr.stages[level];
+        cards += `
+          <div style="background:var(--surface);border:2px solid ${cr.color}33;border-radius:14px;padding:12px 8px;text-align:center;cursor:pointer;"
+               onclick="openProfile('${code}')" title="${code}">
+            <img src="https://mrbl.4lima.de/app/companion-img/${creature.type}-${level}.png"
+                 alt="${cr.name}"
+                 style="width:70px;height:70px;object-fit:contain;"
+                 onerror="this.outerHTML='<div style=\'font-size:2.5rem\'>${cr.emoji}</div>'">
+            <div style="font-weight:700;color:${cr.color};font-size:0.82rem;margin-top:4px;">${cr.emoji} ${displayName}</div>
+            <div style="font-size:0.72rem;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${code}</div>
+            <div style="font-size:0.7rem;color:var(--text-tertiary,#94a3b8);">${mvCount} MV · Stufe ${level+1}</div>
+          </div>`;
+      });
+
+      if (!cards) {
+        grid.innerHTML = `<p style="color:var(--text-secondary)">Noch keine Sprites gespeichert (${noSprite} Schüler ohne Begleiter).</p>`;
+      } else {
+        grid.innerHTML = cards;
+        if (noSprite > 0) {
+          grid.innerHTML += `<p style="grid-column:1/-1;color:var(--text-secondary);font-size:0.82rem;margin-top:8px;">${noSprite} Schüler ohne Begleiter nicht angezeigt.</p>`;
+        }
+      }
+    }
 
     // ===== SERVER-SYNC =====
     function openServerConfig() {
