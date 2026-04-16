@@ -1090,6 +1090,8 @@ function saveResultsToHub(pct, xpTotal, correctCount, total) {
   if (typeof SpacedRepetition !== 'undefined') {
     const triggeredMVs = Object.keys(srData).filter(mv => srData[mv].quality < 3);
     SpacedRepetition.updateAfterDiagnostic(MODULE_ID, triggeredMVs, Object.keys(srData));
+    if (typeof ZP10Storage !== 'undefined' && triggeredMVs.length)
+      ZP10Storage.pushHubFehlvorstellungen(MODULE_ID, triggeredMVs, typeof MV !== 'undefined' ? MV : {});
   }
   if (typeof ZP10Storage !== 'undefined') ZP10Storage.saveModuleResult(MODULE_ID, resultData).catch(() => {});
 }

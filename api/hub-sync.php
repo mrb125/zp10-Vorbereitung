@@ -103,6 +103,18 @@ function mergeHubData(array $server, array $client): array {
     );
     $m['completedModules'] = array_values(array_unique($combined));
 
+    // fehlvorstellungen: Union, neueste detectedAt pro (code+moduleId) gewinnt
+    $sf = $server['fehlvorstellungen'] ?? [];
+    $cf = $client['fehlvorstellungen'] ?? [];
+    $fv_map = [];
+    foreach (array_merge($sf, $cf) as $fv) {
+        $fkey = ($fv['code'] ?? '') . '|' . ($fv['moduleId'] ?? '');
+        if (!isset($fv_map[$fkey]) || ($fv['detectedAt'] ?? '') > ($fv_map[$fkey]['detectedAt'] ?? '')) {
+            $fv_map[$fkey] = $fv;
+        }
+    }
+    $m['fehlvorstellungen'] = array_values($fv_map);
+
     // creature: server-first; customName aus client übernehmen falls server keinen hat
     if (!empty($client['creature'])) {
         if (empty($server['creature']['type'])) {

@@ -1142,7 +1142,7 @@
           const avgScore = localSt && Object.keys(localSt.modules||{}).length
             ? Math.round(Object.values(localSt.modules).reduce((a,m) => a + (m.score||0), 0) / Object.keys(localSt.modules).length)
             : null;
-          const fehlvorstellungen = localSt?.fehlvorstellungen || [];
+          const fehlvorstellungen = hub?.fehlvorstellungen || localSt?.fehlvorstellungen || [];
           return { code, studentName, hub, creature, cr, mvCount, level, moduleCount, totalXP, avgScore, totalModules, fehlvorstellungen };
         });
 

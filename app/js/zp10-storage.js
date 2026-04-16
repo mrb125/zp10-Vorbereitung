@@ -231,6 +231,43 @@ const ZP10Storage = {
     }
   },
 
+  // ─── Hub Fehlvorstellungen Push ───
+
+  pushHubFehlvorstellungen(moduleId, triggeredMVCodes, mvDefs) {
+    if (!triggeredMVCodes || !triggeredMVCodes.length) return;
+    try {
+      const hub = JSON.parse(localStorage.getItem('zp10_hub_data') || '{}');
+      const existing = hub.fehlvorstellungen || [];
+      const now = new Date().toISOString();
+      triggeredMVCodes.forEach(code => {
+        const def = mvDefs && mvDefs[code];
+        const idx = existing.findIndex(f => f.code === code && f.moduleId === moduleId);
+        const entry = { code, title: (def && def.title) || code, moduleId, detectedAt: now };
+        if (idx >= 0) existing[idx] = entry;
+        else existing.push(entry);
+      });
+      hub.fehlvorstellungen = existing;
+      localStorage.setItem('zp10_hub_data', JSON.stringify(hub));
+    } catch(e) {}
+    this._pushHubToServer();
+  },
+
+  _pushHubToServer() {
+    const base = this.SERVER_URL;
+    const key = this.API_KEY;
+    const code = localStorage.getItem('zp10_student_code');
+    if (!base || !key || !code || code === 'GAST') return;
+    try {
+      const hub = JSON.parse(localStorage.getItem('zp10_hub_data') || '{}');
+      fetch(base + '/hub-sync.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-API-Key': key },
+        body: JSON.stringify({ code, hub_data: hub }),
+        keepalive: true
+      }).catch(() => {});
+    } catch(e) {}
+  },
+
   // ─── Migration ───
 
   async migrateFromLocalStorage() {
