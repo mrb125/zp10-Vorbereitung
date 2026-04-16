@@ -39,12 +39,36 @@
 
     <!-- BEGLEITER TAB -->
     <div id="companions" class="tab-content">
+      <!-- KLASSENTIER BANNER -->
+      <div id="classAnimalBanner" class="card" style="display:none;margin-bottom:1rem;">
+        <div style="display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;">
+          <div id="classAnimalSprite" style="flex-shrink:0;text-align:center;">
+          </div>
+          <div style="flex:1;min-width:200px;">
+            <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-secondary);margin-bottom:.2rem;">Klassentier</div>
+            <div id="classAnimalName" style="font-size:1.6rem;font-weight:800;"></div>
+            <div id="classAnimalSub" style="font-size:0.85rem;color:var(--text-secondary);margin-top:.25rem;"></div>
+          </div>
+          <!-- STATS PILLS -->
+          <div id="classAnimalStats" style="display:flex;gap:.6rem;flex-wrap:wrap;"></div>
+        </div>
+      </div>
+
+      <!-- KLASSEN-ÜBERSICHT KARTEN -->
       <div class="card">
-        <h2>🐾 Begleiter-Übersicht</h2>
-        <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:1.5rem;">
-          Alle Schüler-Sprites aus dem Server — wird beim Öffnen des Tabs geladen.
-        </p>
-        <div id="companionsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;gap:1rem;flex-wrap:wrap;">
+          <h2 style="margin:0;">🐾 Begleiter-Übersicht</h2>
+          <div style="display:flex;gap:.5rem;align-items:center;">
+            <label style="font-size:0.82rem;color:var(--text-secondary);">Sortieren:</label>
+            <select id="companionSort" onchange="sortCompanions()" style="font-size:0.82rem;padding:4px 8px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);">
+              <option value="level">Level ↓</option>
+              <option value="modules">Module ↓</option>
+              <option value="xp">XP ↓</option>
+              <option value="name">Name A→Z</option>
+            </select>
+          </div>
+        </div>
+        <div id="companionsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:14px;">
           <p style="color:var(--text-secondary);">Lade…</p>
         </div>
       </div>
@@ -1055,6 +1079,8 @@
     function closeModal(mi) { document.getElementById(mi).classList.remove('active'); }
 
     // ===== BEGLEITER-ÜBERSICHT =====
+    let _companionData = []; // Cache für Sortierung
+
     async function loadCompanions() {
       const grid = document.getElementById('companionsGrid');
       const serverUrl = localStorage.getItem('zp10_server_url') || window.ZP10_SERVER_URL;
@@ -1066,61 +1092,164 @@
       grid.innerHTML = '<p style="color:var(--text-secondary)">Lade Schüler…</p>';
 
       // Alle Codes laden
-      let codes = [];
+      let codesData = [];
       try {
         const r = await fetch(serverUrl + '/codes.php', { headers: { 'X-API-Key': apiKey } });
-        const data = await r.json();
-        codes = data.map(d => d.code);
+        codesData = await r.json();
       } catch(e) {
         grid.innerHTML = '<p style="color:var(--danger)">❌ Fehler beim Laden der Codes.</p>'; return;
       }
-
-      if (!codes.length) {
+      if (!codesData.length) {
         grid.innerHTML = '<p style="color:var(--text-secondary)">Keine Schüler-Codes gefunden.</p>'; return;
       }
 
       // Alle Hub-Daten parallel laden
       const results = await Promise.allSettled(
-        codes.map(code =>
+        codesData.map(({ code, student_name }) =>
           fetch(serverUrl + '/hub-sync.php?code=' + encodeURIComponent(code))
             .then(r => r.json())
-            .then(j => ({ code, hub: j.hub_data }))
+            .then(j => ({ code, studentName: j.hub_data?.studentName || student_name || code, hub: j.hub_data }))
         )
       );
 
-      let cards = '';
+      // Lokale Schülerdaten für Modul-Scores einbeziehen
+      const localStudents = loadData();
+
+      // Daten aufbereiten
+      _companionData = results
+        .filter(r => r.status === 'fulfilled')
+        .map(r => {
+          const { code, studentName, hub } = r.value;
+          const creature = hub?.creature;
+          const cr = creature?.type ? CREATURES[creature.type] : null;
+          const mvCount = Object.values(hub?.mvScores || {}).filter(m => (m.lastScore||0) >= 80).length;
+          const level = getCreatureLevel(mvCount);
+          const completedModules = (hub?.completedModules || []).length;
+          const totalModules = 13;
+          const totalXP = hub?.totalXP || 0;
+          // Lokale Schülerdaten für Modul-Scores
+          const localSt = localStudents.find(s => s.code === code || s.name === code);
+          const localModules = localSt ? Object.keys(localSt.modules || {}).length : 0;
+          const moduleCount = Math.max(completedModules, localModules);
+          const avgScore = localSt && Object.keys(localSt.modules||{}).length
+            ? Math.round(Object.values(localSt.modules).reduce((a,m) => a + (m.score||0), 0) / Object.keys(localSt.modules).length)
+            : null;
+          return { code, studentName, hub, creature, cr, mvCount, level, moduleCount, totalXP, avgScore, totalModules };
+        });
+
+      renderCompanionBanner(_companionData);
+      sortCompanions();
+    }
+
+    function sortCompanions() {
+      const sortBy = document.getElementById('companionSort')?.value || 'level';
+      const sorted = [..._companionData].sort((a, b) => {
+        if (sortBy === 'level')   return (b.level - a.level) || (b.mvCount - a.mvCount);
+        if (sortBy === 'modules') return b.moduleCount - a.moduleCount;
+        if (sortBy === 'xp')      return b.totalXP - a.totalXP;
+        if (sortBy === 'name')    return a.studentName.localeCompare(b.studentName);
+        return 0;
+      });
+      renderCompanionCards(sorted);
+    }
+
+    function renderCompanionBanner(data) {
+      const banner = document.getElementById('classAnimalBanner');
+      if (!data.length) { banner.style.display = 'none'; return; }
+
+      // Häufigstes Tier = Klassentier
+      const typeCounts = {};
+      data.forEach(d => { if (d.creature?.type) typeCounts[d.creature.type] = (typeCounts[d.creature.type]||0)+1; });
+      const topType = Object.entries(typeCounts).sort((a,b)=>b[1]-a[1])[0]?.[0];
+      const cr = topType ? CREATURES[topType] : null;
+      const withCreature = data.filter(d => d.creature?.unlocked && d.cr).length;
+      const avgLevel = withCreature ? (data.filter(d=>d.cr).reduce((s,d)=>s+d.level,0)/Math.max(withCreature,1)).toFixed(1) : 0;
+      const totalMods = data.reduce((s,d)=>s+d.moduleCount,0);
+      const avgScore = (() => {
+        const withScore = data.filter(d=>d.avgScore!==null);
+        return withScore.length ? Math.round(withScore.reduce((s,d)=>s+d.avgScore,0)/withScore.length) : null;
+      })();
+
+      banner.style.display = '';
+      document.getElementById('classAnimalSprite').innerHTML = cr
+        ? `<img src="https://mrbl.4lima.de/app/companion-img/${topType}-2.png"
+               style="width:80px;height:80px;object-fit:contain;"
+               onerror="this.outerHTML='<div style=\'font-size:3.5rem;line-height:1\'>${cr.emoji}</div>'">`
+        : '<div style="font-size:3rem">🐾</div>';
+      document.getElementById('classAnimalName').innerHTML = cr
+        ? `<span style="color:${cr.color}">${cr.emoji} ${cr.name}</span>`
+        : '—';
+      document.getElementById('classAnimalSub').textContent =
+        `${withCreature} von ${data.length} Schülern haben einen Begleiter freigeschaltet`;
+
+      const pill = (icon, val, label, color='var(--primary)') =>
+        `<div style="background:${color}18;border:1px solid ${color}44;border-radius:20px;padding:6px 14px;text-align:center;">
+          <div style="font-size:1.1rem;font-weight:800;color:${color};">${icon} ${val}</div>
+          <div style="font-size:0.7rem;color:var(--text-secondary);margin-top:1px;">${label}</div>
+        </div>`;
+      document.getElementById('classAnimalStats').innerHTML =
+        pill('⭐', `Ø ${avgLevel}`, 'Stufe', cr?.color || 'var(--primary)') +
+        pill('📚', totalMods, 'Module gesamt', '#6366f1') +
+        (avgScore !== null ? pill('🎯', avgScore + '%', 'Ø Score', '#10b981') : '') +
+        pill('✨', data.reduce((s,d)=>s+d.totalXP,0).toLocaleString(), 'XP gesamt', '#f59e0b');
+    }
+
+    function renderCompanionCards(data) {
+      const grid = document.getElementById('companionsGrid');
       let noSprite = 0;
-      results.forEach(r => {
-        if (r.status !== 'fulfilled') return;
-        const { code, hub } = r.value;
-        const creature = hub?.creature;
-        if (!creature?.type || !creature?.unlocked) { noSprite++; return; }
-        const cr = CREATURES[creature.type];
-        if (!cr) { noSprite++; return; }
-        const mvCount = Object.values(hub.mvScores || {}).filter(m => (m.lastScore||0) >= 80).length;
-        const level = getCreatureLevel(mvCount);
-        const customName = creature.customName;
-        const displayName = customName || cr.stages[level];
+      let cards = '';
+
+      data.forEach(({ code, studentName, creature, cr, mvCount, level, moduleCount, totalXP, avgScore, totalModules }) => {
+        if (!creature?.type || !creature?.unlocked || !cr) { noSprite++; return; }
+        const displayName = creature.customName || cr.stages[level];
+        const stars = '★'.repeat(level+1) + '☆'.repeat(3-level);
+        const modPct = Math.round((moduleCount / totalModules) * 100);
+        const scoreColor = avgScore === null ? '#94a3b8' : avgScore >= 75 ? '#10b981' : avgScore >= 50 ? '#f59e0b' : '#ef4444';
+
         cards += `
-          <div style="background:var(--surface);border:2px solid ${cr.color}33;border-radius:14px;padding:12px 8px;text-align:center;cursor:pointer;"
-               onclick="openProfile('${code}')" title="${code}">
+          <div onclick="openProfile('${code}')" title="${code}"
+               style="background:var(--surface);border:2px solid ${cr.color}33;border-radius:14px;
+                      padding:12px 10px;text-align:center;cursor:pointer;
+                      transition:transform .15s,box-shadow .15s;position:relative;"
+               onmouseenter="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px ${cr.color}33'"
+               onmouseleave="this.style.transform='';this.style.boxShadow=''">
+            <!-- Stufe-Badge -->
+            <div style="position:absolute;top:8px;right:8px;font-size:0.65rem;font-weight:700;
+                        background:${cr.color};color:#fff;border-radius:10px;padding:2px 6px;">Lv.${level+1}</div>
+            <!-- Sprite -->
             <img src="https://mrbl.4lima.de/app/companion-img/${creature.type}-${level}.png"
-                 alt="${cr.name}"
-                 style="width:70px;height:70px;object-fit:contain;"
-                 onerror="this.outerHTML='<div style=\'font-size:2.5rem\'>${cr.emoji}</div>'">
-            <div style="font-weight:700;color:${cr.color};font-size:0.82rem;margin-top:4px;">${cr.emoji} ${displayName}</div>
-            <div style="font-size:0.72rem;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${code}</div>
-            <div style="font-size:0.7rem;color:var(--text-tertiary,#94a3b8);">${mvCount} MV · Stufe ${level+1}</div>
+                 alt="${cr.name}" style="width:72px;height:72px;object-fit:contain;"
+                 onerror="this.outerHTML='<div style=\'font-size:2.8rem;line-height:72px\'>${cr.emoji}</div>'">
+            <!-- Name -->
+            <div style="font-weight:700;color:${cr.color};font-size:0.82rem;margin-top:4px;line-height:1.2;">${cr.emoji} ${displayName}</div>
+            <!-- Schülername -->
+            <div style="font-size:0.72rem;color:var(--text-secondary);margin-top:2px;
+                        white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${studentName}">${studentName}</div>
+            <!-- Sterne -->
+            <div style="font-size:0.72rem;color:${cr.color};letter-spacing:1px;margin:3px 0;">${stars}</div>
+            <hr style="border:none;border-top:1px solid var(--border);margin:6px 0;">
+            <!-- Modul-Fortschritt -->
+            <div style="font-size:0.7rem;color:var(--text-secondary);margin-bottom:3px;display:flex;justify-content:space-between;">
+              <span>📚 Module</span><span style="font-weight:700;color:var(--text);">${moduleCount}/${totalModules}</span>
+            </div>
+            <div style="background:var(--border);border-radius:4px;height:5px;overflow:hidden;margin-bottom:6px;">
+              <div style="height:100%;width:${modPct}%;background:${cr.color};border-radius:4px;transition:width .3s;"></div>
+            </div>
+            <!-- Stats -->
+            <div style="display:flex;justify-content:space-between;font-size:0.68rem;">
+              <span style="color:#f59e0b;font-weight:600;">✨ ${totalXP} XP</span>
+              ${avgScore !== null ? `<span style="color:${scoreColor};font-weight:600;">🎯 ${avgScore}%</span>` : ''}
+              <span style="color:#8b5cf6;font-weight:600;">🧠 ${mvCount} MV</span>
+            </div>
           </div>`;
       });
 
       if (!cards) {
-        grid.innerHTML = `<p style="color:var(--text-secondary)">Noch keine Sprites gespeichert (${noSprite} Schüler ohne Begleiter).</p>`;
+        grid.innerHTML = `<p style="color:var(--text-secondary)">Noch keine Begleiter freigeschaltet (${noSprite} Schüler ohne Begleiter).</p>`;
       } else {
         grid.innerHTML = cards;
-        if (noSprite > 0) {
-          grid.innerHTML += `<p style="grid-column:1/-1;color:var(--text-secondary);font-size:0.82rem;margin-top:8px;">${noSprite} Schüler ohne Begleiter nicht angezeigt.</p>`;
-        }
+        if (noSprite > 0)
+          grid.innerHTML += `<p style="grid-column:1/-1;color:var(--text-secondary);font-size:0.8rem;margin-top:4px;">+ ${noSprite} Schüler ohne Begleiter</p>`;
       }
     }
 
