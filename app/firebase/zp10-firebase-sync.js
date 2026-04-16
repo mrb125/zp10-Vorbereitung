@@ -32,6 +32,17 @@ const ZP10Sync = (() => {
   let syncInProgress = false;
   let pendingQueue = [];
 
+  // FIX 1: State für Debounce und Change-Detection
+  let lastPendingCount = 0;
+  let lastStatus = null;
+  let updateStatusTimeout = null;
+  const DEBOUNCE_MS = 300;
+
+  // FIX 2: State für getPendingCount() Caching
+  let cachedPendingCount = null;
+  let cacheTimestamp = 0;
+  const CACHE_TTL_MS = 1000;
+
   /**
    * Initialize the sync module
    * Check if Firebase config is loaded and user is authenticated
@@ -44,10 +55,10 @@ const ZP10Sync = (() => {
 
         // Set up auth state listener
         if (window.onAuthChange) {
-          window.onAuthChange((user) => {
+          window.onAuthChange(async (user) => {
             currentUser = user;
             if (user) {
-              syncPendingResults();
+              await syncPendingResults();
             }
           });
         }
@@ -153,6 +164,9 @@ const ZP10Sync = (() => {
       // Remove from pending queue
       removeFromPendingQueue(moduleId);
 
+      // Invalidate cache since pending count changed
+      cachedPendingCount = null;
+
       updateStatus('synced');
       console.log(`[ZP10Sync] Result synced for module: ${moduleId}`);
     } catch (error) {
@@ -248,6 +262,8 @@ const ZP10Sync = (() => {
   function removeFromPendingQueue(moduleId) {
     pendingQueue = pendingQueue.filter(item => item.moduleId !== moduleId);
     savePendingQueue();
+    // Invalidate cache since pending count changed
+    cachedPendingCount = null;
   }
 
   /**
@@ -263,38 +279,90 @@ const ZP10Sync = (() => {
 
   /**
    * Get count of pending syncs
+   * FIX 2: Optimized with caching to prevent expensive repeated calculations
    */
   function getPendingCount() {
+    const now = Date.now();
+
+    // Return cache if still valid (< 1 second old)
+    if (
+      cachedPendingCount !== null &&
+      now - cacheTimestamp < CACHE_TTL_MS
+    ) {
+      return cachedPendingCount;
+    }
+
+    // Cache expired or not set - recalculate
     const allKeys = Object.keys(localStorage);
     const syncKeys = allKeys.filter(key => key.startsWith(SYNC_PREFIX));
-    return syncKeys.filter(key => {
-      const data = JSON.parse(localStorage.getItem(key));
-      return !data.synced;
-    }).length;
+
+    let count = 0;
+    for (const key of syncKeys) {
+      try {
+        const data = JSON.parse(localStorage.getItem(key));
+        if (!data.synced) count++;
+      } catch (error) {
+        // Parse error - skip this item
+      }
+    }
+
+    // Update cache
+    cachedPendingCount = count;
+    cacheTimestamp = now;
+
+    return count;
   }
 
   /**
    * Update sync status in localStorage
+   * FIX 1: Debounced with change-detection to prevent recursive event loops
    */
   function updateStatus(status) {
     try {
-      localStorage.setItem(STATUS_KEY, JSON.stringify({
-        status,
-        timestamp: new Date().toISOString(),
-        pendingCount: getPendingCount()
-      }));
+      // Clear any pending timeout
+      clearTimeout(updateStatusTimeout);
 
-      // Dispatch custom event for status changes
-      window.dispatchEvent(new CustomEvent('zp10-sync-status', {
-        detail: { status, pendingCount: getPendingCount() }
-      }));
+      const newPendingCount = getPendingCount();
+
+      // Only update if status or pending count has actually changed
+      if (
+        newPendingCount !== lastPendingCount ||
+        status !== lastStatus
+      ) {
+        lastPendingCount = newPendingCount;
+        lastStatus = status;
+
+        // Debounce the actual update and event dispatch
+        updateStatusTimeout = setTimeout(() => {
+          try {
+            localStorage.setItem(
+              STATUS_KEY,
+              JSON.stringify({
+                status,
+                timestamp: new Date().toISOString(),
+                pendingCount: newPendingCount
+              })
+            );
+
+            // Dispatch custom event for status changes (only once per debounce window)
+            window.dispatchEvent(
+              new CustomEvent('zp10-sync-status', {
+                detail: { status, pendingCount: newPendingCount }
+              })
+            );
+          } catch (error) {
+            console.warn('[ZP10Sync] Error updating status (debounced):', error);
+          }
+        }, DEBOUNCE_MS);
+      }
     } catch (error) {
-      console.warn('[ZP10Sync] Error updating status:', error);
+      console.warn('[ZP10Sync] Error in updateStatus:', error);
     }
   }
 
   /**
    * Show sync status indicator in the page
+   * FIX 3: Added event listener cleanup to prevent memory leaks
    */
   function showSyncStatus(containerId) {
     const container = document.getElementById(containerId);
@@ -317,8 +385,8 @@ const ZP10Sync = (() => {
       transition: all 0.3s;
     `;
 
-    // Update indicator based on status
-    function updateIndicator() {
+    // Named function for status updates (so it can be removed later)
+    const updateIndicator = () => {
       try {
         const statusData = JSON.parse(localStorage.getItem(STATUS_KEY));
         const status = statusData?.status || 'offline';
@@ -364,13 +432,26 @@ const ZP10Sync = (() => {
       } catch (error) {
         console.warn('[ZP10Sync] Error updating indicator:', error);
       }
-    }
+    };
 
     // Initial update
     updateIndicator();
 
     // Listen for status changes
     window.addEventListener('zp10-sync-status', updateIndicator);
+
+    // Cleanup: Remove listener if indicator is removed from DOM
+    const observer = new MutationObserver(() => {
+      if (!document.body.contains(indicator)) {
+        window.removeEventListener('zp10-sync-status', updateIndicator);
+        observer.disconnect();
+      }
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
 
     // Append indicator to container
     container.appendChild(indicator);
@@ -441,9 +522,9 @@ const ZP10Sync = (() => {
   }
 
   // Listen for online/offline events
-  window.addEventListener('online', () => {
+  window.addEventListener('online', async () => {
     console.log('[ZP10Sync] Back online, attempting to sync...');
-    syncPendingResults();
+    await syncPendingResults();
   });
 
   window.addEventListener('offline', () => {
