@@ -1168,7 +1168,7 @@
 
       // Klassentier ist immer Nebula (Nebelwolf)
       const cr = CREATURES.wolf;
-      const withCreature = data.filter(d => d.creature?.unlocked && d.cr).length;
+      const withCreature = data.filter(d => d.creature?.type && d.cr).length;
       const avgLevel = withCreature
         ? (data.filter(d=>d.cr).reduce((s,d)=>s+d.level,0)/Math.max(withCreature,1)).toFixed(1)
         : 0;
@@ -1230,7 +1230,7 @@
       let cards = '';
 
       data.forEach(({ code, studentName, creature, cr, mvCount, level, moduleCount, totalXP, avgScore, totalModules, fehlvorstellungen }) => {
-        if (!creature?.type || !creature?.unlocked || !cr) { noSprite++; return; }
+        if (!creature?.type || !cr) { noSprite++; return; }
         const displayName = creature.customName || cr.stages[level];
         const stars = '★'.repeat(level+1) + '☆'.repeat(3-level);
         const modPct = Math.round((moduleCount / totalModules) * 100);
