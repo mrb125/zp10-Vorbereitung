@@ -436,7 +436,7 @@
       'zp10-exponentialfunktionen':    'Exponentialfunktionen',
     };
     // Lookup-Hilfsfunktion — gibt Klarnamen oder die ID selbst zurück
-    function moduleName(mid) { return moduleName(mid) || mid || '—'; }
+    function moduleName(mid) { return MODULES[mid] || mid || '—'; }
 
     const COMPETENCIES = {'K1': 'Modellieren', 'K2': 'Problemlösen', 'K3': 'Reasoning', 'K4': 'Darstellen', 'K5': 'Kommunikation', 'K6': 'Werkzeuge'};
 
