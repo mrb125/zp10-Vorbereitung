@@ -144,14 +144,14 @@
           <table id="classTable">
             <thead>
               <tr>
-                <th onclick="sortTable(0)">Name 👤</th>
+                <th onclick="sortTable(0)" style="cursor:pointer;user-select:none;" title="Sortieren"><span>Name 👤</span><span class="sort-icon" id="sort-icon-0"></span></th>
                 <th>Status</th>
-                <th onclick="sortTable(1)">Ø Score</th>
-                <th onclick="sortTable(2)">Note</th>
-                <th onclick="sortTable(3)">Module</th>
-                <th onclick="sortTable(4)">XP</th>
-                <th onclick="sortTable(5)">MVs</th>
-                <th onclick="sortTable(6)">Zuletzt aktiv</th>
+                <th onclick="sortTable(1)" style="cursor:pointer;user-select:none;" title="Sortieren"><span>Ø Score</span><span class="sort-icon" id="sort-icon-1"></span></th>
+                <th onclick="sortTable(2)" style="cursor:pointer;user-select:none;" title="Sortieren"><span>Note</span><span class="sort-icon" id="sort-icon-2"></span></th>
+                <th onclick="sortTable(3)" style="cursor:pointer;user-select:none;" title="Sortieren"><span>Module</span><span class="sort-icon" id="sort-icon-3"></span></th>
+                <th onclick="sortTable(4)" style="cursor:pointer;user-select:none;" title="Sortieren"><span>XP</span><span class="sort-icon" id="sort-icon-4"></span></th>
+                <th onclick="sortTable(5)" style="cursor:pointer;user-select:none;" title="Sortieren"><span>MVs</span><span class="sort-icon" id="sort-icon-5"></span></th>
+                <th onclick="sortTable(6)" style="cursor:pointer;user-select:none;" title="Sortieren"><span>Zuletzt aktiv</span><span class="sort-icon" id="sort-icon-6"></span></th>
               </tr>
             </thead>
             <tbody id="classTableBody">
@@ -667,6 +667,13 @@
         return ia ? av.localeCompare(bv, 'de') : bv.localeCompare(av, 'de');
       });
       tb.innerHTML = rs.map(r => r.outerHTML).join('');
+      // Update sort icons
+      [0,1,2,3,4,5,6].forEach(i => {
+        const el = document.getElementById('sort-icon-' + i);
+        if (el) el.textContent = '';
+      });
+      const icon = document.getElementById('sort-icon-' + ci);
+      if (icon) icon.textContent = ia ? ' ↑' : ' ↓';
     }
 
     function renderCompetencies() {
@@ -942,6 +949,7 @@
       forest:  { name:'Waldgeist',    emoji:'🌿', color:'#66bb6a', stages:['Sprouta','Leafling','Arboros','Ancienta'] },
       phoenix: { name:'Phönix',       emoji:'🔥', color:'#ff7043', stages:['Emberkin','Cindross','Flamara','Phoenara'] },
       gecko:   { name:'Kaktusgecko',  emoji:'🌵', color:'#8bc34a', stages:['Pricklet','Spikeliz','Cactudon','Thornlord'] },
+      wolf:    { name:'Nebelwolf',    emoji:'🐺', color:'#8b5cf6', stages:['Nebula','Nebula','Nebula','Nebula'] },
     };
     function getCreatureLevel(mvCount) {
       const t = [0,3,15,35]; let l = 0;
@@ -1134,7 +1142,8 @@
           const avgScore = localSt && Object.keys(localSt.modules||{}).length
             ? Math.round(Object.values(localSt.modules).reduce((a,m) => a + (m.score||0), 0) / Object.keys(localSt.modules).length)
             : null;
-          return { code, studentName, hub, creature, cr, mvCount, level, moduleCount, totalXP, avgScore, totalModules };
+          const fehlvorstellungen = localSt?.fehlvorstellungen || [];
+          return { code, studentName, hub, creature, cr, mvCount, level, moduleCount, totalXP, avgScore, totalModules, fehlvorstellungen };
         });
 
       renderCompanionBanner(_companionData);
@@ -1157,41 +1166,62 @@
       const banner = document.getElementById('classAnimalBanner');
       if (!data.length) { banner.style.display = 'none'; return; }
 
-      // Häufigstes Tier = Klassentier
-      const typeCounts = {};
-      data.forEach(d => { if (d.creature?.type) typeCounts[d.creature.type] = (typeCounts[d.creature.type]||0)+1; });
-      const topType = Object.entries(typeCounts).sort((a,b)=>b[1]-a[1])[0]?.[0];
-      const cr = topType ? CREATURES[topType] : null;
+      // Klassentier ist immer Nebula (Nebelwolf)
+      const cr = CREATURES.wolf;
       const withCreature = data.filter(d => d.creature?.unlocked && d.cr).length;
-      const avgLevel = withCreature ? (data.filter(d=>d.cr).reduce((s,d)=>s+d.level,0)/Math.max(withCreature,1)).toFixed(1) : 0;
+      const avgLevel = withCreature
+        ? (data.filter(d=>d.cr).reduce((s,d)=>s+d.level,0)/Math.max(withCreature,1)).toFixed(1)
+        : 0;
       const totalMods = data.reduce((s,d)=>s+d.moduleCount,0);
-      const avgScore = (() => {
-        const withScore = data.filter(d=>d.avgScore!==null);
-        return withScore.length ? Math.round(withScore.reduce((s,d)=>s+d.avgScore,0)/withScore.length) : null;
+      const totalXP   = data.reduce((s,d)=>s+d.totalXP,0);
+      const avgScore  = (() => {
+        const ws = data.filter(d=>d.avgScore!==null);
+        return ws.length ? Math.round(ws.reduce((s,d)=>s+d.avgScore,0)/ws.length) : null;
       })();
+      // Top MVs der ganzen Klasse
+      const mvFreq = {};
+      data.forEach(d => (d.fehlvorstellungen||[]).forEach(f => { mvFreq[f.code] = (mvFreq[f.code]||{count:0,title:f.title}); mvFreq[f.code].count++; }));
+      const topMVs = Object.entries(mvFreq).sort((a,b)=>b[1].count-a[1].count).slice(0,3);
+      const modPct = Math.round((totalMods / Math.max(data.length * 13, 1)) * 100);
+      const scoreColor = avgScore===null?'#94a3b8':avgScore>=75?'#10b981':avgScore>=50?'#f59e0b':'#ef4444';
+      const stars = '★'.repeat(Math.round(avgLevel)+1||1) + '☆'.repeat(Math.max(0,3-Math.round(avgLevel)));
 
       banner.style.display = '';
-      document.getElementById('classAnimalSprite').innerHTML = cr
-        ? `<img src="https://mrbl.4lima.de/app/companion-img/${topType}-2.png"
-               style="width:80px;height:80px;object-fit:contain;"
-               onerror="this.outerHTML='<div style=\'font-size:3.5rem;line-height:1\'>${cr.emoji}</div>'">`
-        : '<div style="font-size:3rem">🐾</div>';
-      document.getElementById('classAnimalName').innerHTML = cr
-        ? `<span style="color:${cr.color}">${cr.emoji} ${cr.name}</span>`
-        : '—';
+      document.getElementById('classAnimalSprite').innerHTML =
+        `<img src="https://mrbl.4lima.de/app/companion-img/wolf-2.png"
+             style="width:90px;height:90px;object-fit:contain;"
+             onerror="this.outerHTML='<div style=\'font-size:3.5rem;line-height:1\'>${cr.emoji}</div>'">`;
+
+      document.getElementById('classAnimalName').innerHTML =
+        `<span style="color:${cr.color}">${cr.emoji} Nebula</span>`;
       document.getElementById('classAnimalSub').textContent =
         `${withCreature} von ${data.length} Schülern haben einen Begleiter freigeschaltet`;
 
-      const pill = (icon, val, label, color='var(--primary)') =>
-        `<div style="background:${color}18;border:1px solid ${color}44;border-radius:20px;padding:6px 14px;text-align:center;">
-          <div style="font-size:1.1rem;font-weight:800;color:${color};">${icon} ${val}</div>
-          <div style="font-size:0.7rem;color:var(--text-secondary);margin-top:1px;">${label}</div>
+      // Karten-Stats (gleiche Optik wie Schüler-Karte)
+      document.getElementById('classAnimalStats').innerHTML = `
+        <div style="display:flex;flex-direction:column;gap:8px;min-width:220px;">
+          <div style="font-size:0.72rem;color:${cr.color};letter-spacing:1px;">${stars} Ø Stufe ${avgLevel}</div>
+          <div style="font-size:0.7rem;color:var(--text-secondary);display:flex;justify-content:space-between;margin-bottom:2px;">
+            <span>📚 Module (Ø)</span><span style="font-weight:700;color:var(--text);">${(totalMods/Math.max(data.length,1)).toFixed(1)}/13</span>
+          </div>
+          <div style="background:var(--border);border-radius:4px;height:5px;overflow:hidden;margin-bottom:4px;">
+            <div style="height:100%;width:${modPct}%;background:${cr.color};border-radius:4px;"></div>
+          </div>
+          <div style="display:flex;gap:12px;font-size:0.72rem;font-weight:600;">
+            <span style="color:#f59e0b;">✨ ${totalXP.toLocaleString()} XP</span>
+            ${avgScore!==null?`<span style="color:${scoreColor};">🎯 Ø ${avgScore}%</span>`:''}
+            <span style="color:#6366f1;">📚 ${totalMods} Module</span>
+          </div>
+          ${topMVs.length ? `
+            <div style="margin-top:4px;">
+              <div style="font-size:0.68rem;color:var(--text-secondary);margin-bottom:4px;">Häufigste Fehlvorstellungen:</div>
+              ${topMVs.map(([code,{count,title}])=>`
+                <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.68rem;margin-bottom:2px;">
+                  <span style="color:var(--text);">${title||code}</span>
+                  <span style="background:#ef444422;color:#ef4444;border-radius:8px;padding:1px 6px;font-weight:700;">${count}×</span>
+                </div>`).join('')}
+            </div>` : ''}
         </div>`;
-      document.getElementById('classAnimalStats').innerHTML =
-        pill('⭐', `Ø ${avgLevel}`, 'Stufe', cr?.color || 'var(--primary)') +
-        pill('📚', totalMods, 'Module gesamt', '#6366f1') +
-        (avgScore !== null ? pill('🎯', avgScore + '%', 'Ø Score', '#10b981') : '') +
-        pill('✨', data.reduce((s,d)=>s+d.totalXP,0).toLocaleString(), 'XP gesamt', '#f59e0b');
     }
 
     function renderCompanionCards(data) {
@@ -1199,12 +1229,18 @@
       let noSprite = 0;
       let cards = '';
 
-      data.forEach(({ code, studentName, creature, cr, mvCount, level, moduleCount, totalXP, avgScore, totalModules }) => {
+      data.forEach(({ code, studentName, creature, cr, mvCount, level, moduleCount, totalXP, avgScore, totalModules, fehlvorstellungen }) => {
         if (!creature?.type || !creature?.unlocked || !cr) { noSprite++; return; }
         const displayName = creature.customName || cr.stages[level];
         const stars = '★'.repeat(level+1) + '☆'.repeat(3-level);
         const modPct = Math.round((moduleCount / totalModules) * 100);
         const scoreColor = avgScore === null ? '#94a3b8' : avgScore >= 75 ? '#10b981' : avgScore >= 50 ? '#f59e0b' : '#ef4444';
+
+        // Top-3 Fehlvorstellungen (ohne Duplikate nach Code)
+        const uniqueMVs = [];
+        const seen = new Set();
+        (fehlvorstellungen || []).forEach(f => { if (!seen.has(f.code)) { seen.add(f.code); uniqueMVs.push(f); } });
+        const topMVs = uniqueMVs.slice(0, 3);
 
         cards += `
           <div onclick="openProfile('${code}')" title="${code}"
@@ -1236,11 +1272,22 @@
               <div style="height:100%;width:${modPct}%;background:${cr.color};border-radius:4px;transition:width .3s;"></div>
             </div>
             <!-- Stats -->
-            <div style="display:flex;justify-content:space-between;font-size:0.68rem;">
+            <div style="display:flex;justify-content:space-between;font-size:0.68rem;margin-bottom:${topMVs.length?'6px':'0'};">
               <span style="color:#f59e0b;font-weight:600;">✨ ${totalXP} XP</span>
               ${avgScore !== null ? `<span style="color:${scoreColor};font-weight:600;">🎯 ${avgScore}%</span>` : ''}
-              <span style="color:#8b5cf6;font-weight:600;">🧠 ${mvCount} MV</span>
+              <span style="color:#8b5cf6;font-weight:600;">🧠 ${fehlvorstellungen.length} MV</span>
             </div>
+            ${topMVs.length ? `
+            <hr style="border:none;border-top:1px solid var(--border);margin:4px 0 5px;">
+            <div style="text-align:left;">
+              ${topMVs.map(f => `
+                <div style="font-size:0.63rem;color:#ef4444;background:#ef444412;border-radius:6px;
+                            padding:2px 6px;margin-bottom:2px;white-space:nowrap;overflow:hidden;
+                            text-overflow:ellipsis;" title="${f.title||f.code}">
+                  ⚠ ${f.title||f.code}
+                </div>`).join('')}
+              ${fehlvorstellungen.length > 3 ? `<div style="font-size:0.62rem;color:var(--text-secondary);margin-top:2px;">+${fehlvorstellungen.length-3} weitere</div>` : ''}
+            </div>` : ''}
           </div>`;
       });
 
