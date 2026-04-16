@@ -1184,6 +1184,7 @@
         renderAllTables();
         setServerStatus(`✅ ${serverData.length} Schüler geladen und zusammengeführt.`, 'success');
       } catch (e) {
+        console.error('[loadFromServer] Fehler:', e);
         setServerStatus(`❌ Verbindungsfehler: ${e.message}`, 'error');
       }
     }
