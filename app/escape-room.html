@@ -3178,6 +3178,28 @@
             }));
         }
 
+        // Schreibt Escape-Room-Ergebnis direkt in zp10_lehrer_data (gleicher Browser/Gerät)
+        function saveEscapeResultToLehrer(moduleId, percentage, xpTotal) {
+            const code = (localStorage.getItem('zp10_student_code') || '').trim();
+            if (!code || code === 'GAST' || code === 'NONE') return;
+            try {
+                const data = JSON.parse(localStorage.getItem('zp10_lehrer_data') || '[]');
+                let st = data.find(s => s.code === code || s.name === code);
+                if (!st) {
+                    st = {name: code, code: code, modules: {}, fehlvorstellungen: [], totalXP: 0, lastActivity: null, status: 'active'};
+                    data.push(st);
+                }
+                if (!st.modules || Array.isArray(st.modules)) st.modules = {};
+                const prev = st.modules[moduleId] || {};
+                const ts = new Date().toISOString().slice(0,19).replace('T',' ');
+                st.modules[moduleId] = {score: percentage, xp: xpTotal, lastAttempt: ts, attemptCount: (prev.attemptCount || 0) + 1};
+                st.totalXP = xpTotal;
+                st.lastActivity = ts;
+                st.status = 'active';
+                localStorage.setItem('zp10_lehrer_data', JSON.stringify(data));
+            } catch(e) {}
+        }
+
         function loadFromLocalStorage() {
             const saved = localStorage.getItem('zp10_escape_state');
             if (saved) {
@@ -4872,17 +4894,19 @@
             // Zwischenstand nach jedem Raum ans Backend senden
             const completedRoom = ROOMS[AppState.global.currentRoom - 1];
             const roomStats = AppState.global.allRoomStats[completedRoom?.id] || {};
+            const roomPct = roomStats.total ? Math.round((roomStats.correct / roomStats.total) * 100) : 0;
             ZP10Storage.saveModuleResult('ESCAPE_ROOM_' + (AppState.global.currentRoom), {
                 studentCode: localStorage.getItem('zp10_student_code') || 'GAST',
                 score:       roomStats.correct || 0,
                 maxScore:    roomStats.total || 0,
-                percentage:  roomStats.total ? Math.round((roomStats.correct / roomStats.total) * 100) : 0,
+                percentage:  roomPct,
                 xp:          AppState.global.totalXP,
                 mode:        'escape_partial',
                 roomId:      completedRoom?.id || '',
                 roomsDone:   AppState.global.currentRoom,
                 roomsTotal:  ROOMS.length,
             });
+            saveEscapeResultToLehrer('ESCAPE_ROOM_' + AppState.global.currentRoom, roomPct, AppState.global.totalXP);
 
             if (AppState.global.currentRoom >= ROOMS.length) {
                 setTimeout(showFinalEvaluation, 1500);
@@ -5063,6 +5087,7 @@
                 mode:        'diagnose',
                 confidence:  finalResults.kompetenzScores || null,
             });
+            saveEscapeResultToLehrer('ESCAPE', Math.round(finalResults.successRate), finalResults.totalXP || 0);
 
             // IndexedDB: Session-Protokoll speichern (Phase 3A)
             zp10db.ready().then(() => zp10db.saveSession({
