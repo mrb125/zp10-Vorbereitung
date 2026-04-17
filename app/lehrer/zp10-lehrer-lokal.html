@@ -375,6 +375,9 @@
           <button onclick="loadFromServer()" style="padding:10px 20px;background:var(--success);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;">
             ⬇️ Daten jetzt laden
           </button>
+          <button onclick="uploadToServer()" style="padding:10px 20px;background:#7c3aed;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;">
+            ⬆️ Lokal → Server
+          </button>
           <button onclick="clearServerConfig()" style="padding:10px 20px;background:var(--danger);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;">
             🗑️ Verbindung entfernen
           </button>
@@ -1395,6 +1398,30 @@
         setServerStatus(`✅ ${serverData.length} Schüler geladen und zusammengeführt.`, 'success');
       } catch (e) {
         console.error('[loadFromServer] Fehler:', e);
+        setServerStatus(`❌ Verbindungsfehler: ${e.message}`, 'error');
+      }
+    }
+
+    async function uploadToServer() {
+      const url = getServerUrl() || document.getElementById('serverUrl').value.trim().replace(/\/$/, '');
+      const key = getApiKey() || document.getElementById('serverKey').value.trim();
+      if (!url || !key) { setServerStatus('⚠️ Bitte zuerst speichern.', 'warning'); return; }
+
+      const local = loadData();
+      if (!local.length) { setServerStatus('⚠️ Keine lokalen Daten vorhanden.', 'warning'); return; }
+
+      setServerStatus(`⏳ Lade ${local.length} Schüler hoch…`, 'info');
+      try {
+        const res = await fetch(`${url}/bulk-import.php`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-API-Key': key },
+          body: JSON.stringify({ students: local }),
+        });
+        if (res.status === 401) { setServerStatus('❌ Falscher API-Schlüssel.', 'error'); return; }
+        if (!res.ok) { setServerStatus(`❌ Server-Fehler: ${res.status}`, 'error'); return; }
+        const result = await res.json();
+        setServerStatus(`✅ ${result.added} neu, ${result.updated} aktualisiert — ${result.total} Schüler auf Server.`, 'success');
+      } catch (e) {
         setServerStatus(`❌ Verbindungsfehler: ${e.message}`, 'error');
       }
     }
