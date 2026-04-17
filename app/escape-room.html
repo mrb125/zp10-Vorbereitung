@@ -3569,8 +3569,10 @@
                 const dueCount = getDueCount(index);
                 const mastery = getMasteryLevel(index);
                 const dueBadge = dueCount > 0 ? `<span class="due-badge">🔄 ${dueCount} fällig</span>` : '';
+                const roomDone = AppState.global.completedRooms[index];
+                const roomErrors = roomDone ? (roomDone.total - roomDone.correct) : 0;
                 html += `
-                    <div class="room-card ${AppState.global.completedRooms[index] ? 'completed' : ''} room-mastery-border ${mastery.level}" onclick="startRoom(${index})">
+                    <div class="room-card ${roomDone ? 'completed' : ''} room-mastery-border ${mastery.level}" onclick="${roomDone ? 'openRoomReview('+index+')' : 'startRoom('+index+')'}">
                         <div class="room-header room-${index}">
                             <div class="room-emoji">${room.emoji}</div>
                             <div class="room-header-text">
@@ -3585,8 +3587,8 @@
                                 <span class="puzzle-count">${progressText}${dueBadge}</span>
                                 ${progressBar}
                                 <span class="room-status">
-                                    <span class="status-badge ${AppState.global.completedRooms[index] ? 'completed' : 'available'}">
-                                        ${AppState.global.completedRooms[index] ? '✓ Beendet' : '▶ Verfügbar'}
+                                    <span class="status-badge ${roomDone ? 'completed' : 'available'}">
+                                        ${roomDone ? (roomErrors > 0 ? '🔍 '+roomErrors+' Fehler' : '✓ Perfekt') : '▶ Verfügbar'}
                                     </span>
                                 </span>
                             </div>
@@ -3607,8 +3609,10 @@
                 const dueCount = getDueCount(roomIndex);
                 const mastery = getMasteryLevel(roomIndex);
                 const dueBadge = dueCount > 0 ? `<span class="due-badge">🔄 ${dueCount} fällig</span>` : '';
+                const roomDone = AppState.global.completedRooms[roomIndex];
+                const roomErrors = roomDone ? (roomDone.total - roomDone.correct) : 0;
                 html += `
-                    <div class="room-card ${AppState.global.completedRooms[roomIndex] ? 'completed' : ''} room-mastery-border ${mastery.level}" onclick="startRoom(${roomIndex})">
+                    <div class="room-card ${roomDone ? 'completed' : ''} room-mastery-border ${mastery.level}" onclick="${roomDone ? 'openRoomReview('+roomIndex+')' : 'startRoom('+roomIndex+')'}">
                         <div class="room-header room-${roomIndex}">
                             <div class="room-emoji">${room.emoji}</div>
                             <div class="room-header-text">
@@ -3623,8 +3627,8 @@
                                 <span class="puzzle-count">${progressText}${dueBadge}</span>
                                 ${progressBar}
                                 <span class="room-status">
-                                    <span class="status-badge ${AppState.global.completedRooms[roomIndex] ? 'completed' : 'available'}">
-                                        ${AppState.global.completedRooms[roomIndex] ? '✓ Beendet' : '▶ Verfügbar'}
+                                    <span class="status-badge ${roomDone ? 'completed' : 'available'}">
+                                        ${roomDone ? (roomErrors > 0 ? '🔍 '+roomErrors+' Fehler' : '✓ Perfekt') : '▶ Verfügbar'}
                                     </span>
                                 </span>
                             </div>
@@ -5231,6 +5235,96 @@
             </div>`;
         }
 
+        // ============== RAUM-REVIEW MODAL ==============
+        function openRoomReview(roomId) {
+            const room = ROOMS[roomId];
+            if (!room) return;
+            const roomStats = AppState.global.completedRooms[roomId];
+            if (!roomStats) return;
+
+            // answers kommen aus allRoomStats (persistent) oder savedRoomAnswers
+            const statEntry = AppState.global.allRoomStats.find(rs => rs.roomId === roomId);
+            const answers = statEntry ? statEntry.answers : (AppState.global.savedRoomAnswers[roomId]?.answers || {});
+
+            const correct = roomStats.correct;
+            const total = roomStats.total;
+            const pct = total > 0 ? Math.round(correct / total * 100) : 0;
+            const c = s => s >= 70 ? '#10B981' : s >= 45 ? '#F59E0B' : '#EF4444';
+
+            let html = `
+                <div style="margin-bottom:20px;">
+                    <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;">
+                        <span style="font-size:2.2rem;">${room.emoji}</span>
+                        <div>
+                            <div style="font-size:0.75rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-secondary,#888);margin-bottom:2px;">Raum ${roomId + 1}</div>
+                            <div style="font-size:1.15rem;font-weight:800;">${room.title}</div>
+                            <div style="font-size:0.82rem;color:var(--text-secondary,#888);">${room.description}</div>
+                        </div>
+                        <div style="margin-left:auto;text-align:right;flex-shrink:0;">
+                            <div style="font-size:1.8rem;font-weight:800;color:${c(pct)};">${pct}%</div>
+                            <div style="font-size:0.8rem;color:var(--text-secondary,#888);">${correct}/${total} richtig</div>
+                        </div>
+                    </div>
+                    <div style="background:var(--bg,#f8f9fa);border-radius:8px;height:8px;overflow:hidden;">
+                        <div style="height:100%;width:${pct}%;background:${c(pct)};border-radius:8px;"></div>
+                    </div>
+                </div>
+                <div style="font-size:0.75rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-secondary,#888);margin-bottom:10px;">Aufgaben im Detail</div>
+            `;
+
+            room.puzzles.forEach((puzzle, idx) => {
+                const ans = answers[idx];
+                const isCorrect = ans?.correct === true;
+                const isUnanswered = !ans;
+                const bg = isCorrect ? 'rgba(16,185,129,0.07)' : isUnanswered ? 'rgba(148,163,184,0.1)' : 'rgba(239,68,68,0.07)';
+                const border = isCorrect ? 'rgba(16,185,129,0.3)' : isUnanswered ? 'rgba(148,163,184,0.25)' : 'rgba(239,68,68,0.3)';
+                const icon = isCorrect ? '<span style="color:#10B981;font-size:1.1rem;">✓</span>' : isUnanswered ? '<span style="color:#94a3b8;font-size:1rem;">—</span>' : '<span style="color:#EF4444;font-size:1.1rem;">✗</span>';
+
+                html += `<div style="border:1px solid ${border};background:${bg};border-radius:12px;padding:12px 14px;margin-bottom:8px;">
+                    <div style="display:flex;align-items:flex-start;gap:10px;">
+                        <div style="width:24px;flex-shrink:0;padding-top:1px;">${icon}</div>
+                        <div style="flex:1;min-width:0;">
+                            <div style="font-size:0.88rem;font-weight:600;margin-bottom:${(!isCorrect && ans) ? '8px' : '0'};">${idx + 1}. ${puzzle.title}</div>`;
+
+                if (!isCorrect && ans) {
+                    const userAns = formatUserAnswer(puzzle, ans.answer);
+                    const correctAns = formatCorrectAnswer(puzzle);
+                    const feedback = ans.errorInfo?.feedback || '';
+                    html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:${feedback ? '8px' : '0'};">
+                        <div style="background:rgba(239,68,68,0.1);border-radius:8px;padding:7px 10px;">
+                            <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;color:#EF4444;margin-bottom:3px;">Deine Antwort</div>
+                            <div style="font-size:0.83rem;">${userAns}</div>
+                        </div>
+                        <div style="background:rgba(16,185,129,0.1);border-radius:8px;padding:7px 10px;">
+                            <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;color:#10B981;margin-bottom:3px;">Richtige Antwort</div>
+                            <div style="font-size:0.83rem;">${correctAns}</div>
+                        </div>
+                    </div>`;
+                    if (feedback) {
+                        html += `<div style="background:rgba(91,108,240,0.08);border-radius:8px;padding:7px 10px;font-size:0.82rem;color:var(--text,#333);">
+                            <span style="font-weight:700;color:var(--primary,#5B6CF0);">💡 </span>${feedback}
+                        </div>`;
+                    }
+                }
+
+                html += `</div></div></div>`;
+            });
+
+            html += `<div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;">
+                <button onclick="closeRoomReview();startRoom(${roomId})" style="flex:1;padding:11px 16px;background:var(--primary,#5B6CF0);color:#fff;border:none;border-radius:12px;font-weight:700;font-size:0.9rem;cursor:pointer;">🔄 Raum wiederholen</button>
+                <button onclick="closeRoomReview()" style="padding:11px 20px;background:var(--bg,#f8f9fa);border:1px solid var(--border,#e2e8f0);border-radius:12px;font-weight:600;font-size:0.9rem;cursor:pointer;">Schließen</button>
+            </div>`;
+
+            document.getElementById('roomReviewBody').innerHTML = html;
+            document.getElementById('roomReviewModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeRoomReview() {
+            document.getElementById('roomReviewModal').style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
         // ============== PRINTABLE ANALYSIS ==============
         function renderAnalysis() {
             const results = JSON.parse(localStorage.getItem('zp10_escape_results') || '{}');
@@ -5804,6 +5898,15 @@
             </div>
         </div>
     </div>
+    <!-- RAUM-REVIEW MODAL -->
+    <div id="roomReviewModal" style="display:none;position:fixed;inset:0;z-index:9999;overflow-y:auto;padding:20px 16px;">
+        <div onclick="closeRoomReview()" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:-1;"></div>
+        <div style="background:var(--surface,#fff);border-radius:20px;max-width:660px;width:100%;margin:0 auto;padding:28px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.25);">
+            <button onclick="closeRoomReview()" style="position:absolute;top:16px;right:16px;background:var(--bg,#f8f9fa);border:none;border-radius:50%;width:34px;height:34px;font-size:1rem;cursor:pointer;color:var(--text,#333);display:flex;align-items:center;justify-content:center;">✕</button>
+            <div id="roomReviewBody"></div>
+        </div>
+    </div>
+
     <link rel="stylesheet" href="css/wolf-helper.css">
     <script>window.WOLF_IMG_BASE = 'companion-img';</script>
     <script src="js/wolf-helper.js"></script>
