@@ -2793,6 +2793,9 @@
                         </div>
                     </div>
 
+                    <!-- FEHLERANALYSE ÜBERSICHT -->
+                    <div id="fehleranalyseCard"></div>
+
                     <!-- FALSCHE AUFGABEN ÜBERSICHT -->
                     <div id="finalWrongAnswers"></div>
 
@@ -5110,7 +5113,122 @@
             };
 
             showScreen('finalEvaluationScreen');
+            renderFehleranalyse();
             renderFinalWrongAnswers();
+        }
+
+        // ============== FEHLERANALYSE ÜBERSICHT ==============
+        function renderFehleranalyse() {
+            const card = document.getElementById('fehleranalyseCard');
+            if (!card) return;
+            const results = JSON.parse(localStorage.getItem('zp10_escape_results') || '{}');
+            if (!results.roomScores || !Object.keys(results.roomScores).length) { card.style.display='none'; return; }
+
+            const c = s => s>=70?'#10B981':s>=45?'#F59E0B':'#EF4444';
+            const bg = s => s>=70?'rgba(16,185,129,0.1)':s>=45?'rgba(245,158,11,0.1)':'rgba(239,68,68,0.1)';
+            const lbl = s => s>=70?'Sicher':s>=45?'Üben':'Lücken';
+
+            const modNames = {
+                'zp10-terme-gleichungen':'Terme & Gleichungen','zp10-terme-muster':'Terme & Muster',
+                'zp10-terme-vereinfachen':'Terme vereinfachen','zp10-lineare-funktionen':'Lineare Funktionen',
+                'zp10-quadratische-funktionen':'Quadratische Funktionen','zp10-potenzen-wurzeln':'Potenzen & Wurzeln',
+                'zp10-lgs':'LGS','zp10-geometrie':'Geometrie','zp10-stochastik':'Stochastik',
+                'zp10-prozent-wachstum':'Prozent & Wachstum','zp10-exponentialfunktionen':'Exponentialfunktionen',
+                'zp10-expo-grundlagen':'Expo-Grundlagen','zp10-strahlensatz':'Strahlensatz'
+            };
+
+            // Fehler sammeln
+            const errorTypeCounts = {};
+            let totalCorrect = 0, totalAll = 0;
+            AppState.global.allRoomStats.forEach(roomStat => {
+                const room = ROOMS[roomStat.roomId];
+                if (!room) return;
+                room.puzzles.forEach((puzzle, idx) => {
+                    const ans = roomStat.answers[idx];
+                    totalAll++;
+                    if (ans && ans.correct) { totalCorrect++; }
+                    else if (ans) {
+                        const et = ans.errorType || 'Allgemeiner Fehler';
+                        errorTypeCounts[et] = (errorTypeCounts[et]||0) + 1;
+                    }
+                });
+            });
+            const totalWrong = totalAll - totalCorrect;
+            const pct = totalAll>0 ? Math.round(totalCorrect/totalAll*100) : 0;
+            const topErrors = Object.entries(errorTypeCounts).sort((a,b)=>b[1]-a[1]).slice(0,4);
+
+            // Räume nach Teil aufteilen, schlechteste zuerst
+            const teil1 = Object.entries(results.roomScores).filter(([id])=>parseInt(id)<5).sort((a,b)=>a[1].score-b[1].score);
+            const teil2 = Object.entries(results.roomScores).filter(([id])=>parseInt(id)>=5).sort((a,b)=>a[1].score-b[1].score);
+
+            const roomGrid = (entries) => entries.map(([roomId, rs]) => {
+                const room = ROOMS[parseInt(roomId)];
+                const em = room?.emoji || '🏠';
+                return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:${bg(rs.score)};border:1px solid ${c(rs.score)}44;border-radius:12px;">
+                    <span style="font-size:1.3rem;flex-shrink:0;">${em}</span>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-size:0.85rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${rs.title}</div>
+                        <div style="display:flex;align-items:center;gap:6px;margin-top:3px;">
+                            <div style="flex:1;height:5px;background:var(--bg);border-radius:4px;overflow:hidden;">
+                                <div style="height:100%;width:${rs.score}%;background:${c(rs.score)};border-radius:4px;"></div>
+                            </div>
+                            <span style="font-size:0.72rem;color:var(--text-secondary);flex-shrink:0;">${rs.correct}/${rs.total}</span>
+                        </div>
+                    </div>
+                    <div style="text-align:right;flex-shrink:0;">
+                        <div style="font-size:1rem;font-weight:800;color:${c(rs.score)};">${rs.score}%</div>
+                        <div style="font-size:0.7rem;color:${c(rs.score)};font-weight:600;">${lbl(rs.score)}</div>
+                    </div>
+                </div>`;
+            }).join('');
+
+            // Lernplan
+            const weakMods = (results.recommendedModules || []).slice(0, 4);
+            const lernplan = weakMods.length ? weakMods.map((mid, i) => {
+                const name = modNames[mid] || mid;
+                const moduleFile = `module/${mid}.html`;
+                return `<a href="${moduleFile}" style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:12px;text-decoration:none;color:var(--text);transition:border-color 0.2s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">
+                    <span style="background:var(--primary);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;flex-shrink:0;">${i+1}</span>
+                    <span style="font-size:0.88rem;font-weight:600;flex:1;">${name}</span>
+                    <span style="font-size:0.8rem;color:var(--primary);">→ Üben</span>
+                </a>`;
+            }).join('') : '<div style="font-size:0.88rem;color:var(--text-secondary);padding:8px 0;">Alle Bereiche gut gemeistert! 🎉</div>';
+
+            card.innerHTML = `
+            <div style="background:var(--surface);border-radius:20px;padding:24px;margin:24px 0;border:2px solid var(--border);">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+                    <div>
+                        <h3 style="font-weight:800;font-size:1.1rem;margin:0 0 4px;">🔍 Deine Fehleranalyse</h3>
+                        <p style="font-size:0.85rem;color:var(--text-secondary);margin:0;">${totalCorrect} von ${totalAll} Aufgaben richtig</p>
+                    </div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                        <span style="padding:4px 12px;border-radius:20px;font-size:0.82rem;font-weight:700;background:rgba(16,185,129,0.12);color:#10B981;">✓ ${totalCorrect} richtig</span>
+                        ${totalWrong>0?`<span style="padding:4px 12px;border-radius:20px;font-size:0.82rem;font-weight:700;background:rgba(239,68,68,0.12);color:#EF4444;">✗ ${totalWrong} falsch</span>`:''}
+                    </div>
+                </div>
+
+                <div style="background:var(--bg);border-radius:8px;height:8px;overflow:hidden;margin-bottom:20px;">
+                    <div style="height:100%;width:${pct}%;background:${c(pct)};border-radius:8px;transition:width 0.8s ease;"></div>
+                </div>
+
+                ${teil1.length ? `<div style="font-size:0.75rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:8px;">Teil 1 — Ohne Hilfsmittel</div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:16px;">${roomGrid(teil1)}</div>` : ''}
+
+                ${teil2.length ? `<div style="font-size:0.75rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:8px;">Teil 2 — Mit Hilfsmitteln</div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:16px;">${roomGrid(teil2)}</div>` : ''}
+
+                ${topErrors.length ? `<div style="border-top:1px solid var(--border);padding-top:16px;margin-bottom:16px;">
+                    <div style="font-size:0.75rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:10px;">⚠️ Häufige Fehlertypen</div>
+                    <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                        ${topErrors.map(([type,n])=>`<span style="padding:5px 12px;border-radius:20px;font-size:0.8rem;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);color:var(--text);">${type} <strong style="color:#EF4444;">${n}×</strong></span>`).join('')}
+                    </div>
+                </div>` : ''}
+
+                <div style="border-top:1px solid var(--border);padding-top:16px;">
+                    <div style="font-size:0.75rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:10px;">📚 Dein persönlicher Lernplan</div>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;">${lernplan}</div>
+                </div>
+            </div>`;
         }
 
         // ============== PRINTABLE ANALYSIS ==============
