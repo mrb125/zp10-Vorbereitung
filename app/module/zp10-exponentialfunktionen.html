@@ -304,6 +304,11 @@ function renderQuestion(){
     submitExam();
     return;
   }
+  if(Q[currentQIndex].type==='multi'||Q[currentQIndex].type==="multi"){
+    currentQIndex++;
+    renderQuestion();
+    return;
+  }
 
   const q=Q[currentQIndex];
   const isCalibratingQuestion=(currentQIndex+1)%5===0;
