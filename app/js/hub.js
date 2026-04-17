@@ -566,7 +566,7 @@ function setupLehrerAccess() {
     const card = document.getElementById('lehrerActionCard');
     const link = card.parentElement.querySelector('a[href="lehrer/zp10-lehrer-lokal.html"]');
 
-    if (params.has('lehrer') && params.get('lehrer') === '1') {
+    if (params.has('lehrer') && params.get('lehrer') === 'ZP10-Admin') {
         localStorage.setItem('zp10_is_lehrer', 'true');
     }
 
