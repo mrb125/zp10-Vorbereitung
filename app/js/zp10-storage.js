@@ -157,12 +157,13 @@ const ZP10Storage = {
     const payload = {
       studentCode: result.studentCode || localStorage.getItem('zp10_student_code') || 'GAST',
       moduleId,
-      score:      result.score      ?? 0,
-      maxScore:   result.maxScore   ?? 0,
-      percentage: result.percentage ?? 0,
-      xp:         result.xp        ?? 0,
-      mode:       result.mode       || 'diagnose',
-      confidence: result.confidence || null,
+      score:        result.score        ?? 0,
+      maxScore:     result.maxScore     ?? 0,
+      percentage:   result.percentage   ?? 0,
+      xp:           result.xp           ?? 0,
+      mode:         result.mode         || 'diagnose',
+      confidence:   result.confidence   || null,
+      lastActivity: new Date().toISOString(), // FIX: bei jedem Modul-Abschluss aktualisieren
     };
     fetch(this.SERVER_URL + '/save.php', {
       method: 'POST',

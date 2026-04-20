@@ -23,7 +23,17 @@ if (!$code || $code === 'GAST' || $code === 'NONE') {
 
 $pct = (int)($input['percentage'] ?? $input['score'] ?? 0);
 $xp  = (int)($input['xp'] ?? 0);
-$ts  = now();
+
+// Client-Zeitstempel bevorzugen (korrekt bei Offline-Sync aus Queue)
+// Nur akzeptieren wenn valide ISO-8601 und nicht in der Zukunft
+$clientTs = $input['lastActivity'] ?? null;
+$ts = now();
+if ($clientTs && preg_match('/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}/', $clientTs)) {
+    $clientTime = strtotime($clientTs);
+    if ($clientTime && $clientTime <= time() + 60) { // max 60s Toleranz
+        $ts = date('Y-m-d H:i:s', $clientTime);
+    }
+}
 
 $students = loadJson(STUDENTS_FILE);
 

@@ -1388,6 +1388,7 @@
             });
             existing.totalXP = Math.max(existing.totalXP || 0, serverSt.totalXP || 0);
             if (serverSt.lastLogin) existing.lastLogin = serverSt.lastLogin;
+            if (serverSt.lastActivity) existing.lastActivity = serverSt.lastActivity; // FIX: lastActivity übernehmen
             if (serverSt.status) existing.status = serverSt.status;
           } else {
             local.push(serverSt);
@@ -1511,6 +1512,12 @@
       loadTheme();
       renderAllTables();
       document.addEventListener('click', e => { if (e.target.classList.contains('student-name')) openProfile(e.target.textContent); });
+      // Auto-Refresh vom Server beim Seitenstart (falls konfiguriert)
+      if (getServerUrl() && getApiKey()) {
+        loadFromServer().then(() => {
+          setServerStatus('✅ Daten automatisch vom Server geladen.', 'success');
+        }).catch(() => {});
+      }
     });
 
     // ═══════════════════════════════════════════════════════════
