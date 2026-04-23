@@ -10,6 +10,45 @@
 </head>
 
 <body>
+
+<!-- ── Login-Gate ── -->
+<div id="login-gate" style="position:fixed;inset:0;z-index:9999;background:#0f172a;display:flex;align-items:center;justify-content:center">
+  <div style="background:#1e293b;border:1px solid #334155;border-radius:16px;padding:40px 36px;width:100%;max-width:360px;text-align:center">
+    <div style="font-size:36px;margin-bottom:8px">📊</div>
+    <h2 style="font-family:'Nunito Sans',sans-serif;color:#f8fafc;font-size:20px;margin:0 0 4px">Lehrer-Dashboard</h2>
+    <p style="color:#94a3b8;font-size:13px;margin:0 0 24px">ZP10 Diagnose</p>
+    <input id="gate-pw" type="password" placeholder="Passwort"
+      style="width:100%;padding:12px 16px;background:#0f172a;border:2px solid #334155;border-radius:10px;color:#f8fafc;font-size:18px;text-align:center;letter-spacing:4px;outline:none;box-sizing:border-box;transition:border-color .2s"
+      onfocus="this.style.borderColor='#6366f1'"
+      onblur="this.style.borderColor='#334155'"
+      onkeydown="if(event.key==='Enter')checkGate()">
+    <div id="gate-err" style="color:#f87171;font-size:12px;min-height:18px;margin:8px 0"></div>
+    <button onclick="checkGate()"
+      style="width:100%;padding:12px;background:#6366f1;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Nunito Sans',sans-serif">
+      Einloggen
+    </button>
+  </div>
+</div>
+<script>
+(function(){
+  if(sessionStorage.getItem('zp10-lehrer-auth')==='1'){
+    document.getElementById('login-gate').style.display='none';
+  } else {
+    setTimeout(()=>document.getElementById('gate-pw').focus(),100);
+  }
+  window.checkGate=function(){
+    if(document.getElementById('gate-pw').value==='1909'){
+      sessionStorage.setItem('zp10-lehrer-auth','1');
+      document.getElementById('login-gate').style.display='none';
+    } else {
+      document.getElementById('gate-err').textContent='Falsches Passwort';
+      document.getElementById('gate-pw').value='';
+      document.getElementById('gate-pw').focus();
+    }
+  };
+})();
+</script>
+
   <header class="header">
     <div class="hdr-left">
       <a href="../index.html" class="back-btn">← Zurück zur Hub</a>
