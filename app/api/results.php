@@ -13,13 +13,20 @@ $students = loadJson(STUDENTS_FILE);
 $hubs = loadJson(HUB_FILE);
 foreach ($students as &$st) {
     $code = $st['code'] ?? $st['name'] ?? '';
-    if ($code && isset($hubs[$code]['fehlvorstellungen'])) {
+    if ($code && isset($hubs[$code])) {
+        $hub = $hubs[$code];
         // Hub-MVs zusammenführen (Duplikate per code+moduleId vermeiden)
-        $existing = array_column($st['fehlvorstellungen'] ?? [], null, 'code');
-        foreach ($hubs[$code]['fehlvorstellungen'] as $mv) {
-            if (!isset($existing[$mv['code'] ?? ''])) {
-                $st['fehlvorstellungen'][] = $mv;
+        if (!empty($hub['fehlvorstellungen'])) {
+            $existing = array_column($st['fehlvorstellungen'] ?? [], null, 'code');
+            foreach ($hub['fehlvorstellungen'] as $mv) {
+                if (!isset($existing[$mv['code'] ?? ''])) {
+                    $st['fehlvorstellungen'][] = $mv;
+                }
             }
+        }
+        // lastSync für Live-Heartbeat
+        if (!empty($hub['lastSync'])) {
+            $st['lastSync'] = $hub['lastSync'];
         }
     }
 }

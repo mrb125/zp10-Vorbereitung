@@ -30,6 +30,7 @@
       <button class="tab-btn active" onclick="switchTab('overview')">Klassenübersicht</button>
       <button class="tab-btn" onclick="switchTab('competencies')">Kompetenzen</button>
       <button class="tab-btn" onclick="switchTab('heatmap')">Fehlvorstellungen</button>
+      <button class="tab-btn" onclick="switchTab('modul-heatmap');startModulHeatmapPolling()">📊 Modul-Heatmap</button>
       <button class="tab-btn" onclick="switchTab('recommendations')">Förderempfehlungen</button>
       <button class="tab-btn" onclick="switchTab('import')">Daten importieren</button>
       <button class="tab-btn" onclick="switchTab('codes');loadCodes()">🔑 Schüler-Codes</button>
@@ -203,6 +204,40 @@
         </div>
       </div>
 
+    </div>
+
+    <div id="modul-heatmap" class="tab-content">
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:6px;flex-wrap:wrap">
+          <h2 style="margin:0">📊 Modul-Heatmap</h2>
+          <div id="mhm-live" style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#10b981;opacity:0">
+            <span style="width:7px;height:7px;border-radius:50%;background:#10b981;animation:mhm-pulse 1.4s ease-in-out infinite;display:inline-block"></span>
+            LIVE
+          </div>
+          <span id="mhm-ts" style="font-size:11px;color:var(--text-secondary);margin-left:auto"></span>
+        </div>
+        <p style="color:var(--text-secondary);margin-bottom:1.5rem;font-size:0.875rem">
+          Zeilen = Schüler · Spalten = 13 Module · Farbe = Lösungsquote<br>
+          Grün ≥ 70% · Gelb 45–69% · Rot &lt;45% · Grau = nicht bearbeitet
+        </p>
+        <style>
+          @keyframes mhm-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
+          #mhm-table{border-collapse:collapse;font-size:11px;min-width:100%}
+          #mhm-table th{padding:4px 6px;white-space:nowrap;background:var(--surface,#f8f9fa);font-weight:700;border:1px solid var(--border,#e2e8f0)}
+          #mhm-table th.mhm-col{writing-mode:vertical-lr;transform:rotate(180deg);max-height:100px;vertical-align:bottom;text-align:left;font-size:10px;padding:6px 4px}
+          #mhm-table td{padding:3px 5px;border:1px solid var(--border,#e2e8f0);text-align:center;font-size:10px;font-family:monospace;min-width:36px}
+          #mhm-table td.mhm-name{text-align:left;white-space:nowrap;font-family:inherit;font-size:11px;padding:3px 8px;font-weight:600}
+          .mhm-none{background:#f1f5f9;color:#94a3b8}
+          .mhm-low {background:#fee2e2;color:#b91c1c}
+          .mhm-mid {background:#fef3c7;color:#92400e}
+          .mhm-ok  {background:#d1fae5;color:#065f46}
+          .mhm-top {background:#6ee7b7;color:#064e3b}
+          .mhm-avg-row td{background:var(--surface,#f8f9fa)!important;font-weight:700;border-top:2px solid var(--border,#e2e8f0)}
+        </style>
+        <div style="overflow-x:auto" id="mhm-wrap">
+          <p style="color:var(--text-secondary);font-style:italic">Bitte zuerst Daten laden (Klassenübersicht → Daten importieren oder Server-Sync).</p>
+        </div>
+      </div>
     </div>
 
     <div id="recommendations" class="tab-content">
@@ -437,6 +472,19 @@
       'zp10-prozent-wachstum':         'Prozent & Wachstum',
       'zp10-expo-grundlagen':          'Expo-Grundlagen',
       'zp10-exponentialfunktionen':    'Exponentialfunktionen',
+      // Escape-Room IDs
+      'ESCAPE_ROOM_1':  '🔓 Escape: Basiswissen I',
+      'ESCAPE_ROOM_2':  '🔓 Escape: Basiswissen II',
+      'ESCAPE_ROOM_3':  '🔓 Escape: Basiswissen III',
+      'ESCAPE_ROOM_4':  '🔓 Escape: Basiswissen IV',
+      'ESCAPE_ROOM_5':  '🔓 Escape: Basiswissen V',
+      'ESCAPE_ROOM_6':  '🔓 Escape: Schulgarten',
+      'ESCAPE_ROOM_7':  '🔓 Escape: Murmelbahn',
+      'ESCAPE_ROOM_8':  '🔓 Escape: Skateboard-Rampe',
+      'ESCAPE_ROOM_9':  '🔓 Escape: Algenpest',
+      'ESCAPE_ROOM_10': '🔓 Escape: Pflastersteine',
+      'ESCAPE_TOTAL':   '🏆 Escape-Room Gesamt',
+      'ESCAPE':         '🏆 Escape-Room (alt)',
     };
     // Lookup-Hilfsfunktion — gibt Klarnamen oder die ID selbst zurück
     function moduleName(mid) { return MODULES[mid] || mid || '—'; }
@@ -1448,7 +1496,115 @@
       if (confirm('⚠️ Alle Daten löschen?')) { localStorage.removeItem('zp10_lehrer_data'); renderAllTables(); alert('✅ Gelöscht.'); }
     }
 
-    function renderAllTables() { renderClassTable(); renderHeatmap(); renderRecommendations(); renderCompetencies(); renderReasoningTab(); }
+    function renderAllTables() { renderClassTable(); renderHeatmap(); renderRecommendations(); renderCompetencies(); renderReasoningTab(); renderModulHeatmap(); }
+
+    // ===== MODUL-HEATMAP =====
+    const MHM_MODULES = [
+      {id:'zp10-terme-gleichungen',       label:'Terme &\nGleich.'},
+      {id:'zp10-terme-muster',            label:'Terme &\nMuster'},
+      {id:'zp10-terme-vereinfachen',      label:'Terme\nvereinfachen'},
+      {id:'zp10-lineare-funktionen',      label:'Lin.\nFkt.'},
+      {id:'zp10-quadratische-funktionen', label:'Quad.\nFkt.'},
+      {id:'zp10-potenzen-wurzeln',        label:'Pot. &\nWurzeln'},
+      {id:'zp10-lgs',                     label:'LGS'},
+      {id:'zp10-geometrie',               label:'Geo-\nmetrie'},
+      {id:'zp10-strahlensatz',            label:'Strahl-\nsatz'},
+      {id:'zp10-stochastik',              label:'Stoch-\nastik'},
+      {id:'zp10-prozent-wachstum',        label:'Prozent &\nWachstum'},
+      {id:'zp10-expo-grundlagen',         label:'Expo\nGrundl.'},
+      {id:'zp10-exponentialfunktionen',   label:'Exp.\nFkt.'},
+    ];
+
+    function mhmCellClass(score){ return score===null?'mhm-none':score<45?'mhm-low':score<70?'mhm-mid':score<85?'mhm-ok':'mhm-top'; }
+    function mhmCellText(score){ return score===null?'—':score+'%'; }
+
+    function renderModulHeatmap(){
+      const students = loadData();
+      const wrap = document.getElementById('mhm-wrap');
+      if(!wrap) return;
+      if(!students.length){
+        wrap.innerHTML = '<p style="color:var(--text-secondary);font-style:italic">Keine Daten geladen.</p>';
+        return;
+      }
+
+      // Column averages
+      const colAvg = MHM_MODULES.map(m => {
+        const scores = students.map(s => s.modules?.[m.id]?.score ?? null).filter(x => x !== null);
+        return scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : null;
+      });
+
+      const header = '<tr><th style="min-width:120px">Schüler</th>' +
+        MHM_MODULES.map(m => `<th class="mhm-col">${m.label.replace(/\n/g,'<br>')}</th>`).join('') +
+        '<th>Ø</th></tr>';
+
+      const rows = students.map(st => {
+        const scores = MHM_MODULES.map(m => st.modules?.[m.id]?.score ?? null);
+        const done   = scores.filter(x => x !== null);
+        const avg    = done.length ? Math.round(done.reduce((a,b)=>a+b,0)/done.length) : null;
+        const name   = st.name || st.code || '?';
+        const lastSync = st.lastSync || st.lastActivity;
+        const ago = lastSync ? timeAgoShort(lastSync) : '';
+        const nameCell = `<td class="mhm-name" title="${st.code||''}">${name}${ago?`<br><span style="font-size:9px;color:var(--text-secondary);font-weight:400">${ago}</span>`:''}`;
+        return '<tr>' + nameCell + '</td>' +
+          scores.map(sc => `<td class="${mhmCellClass(sc)}" title="${sc!==null?sc+'%':'—'}">${mhmCellText(sc)}</td>`).join('') +
+          `<td class="${mhmCellClass(avg)}" style="font-weight:700">${mhmCellText(avg)}</td></tr>`;
+      }).join('');
+
+      const avgRow = '<tr class="mhm-avg-row"><td class="mhm-name">Ø Klasse</td>' +
+        colAvg.map(sc => `<td class="${mhmCellClass(sc)}" style="font-weight:700">${mhmCellText(sc)}</td>`).join('') +
+        '<td></td></tr>';
+
+      wrap.innerHTML = `<table id="mhm-table"><thead>${header}</thead><tbody>${rows}${avgRow}</tbody></table>`;
+    }
+
+    function timeAgoShort(isoStr){
+      if(!isoStr) return '';
+      const sec = Math.floor((Date.now() - new Date(isoStr).getTime())/1000);
+      if(sec < 60)  return 'gerade eben';
+      if(sec < 3600) return `vor ${Math.floor(sec/60)} min`;
+      if(sec < 86400) return `vor ${Math.floor(sec/3600)} h`;
+      return `vor ${Math.floor(sec/86400)} T`;
+    }
+
+    // Polling
+    let _mhmPollInterval = null;
+
+    function startModulHeatmapPolling(){
+      renderModulHeatmap();
+      const liveEl = document.getElementById('mhm-live');
+      const tsEl   = document.getElementById('mhm-ts');
+      if(liveEl) liveEl.style.opacity = '1';
+      if(tsEl)   tsEl.textContent = 'Letzte Aktualisierung: '+new Date().toLocaleTimeString('de-DE');
+      if(_mhmPollInterval) return;
+      _mhmPollInterval = setInterval(async () => {
+        if(!document.getElementById('modul-heatmap')?.classList.contains('active')) return;
+        const url = getServerUrl();
+        const key = getApiKey();
+        if(!url || !key) return;
+        try {
+          const r = await fetch(`${url}/results.php?key=${encodeURIComponent(key)}`);
+          if(!r.ok) return;
+          const serverData = await r.json();
+          if(!Array.isArray(serverData)) return;
+          // Merge into localStorage (same logic as existing server load)
+          const local = loadData();
+          const map = Object.fromEntries(local.map(s => [s.code||s.name, s]));
+          serverData.forEach(s => {
+            const k = s.code || s.name;
+            if(map[k]){
+              Object.assign(map[k].modules, s.modules || {});
+              if(s.lastSync) map[k].lastSync = s.lastSync;
+              if(s.lastActivity) map[k].lastActivity = s.lastActivity;
+            } else {
+              map[k] = s;
+            }
+          });
+          localStorage.setItem('zp10_lehrer_data', JSON.stringify(Object.values(map)));
+          renderModulHeatmap();
+          if(tsEl) tsEl.textContent = 'Letzte Aktualisierung: '+new Date().toLocaleTimeString('de-DE');
+        } catch(e){}
+      }, 30000);
+    }
 
     // ===== BEGRÜNDUNGEN BEWERTEN =====
     function renderReasoningTab() {
